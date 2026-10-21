@@ -12,7 +12,8 @@ Port-specific differences:
 - `AvailableCiphersuite` contains all the cipher suites of RFC 9420, not only the two supported by HACL*.
 - ECDSA signatures use deterministic nonces (RFC 6979), so `sign_sign` ignores its entropy (as for EdDSA).
 - The fields of `crypto_bytes` that only carry proofs (e.g. `hash_hash_pre`, `*_length_bound`)
-  are not ported yet, as well as `bytes_hasEq` and `debug_bytes_to_string`.
+  are not ported yet, as well as `debug_bytes_to_string`.
+- `bytes_hasEq` is `DecidableEq Bytes`.
 - Refined types such as `lbytes bytes n` are not used in the signatures of `CryptoBytes`:
   lengths are checked at runtime by the concrete instance.
 -/
@@ -35,6 +36,9 @@ inductive AvailableCiphersuite where
 deriving DecidableEq, Repr
 
 class CryptoBytes (Bytes: Type) extends BytesLike Bytes where
+  /-- Port of `bytes_hasEq`. -/
+  [decEq: DecidableEq Bytes]
+
   ciphersuite: AvailableCiphersuite
 
   hashHash: Bytes → Result Bytes
@@ -66,6 +70,8 @@ class CryptoBytes (Bytes: Type) extends BytesLike Bytes where
   hmacHmac: (key: Bytes) → (data: Bytes) → Result Bytes
 
   stringToBytes: String → Bytes
+
+attribute [reducible, instance] CryptoBytes.decEq
 
 /-! ## Concrete instance -/
 
@@ -131,6 +137,9 @@ def mkConcreteCryptoBytes (acs: AvailableCiphersuite): CryptoBytes ByteArray :=
   let (cs, sign) := availableCiphersuiteToConcreteCiphersuite acs
   let hpkeCs := concreteCiphersuiteToHpkeCiphersuite cs
   {
+    -- As MLS*'s postcondition `cb.base == bytes_like_hacl_star_bytes`, which holds here by definition.
+    toBytesLike := bytesLikeByteArray
+
     ciphersuite := acs
 
     hashHash buf := Result.fromOption "hash_hash: Hash.hash failed" (Hash.hash cs.kdfHash buf)

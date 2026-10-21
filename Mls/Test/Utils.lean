@@ -93,10 +93,12 @@ def bytesToHexString (b: ByteArray): String :=
 
 /-! ## Parsing / serializing -/
 
-def parse {a: Type} (mf: NonExtensibleMessageFormat ByteArray a) (b: ByteArray): Option a :=
-  mf.toExtensible.parse b
+/-! As in MLS* (`ps_prefix_to_ps_whole #bytes #bytes_like_bytes`), the `BytesLike` structure is given explicitly. -/
 
-def serialize {a: Type} (mf: NonExtensibleMessageFormat ByteArray a) (x: a): ByteArray :=
-  mf.toExtensible.serialize x
+def parse {a: Type} (mf: @NonExtensibleMessageFormat ByteArray bytesLikeByteArray a) (b: ByteArray): Option a :=
+  @ExtensibleMessageFormat.parse ByteArray bytesLikeByteArray a (@NonExtensibleMessageFormat.toExtensible ByteArray bytesLikeByteArray a mf) b
+
+def serialize {a: Type} (mf: @NonExtensibleMessageFormat ByteArray bytesLikeByteArray a) (x: a): ByteArray :=
+  @ExtensibleMessageFormat.serialize ByteArray bytesLikeByteArray a (@NonExtensibleMessageFormat.toExtensible ByteArray bytesLikeByteArray a mf) x
 
 end Mls.Test

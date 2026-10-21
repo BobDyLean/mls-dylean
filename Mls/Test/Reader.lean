@@ -72,6 +72,27 @@ def parseCryptoBasicsTest (json: Json): Except String CryptoBasicsTest := do
     }
   }
 
+/-! ## Tree Validation -/
+
+def parseTreeValidationTest (json: Json): Except String TreeValidationTest := do
+  return {
+    cipherSuite := ← json.getObjValAs? UInt16 "cipher_suite"
+    tree := ← json.getObjValAs? String "tree"
+    groupId := ← json.getObjValAs? String "group_id"
+    resolutions := ← json.getObjValAs? (List (List UInt32)) "resolutions"
+    treeHashes := ← json.getObjValAs? (List String) "tree_hashes"
+  }
+
+/-! ## Tree Operations -/
+
+def parseTreeOperationsTest (json: Json): Except String TreeOperationsTest := do
+  return {
+    treeBefore := ← json.getObjValAs? String "tree_before"
+    proposal := ← json.getObjValAs? String "proposal"
+    proposalSender := ← json.getObjValAs? UInt32 "proposal_sender"
+    treeAfter := ← json.getObjValAs? String "tree_after"
+  }
+
 /-! ## Messages -/
 
 def parseMessagesTest (json: Json): Except String MessagesTest := do
@@ -100,6 +121,8 @@ def parseMessagesTest (json: Json): Except String MessagesTest := do
 
 def getFilename: TestType → String
   | .cryptoBasics => "test_vectors/data/crypto-basics.json"
+  | .treeValidation => "test_vectors/data/tree-validation.json"
+  | .treeOperations => "test_vectors/data/tree-operations.json"
   | .messages => "test_vectors/data/messages.json"
 
 def getTestsuite (testVectorsDir: System.FilePath) (typ: TestType): IO Testsuite := do
@@ -110,6 +133,12 @@ def getTestsuite (testVectorsDir: System.FilePath) (typ: TestType): IO Testsuite
   | .cryptoBasics =>
     let tests ← IO.ofExcept (l.toList.mapM parseCryptoBasicsTest |>.mapError (s!"parse_crypto_basics_test: incorrect test vector format: {·}"))
     return .cryptoBasicsTest tests
+  | .treeValidation =>
+    let tests ← IO.ofExcept (l.toList.mapM parseTreeValidationTest |>.mapError (s!"parse_tree_validation_test: incorrect test vector format: {·}"))
+    return .treeValidationTest tests
+  | .treeOperations =>
+    let tests ← IO.ofExcept (l.toList.mapM parseTreeOperationsTest |>.mapError (s!"parse_tree_operations_test: incorrect test vector format: {·}"))
+    return .treeOperationsTest tests
   | .messages =>
     let tests ← IO.ofExcept (l.toList.mapM parseMessagesTest |>.mapError (s!"parse_messages_test: incorrect test vector format: {·}"))
     return .messagesTest tests

@@ -12,6 +12,8 @@ open Comparse
 open Mls Mls.TreeSync Mls.TreeKEM Mls.Bootstrap Mls.TreeDEM
 open Mls.Test
 
+attribute [local instance] bytesLikeByteArray
+
 def checkMlsWelcome (mlsWelcome: String): IO Unit := do
   let mlsWelcome ← hexStringToBytes mlsWelcome
   match parse MlsMessage.mf mlsWelcome with

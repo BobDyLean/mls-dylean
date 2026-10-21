@@ -18,6 +18,8 @@ namespace Comparse.Tests
 
 open Comparse
 
+attribute [local instance] bytesLikeByteArray
+
 /-! ## Utility functions, from MLS* -/
 
 def hexCharToHexDigit (c: Char): Option Nat :=

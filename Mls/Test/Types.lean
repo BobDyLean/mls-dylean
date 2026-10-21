@@ -55,6 +55,23 @@ structure CryptoBasicsTest where
   signWithLabel: CryptoBasicsSignWithLabel
   encryptWithLabel: CryptoBasicsEncryptWithLabel
 
+/-! ## Tree Validation -/
+
+structure TreeValidationTest where
+  cipherSuite: UInt16
+  tree: String
+  groupId: String
+  resolutions: List (List UInt32)
+  treeHashes: List String
+
+/-! ## Tree Operations -/
+
+structure TreeOperationsTest where
+  treeBefore: String
+  proposal: String
+  proposalSender: UInt32
+  treeAfter: String
+
 /-! ## Messages -/
 
 structure MessagesTest where
@@ -82,10 +99,14 @@ structure MessagesTest where
 
 inductive TestType where
   | cryptoBasics
+  | treeValidation
+  | treeOperations
   | messages
 
 inductive Testsuite where
   | cryptoBasicsTest: List CryptoBasicsTest → Testsuite
+  | treeValidationTest: List TreeValidationTest → Testsuite
+  | treeOperationsTest: List TreeOperationsTest → Testsuite
   | messagesTest: List MessagesTest → Testsuite
 
 end Mls.Test

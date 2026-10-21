@@ -48,6 +48,14 @@ def mkMlsBytes {Bytes: Type} [BytesLike Bytes] (b: Bytes) (funName varName: Stri
   else
     Result.error s!"{funName}: {varName} too long"
 
+def mkMlsList {Bytes: Type} [BytesLike Bytes] {α: Type} {mf: NonExtensibleMessageFormat Bytes α} [mf.ParseConsumes]
+  (l: List α) (funName varName: String): Result (MlsList mf)
+:=
+  if h: mlsNatPred (BytesLike.length ((ExtensibleMessageFormat.list mf).serialize l)) then
+    pure ⟨l, h⟩
+  else
+    Result.error s!"{funName}: {varName} too long"
+
 def mkMlsAsciiString {Bytes: Type} [BytesLike Bytes] (s: String) (funName varName: String): Result (MlsAsciiString (Bytes := Bytes)) :=
   if h: isAsciiString s then
     let s: Subtype isAsciiString := ⟨s, h⟩

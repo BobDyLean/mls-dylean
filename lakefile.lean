@@ -48,10 +48,16 @@ def fetchTestVector (pkg: Package) (name: String): FetchM (Job System.FilePath) 
 target cryptoBasicsTestVector pkg : System.FilePath :=
   fetchTestVector pkg "crypto-basics"
 
+target treeValidationTestVector pkg : System.FilePath :=
+  fetchTestVector pkg "tree-validation"
+
+target treeOperationsTestVector pkg : System.FilePath :=
+  fetchTestVector pkg "tree-operations"
+
 target messagesTestVector pkg : System.FilePath :=
   fetchTestVector pkg "messages"
 
 @[test_driver]
 lean_exe «mls-test» where
   root := `TestMain
-  needs := #[cryptoBasicsTestVector, messagesTestVector]
+  needs := #[cryptoBasicsTestVector, treeValidationTestVector, treeOperationsTestVector, messagesTestVector]

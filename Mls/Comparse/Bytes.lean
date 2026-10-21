@@ -1,8 +1,13 @@
 import Comparse
 
 /-!
-`BytesLike` instance for `ByteArray`,
+`BytesLike` structure for `ByteArray`,
 counterpart of `seq_u8_bytes_like` in Comparse (F*).
+
+As in MLS* (`bytes_like_bytes` in `MLS.Test.Utils`), it is not a global instance:
+otherwise, in code taking `[CryptoBytes ByteArray]`, two `BytesLike ByteArray` instances
+would be in scope (this one and `CryptoBytes.toBytesLike`), and could not be unified.
+Code that needs it without `CryptoBytes` installs it with `attribute [local instance] bytesLikeByteArray`.
 -/
 
 open Comparse
@@ -23,7 +28,8 @@ theorem size_eq (b : ByteArray) : b.size = b.data.size := rfl
 
 end ByteArray
 
-instance : BytesLike ByteArray where
+@[reducible]
+def bytesLikeByteArray : BytesLike ByteArray where
   length := ByteArray.size
   empty := .empty
   empty_length := ByteArray.size_empty

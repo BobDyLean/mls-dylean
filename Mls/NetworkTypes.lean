@@ -408,6 +408,10 @@ def StaticOption.mk {b: Bool} {a: Type} (x: a): StaticOption b a :=
   | true => x
   | false => ()
 
+/-- The value of a static option known to be present. -/
+def StaticOption.get {a: Type}: {b: Bool} → StaticOption b a → b = true → a
+  | true, x, _ => x
+
 def StaticOption.mf
   {a: Type} (b: Bool) (mf: NonExtensibleMessageFormat Bytes a)
   : NonExtensibleMessageFormat Bytes (StaticOption b a)
