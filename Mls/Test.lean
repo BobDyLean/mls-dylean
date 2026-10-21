@@ -1,18 +1,21 @@
 import Mls.Test.Types
 import Mls.Test.Reader
 import Mls.Test.Utils
+import Mls.Test.FromExt.CryptoBasics
 import Mls.Test.FromExt.Messages
+import OpenSSL.Test
 
 /-!
 Port of `MLS.Test`.
 
 The test vectors are read from `<root>/test_vectors/data/`,
 where `<root>` defaults to the current directory.
-They are downloaded by Lake (target `messagesTestVector` in `lakefile.lean`) before building `mls-test`.
+They are downloaded by Lake (targets `*TestVector` in `lakefile.lean`) before building `mls-test`.
 -/
 
 namespace Mls.Test
 
+open Mls.Test.FromExt.CryptoBasics
 open Mls.Test.FromExt.Messages
 
 def runTests {a: Type} (testVectorsDir: System.FilePath) (name: String) (ty: TestType)
@@ -26,10 +29,15 @@ def runTests {a: Type} (testVectorsDir: System.FilePath) (name: String) (ty: Tes
     let nRun ← runTest testsuite
     IO.println s!"{name}: success! ({nRun}/{testsuite.length})"
 
+def runCryptoBasicsTests (testVectorsDir: System.FilePath): IO Unit :=
+  runTests testVectorsDir "Crypto Basics" .cryptoBasics (fun | .cryptoBasicsTest l => some l | _ => none) testCryptoBasics
+
 def runMessagesTests (testVectorsDir: System.FilePath): IO Unit :=
-  runTests testVectorsDir "Messages" .messages (fun | .messagesTest l => some l) testMessages
+  runTests testVectorsDir "Messages" .messages (fun | .messagesTest l => some l | _ => none) testMessages
 
 def main (testVectorsDir: System.FilePath): IO Unit := do
+  OpenSSL.Test.main
+  runCryptoBasicsTests testVectorsDir
   runMessagesTests testVectorsDir
 
 end Mls.Test

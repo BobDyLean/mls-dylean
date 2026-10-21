@@ -5,6 +5,26 @@ package mls
 
 require dylean from git "https://github.com/BobDyLean/dylean" @ "v4.36.0-rc1"
 
+/-! ## OpenSSL bindings (`OpenSSL/`) -/
+
+target opensslLeanO pkg : System.FilePath := do
+  let srcJob ← inputTextFile <| pkg.dir / "OpenSSL" / "c" / "openssl_lean.c"
+  let oFile := pkg.buildDir / "c" / "openssl_lean.o"
+  let weakArgs := #["-I", (← getLeanIncludeDir).toString]
+  buildO oFile srcJob weakArgs #["-fPIC", "-O2"] "cc"
+
+target opensslLean pkg : System.FilePath := do
+  let o ← opensslLeanO.fetch
+  buildStaticLib (pkg.staticLibDir / nameToStaticLib "opensslLean") #[o]
+
+@[default_target]
+lean_lib OpenSSL where
+  srcDir := "OpenSSL"
+  moreLinkObjs := #[opensslLean]
+  moreLinkArgs := #["-lcrypto"]
+
+/-! ## MLS -/
+
 @[default_target]
 lean_lib Mls
 
@@ -25,10 +45,13 @@ def fetchTestVector (pkg: Package) (name: String): FetchM (Job System.FilePath) 
     download s!"https://raw.githubusercontent.com/mlswg/mls-implementations/{testVectorsCommit}/test-vectors/{name}.json" file
   return file
 
+target cryptoBasicsTestVector pkg : System.FilePath :=
+  fetchTestVector pkg "crypto-basics"
+
 target messagesTestVector pkg : System.FilePath :=
   fetchTestVector pkg "messages"
 
 @[test_driver]
 lean_exe «mls-test» where
   root := `TestMain
-  needs := #[messagesTestVector]
+  needs := #[cryptoBasicsTestVector, messagesTestVector]

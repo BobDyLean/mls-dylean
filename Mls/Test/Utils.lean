@@ -1,5 +1,6 @@
 import Lean.Data.Json
 import Mls.Comparse.Bytes
+import Mls.Result
 
 /-!
 Port of `MLS.Test.Utils` (the parts needed by the ported tests).
@@ -34,6 +35,33 @@ def testListAux {a: Type} (testName: String) (test: a → IO Bool): Nat → List
 
 def testList {a: Type} (testName: String) (test: a → IO Bool) (l: List a): IO Nat :=
   testListAux testName test 0 l
+
+/-! ## Results -/
+
+def extractResult {α: Type} (x: Mls.Result α): IO α :=
+  match x with
+  | .success x => pure x
+  | .internalError s => throw (IO.userError s!"InternalError: {s}")
+  | .protocolError s => throw (IO.userError s!"ProtocolError: {s}")
+
+/-! ## Deterministic randomness -/
+
+structure RandState where
+  internalState: Nat
+
+def initRandState (seed: Nat): RandState :=
+  { internalState := seed % 2^64 }
+
+def genRandBits (st: RandState) (nBits: Nat): RandState × Nat :=
+  let res := (6364136223846793005 * st.internalState + 1442695040888963407) % 2^64
+  ({ internalState := res }, res / 2^(64 - nBits))
+
+def genRandBytes (rng: RandState): Nat → RandState × ByteArray
+  | 0 => (rng, .empty)
+  | size+1 =>
+    let (rng, head) := genRandBits rng 8
+    let (rng, tail) := genRandBytes rng size
+    (rng, ⟨#[head.toUInt8]⟩ ++ tail)
 
 /-! ## Hexadecimal strings -/
 

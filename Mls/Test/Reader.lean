@@ -9,6 +9,69 @@ namespace Mls.Test
 
 open Lean
 
+instance: FromJson UInt16 where
+  fromJson? j := do
+    let n ← j.getNat?
+    if n < 2^16 then pure n.toUInt16 else throw s!"expected uint16, got {n}"
+
+instance: FromJson UInt32 where
+  fromJson? j := do
+    let n ← j.getNat?
+    if n < 2^32 then pure n.toUInt32 else throw s!"expected uint32, got {n}"
+
+/-! ## Crypto Basics -/
+
+def parseCryptoBasicsTest (json: Json): Except String CryptoBasicsTest := do
+  let refHash ← json.getObjVal? "ref_hash"
+  let expandWithLabel ← json.getObjVal? "expand_with_label"
+  let deriveSecret ← json.getObjVal? "derive_secret"
+  let deriveTreeSecret ← json.getObjVal? "derive_tree_secret"
+  let signWithLabel ← json.getObjVal? "sign_with_label"
+  let encryptWithLabel ← json.getObjVal? "encrypt_with_label"
+  return {
+    cipherSuite := ← json.getObjValAs? UInt16 "cipher_suite"
+    refHash := {
+      label := ← refHash.getObjValAs? String "label"
+      value := ← refHash.getObjValAs? String "value"
+      out := ← refHash.getObjValAs? String "out"
+    }
+    expandWithLabel := {
+      secret := ← expandWithLabel.getObjValAs? String "secret"
+      label := ← expandWithLabel.getObjValAs? String "label"
+      context := ← expandWithLabel.getObjValAs? String "context"
+      length := ← expandWithLabel.getObjValAs? UInt16 "length"
+      out := ← expandWithLabel.getObjValAs? String "out"
+    }
+    deriveSecret := {
+      secret := ← deriveSecret.getObjValAs? String "secret"
+      label := ← deriveSecret.getObjValAs? String "label"
+      out := ← deriveSecret.getObjValAs? String "out"
+    }
+    deriveTreeSecret := {
+      secret := ← deriveTreeSecret.getObjValAs? String "secret"
+      label := ← deriveTreeSecret.getObjValAs? String "label"
+      generation := ← deriveTreeSecret.getObjValAs? UInt32 "generation"
+      length := ← deriveTreeSecret.getObjValAs? UInt16 "length"
+      out := ← deriveTreeSecret.getObjValAs? String "out"
+    }
+    signWithLabel := {
+      priv := ← signWithLabel.getObjValAs? String "priv"
+      pub := ← signWithLabel.getObjValAs? String "pub"
+      content := ← signWithLabel.getObjValAs? String "content"
+      label := ← signWithLabel.getObjValAs? String "label"
+      signature := ← signWithLabel.getObjValAs? String "signature"
+    }
+    encryptWithLabel := {
+      priv := ← encryptWithLabel.getObjValAs? String "priv"
+      pub := ← encryptWithLabel.getObjValAs? String "pub"
+      label := ← encryptWithLabel.getObjValAs? String "label"
+      context := ← encryptWithLabel.getObjValAs? String "context"
+      plaintext := ← encryptWithLabel.getObjValAs? String "plaintext"
+      kemOutput := ← encryptWithLabel.getObjValAs? String "kem_output"
+      ciphertext := ← encryptWithLabel.getObjValAs? String "ciphertext"
+    }
+  }
+
 /-! ## Messages -/
 
 def parseMessagesTest (json: Json): Except String MessagesTest := do
@@ -36,6 +99,7 @@ def parseMessagesTest (json: Json): Except String MessagesTest := do
 /-! ## Final functions -/
 
 def getFilename: TestType → String
+  | .cryptoBasics => "test_vectors/data/crypto-basics.json"
   | .messages => "test_vectors/data/messages.json"
 
 def getTestsuite (testVectorsDir: System.FilePath) (typ: TestType): IO Testsuite := do
@@ -43,6 +107,9 @@ def getTestsuite (testVectorsDir: System.FilePath) (typ: TestType): IO Testsuite
   let json ← IO.ofExcept (Json.parse content)
   let l ← IO.ofExcept (json.getArr?.mapError (s!"get_testsuite: incorrect test vector format: {·}"))
   match typ with
+  | .cryptoBasics =>
+    let tests ← IO.ofExcept (l.toList.mapM parseCryptoBasicsTest |>.mapError (s!"parse_crypto_basics_test: incorrect test vector format: {·}"))
+    return .cryptoBasicsTest tests
   | .messages =>
     let tests ← IO.ofExcept (l.toList.mapM parseMessagesTest |>.mapError (s!"parse_messages_test: incorrect test vector format: {·}"))
     return .messagesTest tests

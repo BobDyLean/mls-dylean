@@ -7,8 +7,19 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Pinned instead of `ubuntu-latest`: the OpenSSL bindings (`OpenSSL/`) require OpenSSL >= 3.2,
+    # but Ubuntu 24.04 ships OpenSSL 3.0, and `ubuntu-latest` is migrating from Ubuntu 24.04 to 26.04
+    # (OpenSSL 3.5), so a job could land on either image.
+    # See https://starsling.dev/blog/ubuntu-26
+    # and https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2604-Readme.md
+    runs-on: ubuntu-26.04
 
     steps:
       - uses: actions/checkout@v7
+      # Preinstalled on the runner image; installed explicitly to document the dependency.
+      - name: Install OpenSSL development files
+        run: sudo apt-get update && sudo apt-get install -y libssl-dev
       - uses: leanprover/lean-action@v1
+        with:
+          # Run `lake test` explicitly: auto-detection of the test driver may silently skip it.
+          test: "true"
