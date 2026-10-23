@@ -5,6 +5,7 @@ import Mls.Comparse.Bytes
 import Mls.Comparse.Derived
 import Mls.Comparse.Tests
 import Mls.Common.Code.Result
+import Mls.Common.Proofs.Result.Lemmas
 import Mls.Common.Proofs.MiscLemmas
 import Mls.Common.Code.Crypto.Builtins
 import Mls.Common.Code.Crypto.Derived
@@ -21,6 +22,8 @@ import Mls.TreeSync.Code.Operations
 import Mls.TreeSync.Code.Invariants.ValidLeaves
 import Mls.TreeSync.Code.Invariants.UnmergedLeaves
 import Mls.TreeSync.Code.Invariants.ParentHash
+import Mls.TreeSync.Proofs.Operations.Lemmas
+import Mls.TreeSync.Proofs.Invariants.UnmergedLeaves.Proofs
 import Mls.TreeKEM.Code.NetworkTypes
 import Mls.Bootstrap.Code.NetworkTypes
 import Mls.TreeDEM.NetworkTypes

@@ -145,6 +145,29 @@ grind_pattern ChildSiblingView.leafContent_pack => ((ChildSiblingView.leaf conte
   (LeftRightView.node content left right).pack.position = left.position
 := rfl
 
+grind_pattern LeftRightView.position_pack_node => (LeftRightView.node content left right).pack.position
+
+@[simp] theorem LeftRightView.nodeContent_pack {l: Nat} (content: Node) (left right: Tree Leaf Node l):
+  (LeftRightView.node content left right).pack.nodeContent = content
+:= rfl
+
+grind_pattern LeftRightView.nodeContent_pack => (LeftRightView.node content left right).pack.nodeContent
+
+@[simp] theorem LeftRightView.left_pack {l: Nat} (content: Node) (left right: Tree Leaf Node l):
+  (LeftRightView.node content left right).pack.left = left
+:= rfl
+
+grind_pattern LeftRightView.left_pack => (LeftRightView.node content left right).pack.left
+
+@[simp] theorem LeftRightView.right_pack {l: Nat} (content: Node) (left right: Tree Leaf Node l)
+  (h: right.position = left.position + 2^l):
+  (LeftRightView.node content left right).pack.right = right
+:= by
+  obtain ⟨pr, br⟩ := right
+  grind [LeftRightView.pack, Tree.right, Tree.intoLeftRightView]
+
+grind_pattern LeftRightView.right_pack => (LeftRightView.node content left right).pack.right
+
 /-- The child for `li` of a packed left / right view, when `right` is the right half next to `left`. -/
 @[simp] theorem LeftRightView.child_pack {l: Nat} (content: Node) (left right: Tree Leaf Node l) (li: Nat)
   (h: right.position = left.position + 2^l):
@@ -162,6 +185,17 @@ theorem Tree.child_eq_left_right {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat):
   cases bt
   simp only [Tree.child_node]
   rfl
+
+grind_pattern Tree.child_eq_left_right => t.child li
+
+theorem Tree.sibling_eq_left_right {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat):
+  t.sibling li = if li < t.right.position then t.right else t.left
+:= by
+  obtain ⟨p, bt⟩ := t
+  cases bt
+  grind [Tree.sibling_node, Tree.left, Tree.right, Tree.intoLeftRightView_node]
+
+grind_pattern Tree.sibling_eq_left_right => t.sibling li
 
 theorem Tree.mem_left_or_right {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (h: t.containsLeafIndex li):
   (t.left.containsLeafIndex li ∧ li < t.right.position) ∨ (t.right.containsLeafIndex li ∧ ¬ li < t.right.position)
@@ -190,6 +224,26 @@ theorem Tree.pack_replaceChild_node {l: Nat} (p: Nat) (content content': Node) (
   grind [Tree.pack_replaceChild_node]
 
 grind_pattern Tree.position_pack_replaceChild => (ChildSiblingView.node content c (t.sibling li)).pack.position
+
+@[simp] theorem Tree.nodeContent_pack_replaceChild {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (content: Node)
+  (c: Tree Leaf Node l) (hc: c.position = (t.child li).position):
+  (ChildSiblingView.node content c (t.sibling li)).pack.nodeContent = content
+:= by
+  obtain ⟨p, bt⟩ := t
+  cases bt
+  grind [Tree.pack_replaceChild_node, Tree.nodeContent_node]
+
+grind_pattern Tree.nodeContent_pack_replaceChild => (ChildSiblingView.node content c (t.sibling li)).pack.nodeContent
+
+@[simp] theorem Tree.sibling_pack_replaceChild {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (content: Node)
+  (c: Tree Leaf Node l) (hc: c.position = (t.child li).position):
+  (ChildSiblingView.node content c (t.sibling li)).pack.sibling li = t.sibling li
+:= by
+  obtain ⟨p, bt⟩ := t
+  cases bt
+  grind [Tree.pack_replaceChild_node, Tree.sibling_node, Tree.child_node]
+
+grind_pattern Tree.sibling_pack_replaceChild => (ChildSiblingView.node content c (t.sibling li)).pack.sibling li
 
 /-- If `li'` is in the same child as `li`, the child for `li'` is the new child. -/
 @[simp] theorem Tree.child_pack_replaceChild_of_child_eq_child {l: Nat} (t: Tree Leaf Node (l+1)) (li li': Nat)
@@ -228,6 +282,15 @@ theorem Tree.mem_child_self {l: Nat} (t: Tree Leaf Node (l+1)) {li: Nat} (hli: t
   obtain ⟨p, bt⟩ := t
   cases bt
   grind [Tree.child_node, Tree.containsLeafIndex, Nat.pow_succ]
+
+theorem Tree.not_mem_sibling_self {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat):
+  ¬ (t.sibling li).containsLeafIndex li
+:= by
+  obtain ⟨p, bt⟩ := t
+  cases bt
+  grind [Tree.sibling_node, Tree.containsLeafIndex, Nat.pow_succ]
+
+grind_pattern Tree.not_mem_sibling_self => (t.sibling li).containsLeafIndex li
 
 /--
 A leaf index `li'` of `t` is either in the same child as `li`, or in the sibling of `li` (and then `li ≠ li'`).

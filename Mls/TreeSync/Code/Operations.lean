@@ -52,6 +52,7 @@ def treeAdd {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (lp: LeafNode Bytes tkt
         pure (some { content with unmergedLeaves := newUnmergedLeaves })
     let newChild ← treeAdd child li lp
     pure (ChildSiblingView.node newOptContent newChild sibling).pack
+termination_by l
 
 /--
 Port of `un_addP`.
@@ -249,6 +250,7 @@ def applyPathAux {l: Nat}
     let (newOptContent, newParentParentHash) ← computeNewNpAndPh optExtContent sibling parentParentHash
     let newChild ← applyPathAux child li pNext newParentParentHash
     pure (ChildSiblingView.node newOptContent newChild sibling).pack
+termination_by l
 
 /--
 Port of `apply_path`.

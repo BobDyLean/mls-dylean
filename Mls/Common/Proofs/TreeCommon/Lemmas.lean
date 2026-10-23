@@ -56,25 +56,19 @@ theorem leafAt_treeRemove {l: Nat} (t: Tree (Option Leaf) (Option Node) l) (li: 
 := by
   induction l generalizing p <;> simp_all [mkBlankTreeGeneral]
 
+grind_pattern mkBlankTreeGeneral_position => (mkBlankTreeGeneral l p leafContent nodeContent).position
+
 /-- Port of `leaf_at_mk_blank_tree_general`. -/
 theorem leafAt_mkBlankTreeGeneral (l p: Nat) (leafContent: Leaf) (nodeContent: Node) (li: Nat):
   leafAt (mkBlankTreeGeneral l p leafContent nodeContent) li = leafContent
 := by
-  induction l generalizing p with
-  | zero => unfold leafAt mkBlankTreeGeneral; simp
-  | succ l ih =>
-    unfold leafAt mkBlankTreeGeneral
-    simp only [Tree.intoChildSiblingView_eq, LeftRightView.child_pack, mkBlankTreeGeneral_position]
-    grind
+  induction l generalizing p <;> grind [leafAt.eq_def, mkBlankTreeGeneral]
 
 /-- Port of `leaf_at_tree_extend`. -/
 theorem leafAt_treeExtend {l: Nat} (t: Tree (Option Leaf) (Option Node) l) (li: Nat):
   leafAt (treeExtend t) li = if li < t.position + 2^l then leafAt t li else none
 := by
-  unfold treeExtend
-  rw [leafAt.eq_def]
-  simp only [Tree.intoChildSiblingView_eq, LeftRightView.child_pack, mkBlankTree, mkBlankTreeGeneral_position]
-  grind [leafAt_mkBlankTreeGeneral]
+  grind [treeExtend, leafAt.eq_def, mkBlankTree, leafAt_mkBlankTreeGeneral]
 
 theorem isTreeEmpty_zero (t: Tree (Option Leaf) (Option Node) 0): isTreeEmpty t = t.leafContent.isNone := by
   grind [isTreeEmpty.eq_def]
@@ -83,10 +77,7 @@ theorem isTreeEmpty_zero (t: Tree (Option Leaf) (Option Node) 0): isTreeEmpty t 
 theorem isTreeEmpty_succ {l: Nat} (t: Tree (Option Leaf) (Option Node) (l+1)) (li: Nat):
   isTreeEmpty t = (t.nodeContent.isNone && isTreeEmpty (t.child li) && isTreeEmpty (t.sibling li))
 := by
-  obtain ⟨p, bt⟩ := t
-  cases bt
-  rw [isTreeEmpty.eq_def]
-  grind [Tree.intoLeftRightView_node, Tree.nodeContent_node, Tree.child_node, Tree.sibling_node]
+  grind [isTreeEmpty.eq_def]
 
 /-- Port of `is_tree_empty_leaf_at`. -/
 theorem leafAt_of_isTreeEmpty {l: Nat} (t: Tree (Option Leaf) (Option Node) l) (li: Nat) (h: isTreeEmpty t):
@@ -106,15 +97,8 @@ theorem findEmptyLeaf_spec {l: Nat} (t: Tree (Option Leaf) (Option Node) l) (li:
     grind [Tree.containsLeafIndex]
   | @node l t ihLeft ihRight =>
     unfold findEmptyLeaf at h
-    unfold leafAt
-    simp only [Tree.intoLeftRightView_eq, Tree.intoChildSiblingView_eq, Tree.child_eq_left_right] at h ⊢
     have := Nat.two_pow_pos l
-    split at h
-    · cases h
-      have := ihLeft _ ‹_›
-      grind [Tree.containsLeafIndex]
-    · have := ihRight _ h
-      grind [Tree.containsLeafIndex]
+    grind [leafAt.eq_def, Tree.containsLeafIndex]
 
 /-- Port of `find_empty_leaf_mk_blank_tree`. -/
 theorem findEmptyLeaf_mkBlankTree (l p: Nat):
