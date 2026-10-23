@@ -348,9 +348,7 @@ def SenderType.toUInt8: SenderType → UInt8
   | .newMemberCommit => 4
 
 instance: SubsetLeftInverse SenderType.toUInt8 SenderType.ofUInt8 where
-  left_inv n := by
-    unfold SenderType.ofUInt8
-    by_cases n = 1 <;> by_cases n = 2 <;> by_cases n = 3 <;> by_cases n = 4 <;> simp_all [SenderType.toUInt8]
+  left_inv n := by grind [SenderType.ofUInt8, SenderType.toUInt8]
 
 instance: SubsetRightInverse SenderType.toUInt8 SenderType.ofUInt8 where
   right_inv x := by cases x <;> rfl
@@ -455,17 +453,10 @@ def WireFormat.toUInt16: WireFormat → UInt16
   | .unknown n _ => n
 
 instance: LeftInverse WireFormat.toUInt16 WireFormat.ofUInt16 where
-  left_inv := by
-    intro n
-    unfold WireFormat.ofUInt16
-    repeat' split
-    all_goals simp_all [WireFormat.toUInt16, ← UInt16.toNat_inj]
-    omega
+  left_inv n := by grind [WireFormat.ofUInt16, WireFormat.toUInt16, ← UInt16.toNat_inj]
 
 instance: RightInverse WireFormat.toUInt16 WireFormat.ofUInt16 where
-  right_inv := by
-    intro x
-    cases x <;> simp_all [WireFormat.ofUInt16, WireFormat.toUInt16]
+  right_inv x := by cases x <;> grind [WireFormat.ofUInt16, WireFormat.toUInt16]
 
 def WireFormat.mf: NonExtensibleMessageFormat Bytes WireFormat :=
   .isomorphic .uint16BE WireFormat.ofUInt16 WireFormat.toUInt16
@@ -498,9 +489,7 @@ def ContentType.toUInt8: ContentType → UInt8
   | .commit => 3
 
 instance: SubsetLeftInverse ContentType.toUInt8 ContentType.ofUInt8 where
-  left_inv n := by
-    unfold ContentType.ofUInt8
-    by_cases n = 1 <;> by_cases n = 2 <;> by_cases n = 3 <;> simp_all [ContentType.toUInt8]
+  left_inv n := by grind [ContentType.ofUInt8, ContentType.toUInt8]
 
 instance: SubsetRightInverse ContentType.toUInt8 ContentType.ofUInt8 where
   right_inv x := by cases x <;> rfl

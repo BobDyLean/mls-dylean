@@ -60,9 +60,7 @@ def LeafNodeSource.toUInt8: LeafNodeSource → UInt8
   | .commit => 3
 
 instance: SubsetLeftInverse LeafNodeSource.toUInt8 LeafNodeSource.ofUInt8 where
-  left_inv n := by
-    unfold LeafNodeSource.ofUInt8
-    by_cases n = 1 <;> by_cases n = 2 <;> by_cases n = 3 <;> simp_all [LeafNodeSource.toUInt8]
+  left_inv n := by grind [LeafNodeSource.ofUInt8, LeafNodeSource.toUInt8]
 
 instance: SubsetRightInverse LeafNodeSource.toUInt8 LeafNodeSource.ofUInt8 where
   right_inv x := by cases x <;> rfl
@@ -361,9 +359,7 @@ def NodeType.toUInt8: NodeType → UInt8
   | .parent => 2
 
 instance: SubsetLeftInverse NodeType.toUInt8 NodeType.ofUInt8 where
-  left_inv n := by
-    unfold NodeType.ofUInt8
-    by_cases n = 1 <;> by_cases n = 2 <;> simp_all [NodeType.toUInt8]
+  left_inv n := by grind [NodeType.ofUInt8, NodeType.toUInt8]
 
 instance: SubsetRightInverse NodeType.toUInt8 NodeType.ofUInt8 where
   right_inv x := by cases x <;> rfl

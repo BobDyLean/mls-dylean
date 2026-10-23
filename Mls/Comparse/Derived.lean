@@ -33,36 +33,22 @@ def g (w: Nat): BitVec (8*(w+1)) → UInt8 × BitVec (8*w) :=
   fun x => (UInt8.ofNat (x.toNat / 2^(8*w)), BitVec.ofNat _ (x.toNat % 2^(8*w)))
 
 theorem lt_aux (w a b: Nat) (ha: a < 256) (hb: b < 2^(8*w)): a * 2^(8*w) + b < 2^(8*(w+1)) := by
-  have: 2^(8*(w+1)) = 256 * 2^(8*w) := by rw [Nat.mul_add, Nat.pow_add, Nat.mul_comm]
-  rw [this]
-  have: a * 2^(8*w) + b < (a+1) * 2^(8*w) := by rw [Nat.add_mul]; omega
-  have: (a+1) * 2^(8*w) ≤ 256 * 2^(8*w) := Nat.mul_le_mul_right _ ha
-  omega
+  have := Nat.mul_le_mul_right (2^(8*w)) ha
+  grind
 
 instance (w: Nat): LeftInverse (g w) (f w) := ⟨by
   intro (hi, lo)
-  have hhi := hi.toNat_lt
   have hlo := lo.isLt
-  have hpos: 0 < 2^(8*w) := Nat.two_pow_pos _
-  simp only [f, g, BitVec.toNat_ofNat, Nat.mod_eq_of_lt (lt_aux w _ _ hhi hlo), Prod.mk.injEq]
-  constructor
-  · apply UInt8.toNat_inj.mp
-    rw [UInt8.toNat_ofNat', Nat.add_comm, Nat.add_mul_div_right _ _ hpos, Nat.div_eq_of_lt hlo]
-    simp
-  · apply BitVec.eq_of_toNat_eq
-    simp [Nat.add_comm, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt hlo]⟩
+  simp only [f, g, BitVec.toNat_ofNat, Nat.mod_eq_of_lt (lt_aux w _ _ hi.toNat_lt hlo), Prod.mk.injEq,
+    ← UInt8.toNat_inj, BitVec.toNat_eq, UInt8.toNat_ofNat']
+  simp [Nat.add_comm _ lo.toNat, Nat.add_mul_div_right _ _ (Nat.two_pow_pos _), Nat.div_eq_of_lt hlo, Nat.mod_eq_of_lt hlo]⟩
 
 instance (w: Nat): RightInverse (g w) (f w) := ⟨by
   intro x
   have hx := x.isLt
-  have hpos: 0 < 2^(8*w) := Nat.two_pow_pos _
-  have h2: 2^(8*(w+1)) = 256 * 2^(8*w) := by rw [Nat.mul_add, Nat.pow_add, Nat.mul_comm]
-  have hx': x.toNat < 2^(8*w) * 256 := by omega
-  have hdiv: x.toNat / 2^(8*w) < 256 := Nat.div_lt_of_lt_mul hx'
-  apply BitVec.eq_of_toNat_eq
-  simp only [f, g, BitVec.toNat_ofNat, UInt8.toNat_ofNat', Nat.mod_eq_of_lt hdiv, Nat.mod_mod]
-  rw [Nat.div_add_mod' x.toNat]
-  exact Nat.mod_eq_of_lt hx⟩
+  have hdiv: x.toNat / 2^(8*w) < 256 := Nat.div_lt_of_lt_mul (by grind)
+  simp only [f, g, BitVec.toNat_eq, BitVec.toNat_ofNat, UInt8.toNat_ofNat', Nat.mod_eq_of_lt hdiv, Nat.mod_mod,
+    Nat.div_add_mod', Nat.mod_eq_of_lt hx]⟩
 
 end NonExtensibleMessageFormat.bitVecBE
 
@@ -244,23 +230,20 @@ namespace NonExtensibleMessageFormat.quicNat
 
 /-- The first byte is split into 2 bits (the log of the length) and 6 bits (the most significant bits of the integer). -/
 def firstByte.f (x: UInt8): Fin 4 × Fin 64 :=
-  (⟨x.toNat / 64, by have := x.toNat_lt; omega⟩, ⟨x.toNat % 64, by omega⟩)
+  (⟨x.toNat / 64, by grind⟩, ⟨x.toNat % 64, by grind⟩)
 
 def firstByte.g (x: Fin 4 × Fin 64): UInt8 :=
   UInt8.ofNat (x.1.val * 64 + x.2.val)
 
 instance: LeftInverse firstByte.g firstByte.f where
   left_inv x := by
-    have := x.toNat_lt
-    apply UInt8.toNat_inj.mp
-    simp only [firstByte.f, firstByte.g, UInt8.toNat_ofNat']
-    omega
+    simp only [firstByte.f, firstByte.g, ← UInt8.toNat_inj, UInt8.toNat_ofNat']
+    grind
 
 instance: RightInverse firstByte.g firstByte.f where
   right_inv x := by
-    obtain ⟨⟨l, hl⟩, ⟨b, hb⟩⟩ := x
-    simp only [firstByte.f, firstByte.g, UInt8.toNat_ofNat', Prod.mk.injEq, Fin.mk.injEq]
-    omega
+    simp only [firstByte.f, firstByte.g, UInt8.toNat_ofNat', Prod.ext_iff, Fin.ext_iff]
+    grind
 
 def firstByte: NonExtensibleMessageFormat Bytes (Fin 4 × Fin 64) :=
   isomorphic uint8 firstByte.f firstByte.g
@@ -286,8 +269,7 @@ def logLen (n: Nat): Fin 4 :=
 theorem logLen_spec (n: Nat) (h: n < 2^62):
   minVal (logLen n) ≤ n ∧ n < 2^(6 + 8 * remLen (logLen n))
 := by
-  unfold logLen
-  split <;> (try split) <;> (try split) <;> simp [remLen, minVal] <;> omega
+  grind [logLen, remLen, minVal]
 
 theorem logLen_unique (n: Nat) (l: Fin 4) (h1: minVal l ≤ n) (h2: n < 2^(6 + 8 * remLen l)):
   logLen n = l
@@ -315,19 +297,13 @@ theorem g_eq (n: QuicNat) (l: Fin 4) (b: Fin 64) (r: BitVec (8 * remLen l))
   g n = ⟨(l, b), r⟩
 := by
   subst hl
-  simp only [g, Sigma.mk.injEq, Prod.mk.injEq, true_and, heq_eq_eq]
-  constructor
-  · exact Fin.ext hb
-  · apply BitVec.eq_of_toNat_eq; simp [← hr]
+  simp [g, Fin.ext_iff, BitVec.toNat_eq, ← hb, ← hr]
 
 instance: SubsetRightInverse g f where
   right_inv n := by
     obtain ⟨n, hn⟩ := n
     have := logLen_spec n hn
-    simp only [f, g, BitVec.toNat_ofNat]
-    have := Nat.div_add_mod' n (2 ^ (8 * remLen (logLen n)))
-    simp only [this]
-    simp_all
+    simp_all [f, g, Nat.div_add_mod']
 
 instance: SubsetLeftInverse g f where
   left_inv x := by
@@ -335,29 +311,18 @@ instance: SubsetLeftInverse g f where
     simp only [f]
     split
     · trivial
-    rename_i y h
+    rename_i h
     split at h
     · rename_i hn
       cases h
       have hb := b.isLt
       have hr := r.isLt
-      have hpow: 2^(6 + 8 * remLen l) = 64 * 2^(8 * remLen l) := by rw [Nat.pow_add]
       apply g_eq
-      · apply logLen_unique
-        · exact hn.2
-        · rw [hpow]
-          show b.val * 2^(8 * remLen l) + r.toNat < 64 * 2^(8 * remLen l)
-          have hr': r.toNat < 2^(8 * remLen l) := hr
-          clear hn hpow hr
-          generalize 2^(8 * remLen l) = k at *
-          have: b.val * k + r.toNat < (b.val + 1) * k := by grind
-          have: (b.val + 1) * k ≤ 64 * k := Nat.mul_le_mul_right _ hb
-          omega
-      · simp only
-        rw [Nat.add_comm, Nat.add_mul_div_right _ _ (Nat.two_pow_pos _), Nat.div_eq_of_lt hr]
-        simp
-      · simp only
-        rw [Nat.add_comm, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt hr]
+      · apply logLen_unique _ _ hn.2
+        have := Nat.mul_le_mul_right (2^(8 * remLen l)) hb
+        grind
+      · simp [Nat.add_comm, Nat.add_mul_div_right _ _ (Nat.two_pow_pos _), Nat.div_eq_of_lt hr]
+      · simp [Nat.add_comm, Nat.mod_eq_of_lt hr]
     · contradiction
 
 end NonExtensibleMessageFormat.quicNat

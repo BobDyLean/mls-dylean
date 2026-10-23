@@ -33,7 +33,7 @@ abbrev MlsNat := {n: Nat // mlsNatPred n}
 
 def MlsNat.f (n: {n: QuicNat // mlsNatPred n.val}): MlsNat := ⟨n.val.val, n.property⟩
 def MlsNat.g (n: MlsNat): {n: QuicNat // mlsNatPred n.val} :=
-  ⟨⟨n.val, by have := n.property; simp only [mlsNatPred] at this; omega⟩, n.property⟩
+  ⟨⟨n.val, by grind [mlsNatPred]⟩, n.property⟩
 
 instance: LeftInverse MlsNat.g MlsNat.f := ⟨by intro _; rfl⟩
 instance: RightInverse MlsNat.g MlsNat.f := ⟨by intro _; rfl⟩
@@ -172,17 +172,10 @@ def ProtocolVersion.toUInt16: ProtocolVersion → UInt16
   | .unknown n _ => n
 
 instance: LeftInverse ProtocolVersion.toUInt16 ProtocolVersion.ofUInt16 where
-  left_inv := by
-    intro n
-    unfold ProtocolVersion.ofUInt16
-    repeat' split
-    all_goals simp_all [ProtocolVersion.toUInt16, ← UInt16.toNat_inj]
-    omega
+  left_inv n := by grind [ProtocolVersion.ofUInt16, ProtocolVersion.toUInt16, ← UInt16.toNat_inj]
 
 instance: RightInverse ProtocolVersion.toUInt16 ProtocolVersion.ofUInt16 where
-  right_inv := by
-    intro x
-    cases x <;> simp_all [ProtocolVersion.ofUInt16, ProtocolVersion.toUInt16]
+  right_inv x := by cases x <;> grind [ProtocolVersion.ofUInt16, ProtocolVersion.toUInt16]
 
 def ProtocolVersion.mf: NonExtensibleMessageFormat Bytes ProtocolVersion :=
   .isomorphic .uint16BE ProtocolVersion.ofUInt16 ProtocolVersion.toUInt16
@@ -226,17 +219,10 @@ def CipherSuite.toUInt16: CipherSuite → UInt16
   | .unknown n _ => n
 
 instance: LeftInverse CipherSuite.toUInt16 CipherSuite.ofUInt16 where
-  left_inv := by
-    intro n
-    unfold CipherSuite.ofUInt16
-    repeat' split
-    all_goals simp_all [CipherSuite.toUInt16, ← UInt16.toNat_inj]
-    omega
+  left_inv n := by grind [CipherSuite.ofUInt16, CipherSuite.toUInt16, ← UInt16.toNat_inj]
 
 instance: RightInverse CipherSuite.toUInt16 CipherSuite.ofUInt16 where
-  right_inv := by
-    intro x
-    cases x <;> simp_all [CipherSuite.ofUInt16, CipherSuite.toUInt16]
+  right_inv x := by cases x <;> grind [CipherSuite.ofUInt16, CipherSuite.toUInt16]
 
 def CipherSuite.mf: NonExtensibleMessageFormat Bytes CipherSuite :=
   .isomorphic .uint16BE CipherSuite.ofUInt16 CipherSuite.toUInt16
@@ -274,17 +260,10 @@ def ExtensionType.toUInt16: ExtensionType → UInt16
   | .unknown n _ => n
 
 instance: LeftInverse ExtensionType.toUInt16 ExtensionType.ofUInt16 where
-  left_inv := by
-    intro n
-    unfold ExtensionType.ofUInt16
-    repeat' split
-    all_goals simp_all [ExtensionType.toUInt16, ← UInt16.toNat_inj]
-    omega
+  left_inv n := by grind [ExtensionType.ofUInt16, ExtensionType.toUInt16, ← UInt16.toNat_inj]
 
 instance: RightInverse ExtensionType.toUInt16 ExtensionType.ofUInt16 where
-  right_inv := by
-    intro x
-    cases x <;> simp_all [ExtensionType.ofUInt16, ExtensionType.toUInt16]
+  right_inv x := by cases x <;> grind [ExtensionType.ofUInt16, ExtensionType.toUInt16]
 
 def ExtensionType.mf: NonExtensibleMessageFormat Bytes ExtensionType :=
   .isomorphic .uint16BE ExtensionType.ofUInt16 ExtensionType.toUInt16
@@ -529,17 +508,10 @@ def ProposalType.toUInt16: ProposalType → UInt16
   | .unknown n _ => n
 
 instance: LeftInverse ProposalType.toUInt16 ProposalType.ofUInt16 where
-  left_inv := by
-    intro n
-    unfold ProposalType.ofUInt16
-    repeat' split
-    all_goals simp_all [ProposalType.toUInt16, ← UInt16.toNat_inj]
-    omega
+  left_inv n := by grind [ProposalType.ofUInt16, ProposalType.toUInt16, ← UInt16.toNat_inj]
 
 instance: RightInverse ProposalType.toUInt16 ProposalType.ofUInt16 where
-  right_inv := by
-    intro x
-    cases x <;> simp_all [ProposalType.ofUInt16, ProposalType.toUInt16]
+  right_inv x := by cases x <;> grind [ProposalType.ofUInt16, ProposalType.toUInt16]
 
 def ProposalType.mf: NonExtensibleMessageFormat Bytes ProposalType :=
   .isomorphic .uint16BE ProposalType.ofUInt16 ProposalType.toUInt16
@@ -576,17 +548,10 @@ def CredentialType.toUInt16: CredentialType → UInt16
   | .unknown n _ => n
 
 instance: LeftInverse CredentialType.toUInt16 CredentialType.ofUInt16 where
-  left_inv := by
-    intro n
-    unfold CredentialType.ofUInt16
-    repeat' split
-    all_goals simp_all [CredentialType.toUInt16, ← UInt16.toNat_inj]
-    omega
+  left_inv n := by grind [CredentialType.ofUInt16, CredentialType.toUInt16, ← UInt16.toNat_inj]
 
 instance: RightInverse CredentialType.toUInt16 CredentialType.ofUInt16 where
-  right_inv := by
-    intro x
-    cases x <;> simp_all [CredentialType.ofUInt16, CredentialType.toUInt16]
+  right_inv x := by cases x <;> grind [CredentialType.ofUInt16, CredentialType.toUInt16]
 
 def CredentialType.mf: NonExtensibleMessageFormat Bytes CredentialType :=
   .isomorphic .uint16BE CredentialType.ofUInt16 CredentialType.toUInt16

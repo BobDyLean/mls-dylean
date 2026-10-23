@@ -118,9 +118,7 @@ def PskType.toUInt8: PskType → UInt8
   | .resumption => 2
 
 instance: SubsetLeftInverse PskType.toUInt8 PskType.ofUInt8 where
-  left_inv n := by
-    unfold PskType.ofUInt8
-    by_cases n = 1 <;> by_cases n = 2 <;> simp_all [PskType.toUInt8]
+  left_inv n := by grind [PskType.ofUInt8, PskType.toUInt8]
 
 instance: SubsetRightInverse PskType.toUInt8 PskType.ofUInt8 where
   right_inv x := by cases x <;> rfl
@@ -156,9 +154,7 @@ def ResumptionPskUsage.toUInt8: ResumptionPskUsage → UInt8
   | .branch => 3
 
 instance: SubsetLeftInverse ResumptionPskUsage.toUInt8 ResumptionPskUsage.ofUInt8 where
-  left_inv n := by
-    unfold ResumptionPskUsage.ofUInt8
-    by_cases n = 1 <;> by_cases n = 2 <;> by_cases n = 3 <;> simp_all [ResumptionPskUsage.toUInt8]
+  left_inv n := by grind [ResumptionPskUsage.ofUInt8, ResumptionPskUsage.toUInt8]
 
 instance: SubsetRightInverse ResumptionPskUsage.toUInt8 ResumptionPskUsage.ofUInt8 where
   right_inv x := by cases x <;> rfl
