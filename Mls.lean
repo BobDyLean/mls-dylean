@@ -9,6 +9,7 @@ import Mls.Common.Proofs.Result.Lemmas
 import Mls.Common.Proofs.MiscLemmas
 import Mls.Common.Code.Crypto.Builtins
 import Mls.Common.Code.Crypto.Derived
+import Mls.Common.Proofs.Crypto.HashCollision
 import Mls.Common.Code.NetworkTypes
 import Mls.Common.Code.Tree
 import Mls.Common.Proofs.Tree.Lemmas
@@ -26,6 +27,8 @@ import Mls.TreeSync.Proofs.Operations.Lemmas
 import Mls.TreeSync.Proofs.Invariants.UnmergedLeaves.Proofs
 import Mls.TreeSync.Proofs.Invariants.ParentHash.Proofs
 import Mls.TreeSync.Proofs.Invariants.ValidLeaves.Proofs
+import Mls.TreeSync.Proofs.TreeHash.Proofs
+import Mls.TreeSync.Proofs.ParentHash.Proofs
 import Mls.TreeKEM.Code.NetworkTypes
 import Mls.Bootstrap.Code.NetworkTypes
 import Mls.TreeDEM.NetworkTypes

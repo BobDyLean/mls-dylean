@@ -450,6 +450,27 @@ theorem Tree.ext_succ {l: Nat} {t1 t2: Tree Leaf Node (l+1)} (li: Nat)
   subst hp hc
   split at hchild <;> simp_all
 
+/--
+Equality of trees at possibly different heights (MLS*'s `l1 == l2 /\ i1 == i2 /\ t1 == t2`), on leaves.
+-/
+theorem Tree.sigma_eq_zero (t1 t2: Tree Leaf Node 0):
+  (⟨0, t1⟩: (l: Nat) × Tree Leaf Node l) = ⟨0, t2⟩ ↔
+    t1.position = t2.position ∧ t1.leafContent = t2.leafContent
+:= by
+  grind [Tree.ext_zero]
+
+/-- Equality of trees at possibly different heights, on nodes: contents and both children are equal. -/
+theorem Tree.sigma_eq_succ {l1 l2: Nat} (t1: Tree Leaf Node (l1+1)) (t2: Tree Leaf Node (l2+1)):
+  (⟨l1+1, t1⟩: (l: Nat) × Tree Leaf Node l) = ⟨l2+1, t2⟩ ↔
+    t1.nodeContent = t2.nodeContent ∧
+    (⟨l1, t1.left⟩: (l: Nat) × Tree Leaf Node l) = ⟨l2, t2.left⟩ ∧
+    (⟨l1, t1.right⟩: (l: Nat) × Tree Leaf Node l) = ⟨l2, t2.right⟩
+:= by
+  obtain ⟨_, ⟨_⟩⟩ := t1
+  obtain ⟨_, ⟨_⟩⟩ := t2
+  simp [Tree.left, Tree.right, Tree.nodeContent, Tree.intoLeftRightView]
+  grind
+
 /-! ## Induction principles -/
 
 /-- Induction on a tree, with induction hypotheses on its left and right halves. -/
@@ -460,6 +481,26 @@ theorem Tree.leftRightInduction {motive: (l: Nat) → Tree Leaf Node l → Prop}
   ∀ {l: Nat} (t: Tree Leaf Node l), motive l t
 | 0, t => leaf t
 | _+1, t => node t (Tree.leftRightInduction leaf node t.left) (Tree.leftRightInduction leaf node t.right)
+
+/--
+Induction on two trees of possibly different heights,
+with induction hypotheses on their left halves and on their right halves.
+-/
+@[elab_as_elim]
+theorem Tree.leftRightInduction₂ {motive: (l1 l2: Nat) → Tree Leaf Node l1 → Tree Leaf Node l2 → Prop}
+  (leafLeaf: ∀ (t1 t2: Tree Leaf Node 0), motive 0 0 t1 t2)
+  (leafNode: ∀ {l2: Nat} (t1: Tree Leaf Node 0) (t2: Tree Leaf Node (l2+1)), motive 0 (l2+1) t1 t2)
+  (nodeLeaf: ∀ {l1: Nat} (t1: Tree Leaf Node (l1+1)) (t2: Tree Leaf Node 0), motive (l1+1) 0 t1 t2)
+  (nodeNode: ∀ {l1 l2: Nat} (t1: Tree Leaf Node (l1+1)) (t2: Tree Leaf Node (l2+1)),
+    motive l1 l2 t1.left t2.left → motive l1 l2 t1.right t2.right → motive (l1+1) (l2+1) t1 t2):
+  ∀ {l1 l2: Nat} (t1: Tree Leaf Node l1) (t2: Tree Leaf Node l2), motive l1 l2 t1 t2
+| 0, 0, t1, t2 => leafLeaf t1 t2
+| 0, _+1, t1, t2 => leafNode t1 t2
+| _+1, 0, t1, t2 => nodeLeaf t1 t2
+| _+1, _+1, t1, t2 =>
+  nodeNode t1 t2
+    (Tree.leftRightInduction₂ leafLeaf leafNode nodeLeaf nodeNode t1.left t2.left)
+    (Tree.leftRightInduction₂ leafLeaf leafNode nodeLeaf nodeNode t1.right t2.right)
 
 /-- Induction on a tree, following the child for the leaf index `li`. -/
 @[elab_as_elim]
