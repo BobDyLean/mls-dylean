@@ -86,6 +86,7 @@ structure ConcreteCiphersuite where
   aead: AEAD.Algorithm
   kdfHash: Hash.Algorithm
 
+/-- Port of `concrete_ciphersuite_to_hpke_ciphersuite`. -/
 def concreteCiphersuiteToHpkeCiphersuite (cs: ConcreteCiphersuite): HPKE.Ciphersuite :=
   { kem := cs.kem, kdf := .ofHash cs.kdfHash, aead := .ofAlgorithm cs.aead }
 
@@ -98,6 +99,7 @@ structure SignatureFunctions where
   signVerify: (verificationKey: ByteArray) → (buf: ByteArray) → (signature: ByteArray) → Bool
 
 /--
+Port of `signature_functions`.
 Generalization of `ed25519_signature_functions` to all the signature algorithms.
 Signing is deterministic (ECDSA uses RFC 6979 nonces), hence ignores its entropy.
 -/
@@ -116,6 +118,7 @@ def signatureFunctions (a: Signature.Algorithm): SignatureFunctions where
   signVerify pk msg signature :=
     Signature.verify a pk msg signature
 
+/-- Port of `available_ciphersuite_to_concrete_ciphersuite`. -/
 def availableCiphersuiteToConcreteCiphersuite: AvailableCiphersuite → ConcreteCiphersuite × SignatureFunctions
   | .mls_128_dhkemx25519_aes128gcm_sha256_ed25519 =>
     ({ kem := .dhkemX25519HkdfSha256, aead := .aes128Gcm, kdfHash := .sha2_256 }, signatureFunctions .ed25519)
@@ -132,6 +135,7 @@ def availableCiphersuiteToConcreteCiphersuite: AvailableCiphersuite → Concrete
   | .mls_256_dhkemp384_aes256gcm_sha384_p384 =>
     ({ kem := .dhkemP384HkdfSha384, aead := .aes256Gcm, kdfHash := .sha2_384 }, signatureFunctions .ecdsaP384Sha384)
 
+/-- Port of `mk_concrete_crypto_bytes`. -/
 @[instance_reducible]
 def mkConcreteCryptoBytes (acs: AvailableCiphersuite): CryptoBytes ByteArray :=
   let (cs, sign) := availableCiphersuiteToConcreteCiphersuite acs

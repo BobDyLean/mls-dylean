@@ -22,6 +22,7 @@ open Mls.Test.FromExt.Messages
 open Mls.Test.FromExt.TreeValidation
 open Mls.Test.FromExt.TreeOperations
 
+/-- Port of `run_tests`. -/
 def runTests {a: Type} (testVectorsDir: System.FilePath) (name: String) (ty: TestType)
   (extractTestsuite: Testsuite → Option (List a)) (runTest: List a → IO Nat)
   : IO Unit := do
@@ -33,18 +34,23 @@ def runTests {a: Type} (testVectorsDir: System.FilePath) (name: String) (ty: Tes
     let nRun ← runTest testsuite
     IO.println s!"{name}: success! ({nRun}/{testsuite.length})"
 
+/-- Port of `run_crypto_basics_tests`. -/
 def runCryptoBasicsTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Crypto Basics" .cryptoBasics (fun | .cryptoBasicsTest l => some l | _ => none) testCryptoBasics
 
+/-- Port of `run_tree_validation_tests`. -/
 def runTreeValidationTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Tree Validation" .treeValidation (fun | .treeValidationTest l => some l | _ => none) testTreeValidation
 
+/-- Port of `run_tree_operations_tests`. -/
 def runTreeOperationsTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Tree Operations" .treeOperations (fun | .treeOperationsTest l => some l | _ => none) testTreeOperations
 
+/-- Port of `run_messages_tests`. -/
 def runMessagesTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Messages" .messages (fun | .messagesTest l => some l | _ => none) testMessages
 
+/-- Port of `main`. -/
 def main (testVectorsDir: System.FilePath): IO Unit := do
   OpenSSL.Test.main
   runCryptoBasicsTests testVectorsDir

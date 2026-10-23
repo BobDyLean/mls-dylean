@@ -46,13 +46,14 @@ deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.H
 variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes}
 
 /--
+Port of `compute_parent_hash`.
 Compute the parent hash to store in the child of a node, given:
 - the node content (with TreeKEM, the HPKE public key),
 - the parent hash stored in the node,
 - the original sibling.
 -/
-def computeParentHash {l: Nat} {i: TreeIndex l}
-  (content: tkt.NodeContent) (parentHash: Bytes) (originalSibling: TreeSync Bytes tkt l i)
+def computeParentHash {l: Nat}
+  (content: tkt.NodeContent) (parentHash: Bytes) (originalSibling: TreeSync Bytes tkt l)
   : Result Bytes
 := do
   let parentHash ← mkMlsBytes parentHash "compute_parent_hash" "parent_hash"
@@ -61,6 +62,7 @@ def computeParentHash {l: Nat} {i: TreeIndex l}
   let hashInput := serializeNE (ParentHashInput.mf tkt) { content, parentHash, originalSiblingTreeHash }
   CryptoBytes.hashHash hashInput
 
+/-- Port of `root_parent_hash`. -/
 def rootParentHash {Bytes: Type} [BytesLike Bytes]: MlsBytes Bytes :=
   ⟨BytesLike.empty, by simp [mlsNatPred, BytesLike.empty_length]⟩
 

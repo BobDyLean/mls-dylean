@@ -16,12 +16,15 @@ deriving Repr, BEq
 
 namespace Result
 
+/-- Port of `internal_failure`. -/
 def internalFailure {α: Type} (s: String): Result α :=
   .internalError s
 
+/-- Port of `error`. -/
 def error {α: Type} (s: String): Result α :=
   .protocolError s
 
+/-- Port of `(let?)`. -/
 def bind {α β: Type} (rx: Result α) (f: α → Result β): Result β :=
   match rx with
   | .success x => f x
@@ -37,6 +40,7 @@ instance: LawfulMonad Result := LawfulMonad.mk'
   (pure_bind := by intros; rfl)
   (bind_assoc := by intro _ _ _ x _ _; cases x <;> rfl)
 
+/-- Port of `from_option`. -/
 def fromOption {α: Type} (s: String) (x: Option α): Result α :=
   match x with
   | none => error s

@@ -29,6 +29,7 @@ def hexCharToHexDigit (c: Char): Option Nat :=
   else none
 
 -- We do recursion on lists, because recursing on a string is slow
+/-- Port of `hex_list_char_to_list_u8`. -/
 def hexListCharToListU8: List Char → Option (List UInt8)
   | [] => some []
   | [_] => none
@@ -38,16 +39,20 @@ def hexListCharToListU8: List Char → Option (List UInt8)
     let bs ← hexListCharToListU8 t
     some ((16*d1 + d2).toUInt8::bs)
 
+/-- Port of `hex_string_to_bytes`. -/
 def hexStringToBytes (s: String): Option ByteArray :=
   (hexListCharToListU8 s.toList).map (fun l => ⟨l.toArray⟩)
 
+/-- Port of `hex_digit_to_hex_string`. -/
 def hexDigitToHexString (n: Nat): String :=
   String.singleton (if n < 10 then Char.ofNat ('0'.toNat + n) else Char.ofNat ('A'.toNat + n - 10))
 
+/-- Port of `nat_to_hex_string_aux`. -/
 def natToHexStringAux (n: Nat): String :=
   if n = 0 then ""
   else natToHexStringAux (n/16) ++ hexDigitToHexString (n%16)
 
+/-- Port of `nat_to_hex_string`. -/
 def natToHexString (n: Nat): String :=
   if n = 0 then "00"
   else
@@ -59,11 +64,13 @@ def natToHexString (n: Nat): String :=
 
 /-! ## Unit tests -/
 
+/-- Port of `parse_ok`. -/
 def parseOk {a: Type} [BEq a] (mf: NonExtensibleMessageFormat ByteArray a) (s: String) (x: a): Bool :=
   match hexStringToBytes s with
   | none => false
   | some b => mf.toExtensible.parse b == some x
 
+/-- Port of `parse_fail`. -/
 def parseFail {a: Type} (mf: NonExtensibleMessageFormat ByteArray a) (s: String): Bool :=
   match hexStringToBytes s with
   | none => false
@@ -101,6 +108,7 @@ instance: BEq QuicNat where
 -- ps_tls_nat_4_high
 #guard parseOk .uint32BE "FFFFFFFF" (2^32-1)
 
+/-- Port of `mk_quic_nat`. -/
 def mkQuicNat (sz: Nat) (n: Nat): String :=
   natToHexString (sz * 2^(8*(2^sz)-2) + n)
 

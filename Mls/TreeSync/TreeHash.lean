@@ -135,13 +135,17 @@ end Formats
 
 variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes}
 
-/-- Compute the tree hash of a tree. -/
-def treeHash: {l: Nat} → {i: TreeIndex l} → TreeSync Bytes tkt l i → Result Bytes
-  | _, i, .leaf olp => do
-    let i ← mkUInt32 i.val "tree_hash" "i"
+/--
+Port of `tree_hash`.
+Compute the tree hash of a tree.
+-/
+def treeHash {l: Nat} (t: TreeSync Bytes tkt l): Result Bytes :=
+  match t.intoLeftRightView with
+  | .leaf olp position => do
+    let i ← mkUInt32 position "tree_hash" "i"
     let hashInput := serializeNE (TreeHashInput.mf tkt) (.leaf { leafIndex := i, leafNode := olp })
     CryptoBytes.hashHash hashInput
-  | _, _, .node onp left right => do
+  | .node onp left right => do
     let leftHash ← treeHash left
     let leftHash ← mkMlsBytes leftHash "tree_hash" "left_bytes"
     let rightHash ← treeHash right

@@ -16,6 +16,7 @@ open Comparse
 
 variable {Bytes: Type} [CryptoBytes Bytes]
 
+/-- Port of `available_ciphersuite_from_network`. -/
 def availableCiphersuiteFromNetwork: CipherSuite → Result AvailableCiphersuite
   | .mls_128_dhkemx25519_aes128gcm_sha256_ed25519 => pure .mls_128_dhkemx25519_aes128gcm_sha256_ed25519
   | .mls_128_dhkemp256_aes128gcm_sha256_p256 => pure .mls_128_dhkemp256_aes128gcm_sha256_p256
@@ -26,6 +27,7 @@ def availableCiphersuiteFromNetwork: CipherSuite → Result AvailableCiphersuite
   | .mls_256_dhkemp384_aes256gcm_sha384_p384 => pure .mls_256_dhkemp384_aes256gcm_sha384_p384
   | .reserved | .unknown .. => Result.error "available_ciphersuite_from_network: ciphersuite not available"
 
+/-- Port of `available_ciphersuite_to_network`. -/
 def availableCiphersuiteToNetwork: AvailableCiphersuite → CipherSuite
   | .mls_128_dhkemx25519_aes128gcm_sha256_ed25519 => .mls_128_dhkemx25519_aes128gcm_sha256_ed25519
   | .mls_128_dhkemp256_aes128gcm_sha256_p256 => .mls_128_dhkemp256_aes128gcm_sha256_p256
@@ -42,12 +44,14 @@ theorem availableCiphersuiteFromNetwork_toNetwork (cs: AvailableCiphersuite):
 
 /-! ## Helper functions with refined types -/
 
+/-- Port of `mk_mls_bytes`. -/
 def mkMlsBytes {Bytes: Type} [BytesLike Bytes] (b: Bytes) (funName varName: String): Result (MlsBytes Bytes) :=
   if h: mlsNatPred (BytesLike.length b) then
     pure ⟨b, h⟩
   else
     Result.error s!"{funName}: {varName} too long"
 
+/-- Port of `mk_mls_list`. -/
 def mkMlsList {Bytes: Type} [BytesLike Bytes] {α: Type} {mf: NonExtensibleMessageFormat Bytes α} [mf.ParseConsumes]
   (l: List α) (funName varName: String): Result (MlsList mf)
 :=
@@ -66,9 +70,11 @@ def mkMlsAsciiString {Bytes: Type} [BytesLike Bytes] (s: String) (funName varNam
   else
     Result.error s!"{funName}: {varName} is not ASCII"
 
+/-- Port of `mk_nat_lbytes` (for `nat_lbytes 2`). -/
 def mkUInt16 (n: Nat) (funName varName: String): Result UInt16 :=
   if n < 2^16 then pure n.toUInt16 else Result.error s!"{funName}: {varName} too big"
 
+/-- Port of `mk_nat_lbytes` (for `nat_lbytes 4`). -/
 def mkUInt32 (n: Nat) (funName varName: String): Result UInt32 :=
   if n < 2^32 then pure n.toUInt32 else Result.error s!"{funName}: {varName} too big"
 
@@ -108,15 +114,18 @@ deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.H
 def getMlsLabel {Bytes: Type} [BytesLike Bytes] (label: String): Result (MlsAsciiString (Bytes := Bytes)) :=
   mkMlsAsciiString ("MLS 1.0 " ++ label) "get_mls_label" "label"
 
+/-- Port of `get_sign_content`. -/
 def getSignContent (label: String) (content: MlsBytes Bytes): Result Bytes := do
   let label ← getMlsLabel label
   pure (serializeNE SignContent.mf { label, content })
 
+/-- Port of `sign_with_label`. -/
 def signWithLabel (signatureKey: Bytes) (label: String) (content: Bytes) (entropy: Bytes): Result Bytes := do
   let content ← mkMlsBytes content "sign_with_label" "content"
   let signContent ← getSignContent label content
   CryptoBytes.signSign signatureKey signContent entropy
 
+/-- Port of `verify_with_label`. -/
 def verifyWithLabel (verificationKey: Bytes) (label: String) (content: Bytes) (signature: Bytes): Bool :=
   match (do
     let content ← mkMlsBytes content "verify_with_label" "content"
@@ -156,6 +165,7 @@ def KdfLabel.mf {Bytes: Type} [BytesLike Bytes]: NonExtensibleMessageFormat Byte
   .isomorphic (.prod .uint16BE (.prod MlsAsciiString.mf MlsBytes.mf)) KdfLabel.f KdfLabel.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+/-- Port of `expand_with_label`. -/
 def expandWithLabel (secret: Bytes) (label: String) (context: Bytes) (len: Nat): Result Bytes := do
   let length ← mkUInt16 len "expand_with_label" "len"
   let context ← mkMlsBytes context "expand_with_label" "context"
@@ -163,6 +173,7 @@ def expandWithLabel (secret: Bytes) (label: String) (context: Bytes) (len: Nat):
   let kdfLabel := serializeNE KdfLabel.mf { length, label, context }
   CryptoBytes.kdfExpand secret kdfLabel len
 
+/-- Port of `derive_secret`. -/
 def deriveSecret (secret: Bytes) (label: String): Result Bytes :=
   expandWithLabel secret label BytesLike.empty (CryptoBytes.kdfLength Bytes)
 
@@ -195,15 +206,18 @@ def EncryptContext.mf {Bytes: Type} [BytesLike Bytes]: NonExtensibleMessageForma
   .isomorphic (.prod MlsAsciiString.mf MlsBytes.mf) EncryptContext.f EncryptContext.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+/-- Port of `compute_encryption_context`. -/
 def computeEncryptionContext (label: String) (context: Bytes): Result Bytes := do
   let context ← mkMlsBytes context "compute_encryption_context" "context"
   let label ← getMlsLabel label
   pure (serializeNE EncryptContext.mf { label, context })
 
+/-- Port of `encrypt_with_label`. -/
 def encryptWithLabel (pkR: Bytes) (label: String) (context: Bytes) (plaintext: Bytes) (entropy: Bytes): Result (Bytes × Bytes) := do
   let contextBytes ← computeEncryptionContext label context
   CryptoBytes.hpkeEncrypt pkR contextBytes BytesLike.empty plaintext entropy
 
+/-- Port of `decrypt_with_label`. -/
 def decryptWithLabel (skR: Bytes) (label: String) (context: Bytes) (kemOutput: Bytes) (ciphertext: Bytes): Result Bytes := do
   let contextBytes ← computeEncryptionContext label context
   CryptoBytes.hpkeDecrypt kemOutput skR contextBytes BytesLike.empty ciphertext
@@ -237,16 +251,21 @@ def RefHashInput.mf {Bytes: Type} [BytesLike Bytes]: NonExtensibleMessageFormat 
   .isomorphic (.prod MlsAsciiString.mf MlsBytes.mf) RefHashInput.f RefHashInput.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
-/-- Unlike the other labelled functions, the label is used as-is (no "MLS 1.0 " prefix). -/
+/--
+Port of `ref_hash`.
+Unlike the other labelled functions, the label is used as-is (no "MLS 1.0 " prefix).
+-/
 def refHash (label: String) (value: Bytes): Result Bytes := do
   let label ← mkMlsAsciiString label "ref_hash" "label"
   let value ← mkMlsBytes value "ref_hash" "value"
   let hashContent := serializeNE RefHashInput.mf { label, value }
   CryptoBytes.hashHash hashContent
 
+/-- Port of `make_keypackage_ref`. -/
 def makeKeypackageRef (buf: Bytes): Result Bytes :=
   refHash "MLS 1.0 KeyPackage Reference" buf
 
+/-- Port of `make_proposal_ref`. -/
 def makeProposalRef (buf: Bytes): Result Bytes :=
   refHash "MLS 1.0 Proposal Reference" buf
 

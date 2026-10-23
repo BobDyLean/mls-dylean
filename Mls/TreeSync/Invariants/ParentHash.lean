@@ -6,109 +6,121 @@ Port of `MLS.TreeSync.Invariants.ParentHash`.
 Port-specific differences:
 - The "parent" tree `p` (of height `lp > ld` and not blank in MLS*) has height `lp+1`,
   so that it is a node by its type. Being non-blank is a separate hypothesis where needed.
-- The descendant `d` (at tree index `id`) lies inside `p`: the refinement `leaf_index_inside lp ip id`
-  is a hypothesis `hInside`, and `id` is used as a leaf index of `p` with `⟨id.val, hInside⟩`.
-- `get_child_sibling p id` is `Tree.getChildSiblingPair`, which hides the indices of the child and sibling:
-  the functions below only need index-polymorphic functions of them.
-- `node_index` is `NodeIndex`, a dependent pair of a height and a tree index.
+- `get_child_sibling p id` is `p.child d.position` and `p.sibling d.position`:
+  the position of the descendant `d` is used as a leaf index of `p`.
+  MLS*'s refinement `leaf_index_inside lp ip id` is not needed to define the functions.
+- Preconditions of MLS* (`node_has_parent_hash d`, `node_not_blank p`, `ld < lp`, `leaf_index_inside lp ip id`)
+  are not ported: functions return `false` (or a default value) when they are not met (see the docstrings).
+- Functions recurse on the views of `Mls.Tree`.
 -/
 
 namespace Mls.TreeSync
 
 open Comparse
-open Mls Mls.Tree
+open Mls
 
 section BytesLike
 
 variable {Bytes: Type} [BytesLike Bytes] {tkt: TreeKEMTypes Bytes}
 
-def nodeNotBlank {l: Nat} {i: TreeIndex l}: TreeSync Bytes tkt l i → Bool
-  | .leaf (some _) => true
-  | .node (some _) _ _ => true
-  | _ => false
+/-- Port of `node_not_blank`. -/
+def nodeNotBlank {l: Nat} (t: TreeSync Bytes tkt l): Bool :=
+  match t.intoLeftRightView with
+  | .leaf content _ => content.isSome
+  | .node content _ _ => content.isSome
 
-def nodeHasParentHash {l: Nat} {i: TreeIndex l}: TreeSync Bytes tkt l i → Bool
-  | .leaf (some ln) => ln.data.source == .commit
-  | .node (some _) _ _ => true
-  | _ => false
+/--
+Port of `get_parent_hash_of`.
+The parent hash stored in a node, if any.
+MLS* requires `node_has_parent_hash t`; here, `none` is returned when it is not met.
+-/
+def getParentHashOf {l: Nat} (t: TreeSync Bytes tkt l): Option (MlsBytes Bytes) :=
+  match t.intoLeftRightView with
+  | .leaf (some ln) _ => if h: ln.data.source == .commit then some (ln.data.parentHash.get h) else none
+  | .leaf none _ => none
+  | .node (some content) _ _ => content.parentHash
+  | .node none _ _ => none
 
-def getParentHashOf {l: Nat} {i: TreeIndex l}: (t: TreeSync Bytes tkt l i) → nodeHasParentHash t → MlsBytes Bytes
-  | .leaf (some content), h => content.data.parentHash.get (by simpa [nodeHasParentHash] using h)
-  | .node (some content) _ _, _ => content.parentHash
+/-- Port of `node_has_parent_hash`. -/
+def nodeHasParentHash {l: Nat} (t: TreeSync Bytes tkt l): Bool :=
+  (getParentHashOf t).isSome
 
+/-- Port of `mem_ul`. -/
 def memUl (x: Nat): List UInt32 → Bool
   | [] => false
   | h::t => x == h.toNat || memUl x t
 
+/-- Port of `un_add_unmerged_leaf`. -/
 def unAddUnmergedLeaf (leaves: List UInt32) (i: Nat): Bool :=
   !(memUl i leaves)
 
 /--
+Port of `un_add`.
 Remove, or "un-add" the leaves whose index are in a list.
 This to compute the "original sibling" in the parent-hash check when joining a group.
 -/
-def unAdd {l: Nat} {i: TreeIndex l} (t: TreeSync Bytes tkt l i) (leaves: List UInt32): TreeSync Bytes tkt l i :=
+def unAdd {l: Nat} (t: TreeSync Bytes tkt l) (leaves: List UInt32): TreeSync Bytes tkt l :=
   unAddP t (unAddUnmergedLeaf leaves)
 
+/-- Port of `set_equal_mem`. -/
 def setEqualMem {α: Type} [DecidableEq α] (l: List α) (x: α): Bool :=
   l.contains x
 
+/-- Port of `set_eq`. -/
 def setEq {α: Type} [DecidableEq α] (l1 l2: List α): Bool :=
   l2.all (setEqualMem l1) && l1.all (setEqualMem l2)
 
-/-- Port of `node_index`. -/
-def NodeIndex := (l: Nat) × TreeIndex l
-
-instance: DecidableEq NodeIndex := fun ⟨l1, i1⟩ ⟨l2, i2⟩ =>
-  if h: l1 = l2 ∧ i1.val = i2.val then
-    isTrue (by obtain ⟨rfl, hv⟩ := h; exact congrArg (Sigma.mk l1) (Subtype.ext hv))
-  else
-    isFalse (by intro e; cases e; exact h ⟨rfl, rfl⟩)
-
-def natToNodeIndex (n: Nat): NodeIndex := ⟨0, ⟨n, Nat.one_dvd n⟩⟩
-
+/-- Port of `unmerged_resolution`. -/
 def unmergedResolution (l: List UInt32): List NodeIndex :=
-  l.map (fun x => natToNodeIndex x.toNat)
+  l.map (fun x => NodeIndex.ofLeafIndex x.toNat)
 
-def resolution: {l: Nat} → {i: TreeIndex l} → TreeSync Bytes tkt l i → List NodeIndex
-  | _, _, .leaf none => []
-  | _, i, .leaf (some _) => [⟨0, i⟩]
-  | _, _, .node none left right => resolution left ++ resolution right
-  | l+1, i, .node (some content) _ _ => ⟨l+1, i⟩ :: unmergedResolution content.unmergedLeaves.val
+/-- Port of `resolution`. -/
+def resolution {l: Nat} (t: TreeSync Bytes tkt l): List NodeIndex :=
+  match t.intoLeftRightView with
+  | .leaf none _ => []
+  | .leaf (some _) _ => [t.nodeIndex]
+  | .node none left right => resolution left ++ resolution right
+  | .node (some content) _ _ => t.nodeIndex :: unmergedResolution content.unmergedLeaves.val
 
 /-- The unmerged leaves of a non-blank node. -/
-def unmergedLeavesOf {l: Nat} {i: TreeIndex (l+1)}: (p: TreeSync Bytes tkt (l+1) i) → nodeNotBlank p → List UInt32
-  | .node (some content) _ _, _ => content.unmergedLeaves.val
-
-def lastUpdateLhs {ld lp: Nat} {id: TreeIndex ld} {ip: TreeIndex (lp+1)}
-  (hInside: leafIndexInside (lp+1) ip id.val) (_: TreeSync Bytes tkt ld id) (p: TreeSync Bytes tkt (lp+1) ip): List NodeIndex
-:=
-  let (⟨_, c⟩, _) := p.getChildSiblingPair ⟨id.val, hInside⟩
-  (resolution c).filter (· != ⟨ld, id⟩)
-
-def lastUpdateRhs {ld lp: Nat} {id: TreeIndex ld} {ip: TreeIndex (lp+1)}
-  (hInside: leafIndexInside (lp+1) ip id.val) (_: TreeSync Bytes tkt ld id) (p: TreeSync Bytes tkt (lp+1) ip) (hp: nodeNotBlank p):
-  List NodeIndex
-:=
-  let (⟨ic, _⟩, _) := p.getChildSiblingPair ⟨id.val, hInside⟩
-  unmergedResolution ((unmergedLeavesOf p hp).filter (fun x => leafIndexInside lp ic x.toNat))
-
-def lastUpdateDInResC {ld lp: Nat} {id: TreeIndex ld} {ip: TreeIndex (lp+1)}
-  (hInside: leafIndexInside (lp+1) ip id.val) (_: TreeSync Bytes tkt ld id) (p: TreeSync Bytes tkt (lp+1) ip): Bool
-:=
-  let (⟨_, c⟩, _) := p.getChildSiblingPair ⟨id.val, hInside⟩
-  (resolution c).contains ⟨ld, id⟩
+def unmergedLeavesOf {l: Nat} (p: TreeSync Bytes tkt (l+1)): List UInt32 :=
+  match p.intoLeftRightView with
+  | .node none _ _ => []
+  | .node (some content) _ _ => content.unmergedLeaves.val
 
 /--
+Port of `last_update_lhs`.
+MLS* requires `node_not_blank p`, `ld < lp` and `leaf_index_inside lp ip id`.
+-/
+def lastUpdateLhs {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt (lp+1)): List NodeIndex :=
+  (resolution (p.child d.position)).filter (· != d.nodeIndex)
+
+/--
+Port of `last_update_rhs`.
+MLS* requires `node_not_blank p`, `ld < lp` and `leaf_index_inside lp ip id`.
+When `p` is blank, its unmerged leaves are considered empty.
+-/
+def lastUpdateRhs {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt (lp+1)): List NodeIndex :=
+  let c := p.child d.position
+  unmergedResolution ((unmergedLeavesOf p).filter (fun x => c.containsLeafIndex x.toNat))
+
+/--
+Port of `last_update_d_in_res_c`.
+MLS* requires `node_not_blank p`, `ld < lp` and `leaf_index_inside lp ip id`.
+-/
+def lastUpdateDInResC {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt (lp+1)): Bool :=
+  (resolution (p.child d.position)).contains d.nodeIndex
+
+/--
+Port of `last_update_correct`.
 Given a "parent" tree P, and a "descendant" D,
 check that D and P were last updated at the same time,
 using the "ninja" equation used in the RFC involving the resolution.
+MLS* requires `node_not_blank p`, `ld < lp` and `leaf_index_inside lp ip id`.
 -/
-def lastUpdateCorrect {ld lp: Nat} {id: TreeIndex ld} {ip: TreeIndex (lp+1)}
-  (hInside: leafIndexInside (lp+1) ip id.val) (d: TreeSync Bytes tkt ld id) (p: TreeSync Bytes tkt (lp+1) ip) (hp: nodeNotBlank p): Bool
-:=
+def lastUpdateCorrect {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt (lp+1)): Bool :=
   -- As in MLS*, set equality (and not list equality), see the comment in `MLS.TreeSync.Invariants.ParentHash`.
-  lastUpdateDInResC hInside d p && setEq (lastUpdateLhs hInside d p) (lastUpdateRhs hInside d p hp)
+  lastUpdateDInResC d p && setEq (lastUpdateLhs d p) (lastUpdateRhs d p)
 
 end BytesLike
 
@@ -116,82 +128,68 @@ section CryptoBytes
 
 variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes}
 
-/-- The content of a non-blank node. -/
-def contentOf {l: Nat} {i: TreeIndex (l+1)}: (p: TreeSync Bytes tkt (l+1) i) → nodeNotBlank p → ParentNode Bytes tkt
-  | .node (some content) _ _, _ => content
-
 /--
+Port of `parent_hash_correct`.
 Given a "parent" tree P, and a "descendant" D,
 check that the parent-hash stored at the root of D is correct with respect to P.
+MLS* requires `node_has_parent_hash d`, `node_not_blank p`, `ld < lp` and `leaf_index_inside lp ip id`;
+here, the result is `false` when `d` has no parent hash or `p` is blank.
 -/
-def parentHashCorrect {ld lp: Nat} {id: TreeIndex ld} {ip: TreeIndex (lp+1)}
-  (hInside: leafIndexInside (lp+1) ip id.val)
-  (d: TreeSync Bytes tkt ld id) (hd: nodeHasParentHash d) (p: TreeSync Bytes tkt (lp+1) ip) (hp: nodeNotBlank p): Bool
-:=
-  let pContent := contentOf p hp
-  let expectedParentHash := getParentHashOf d hd
-  let (_, ⟨_, sibling⟩) := p.getChildSiblingPair ⟨id.val, hInside⟩
-  let originalSibling := unAdd sibling pContent.unmergedLeaves.val
-  match computeParentHash pContent.content pContent.parentHash.val originalSibling with
-  | .success ph => ph == expectedParentHash.val
-  | _ => false
+def parentHashCorrect {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt (lp+1)): Bool :=
+  match p.nodeContent with
+  | none => false
+  | some pContent =>
+    match getParentHashOf d with
+    | none => false
+    | some expectedParentHash =>
+      let originalSibling := unAdd (p.sibling d.position) pContent.unmergedLeaves.val
+      match computeParentHash pContent.content pContent.parentHash.val originalSibling with
+      | .success ph => ph == expectedParentHash.val
+      | _ => false
 
 /--
+Port of `parent_hash_linked`.
 The `parent-hash link` relationship between a "parent" tree P, and a "descendant" D.
 It checks that:
 - the parent-hash stored in D is correct with respect to P,
 - D and P were last updated at the same time.
+MLS* requires `node_has_parent_hash d`, `node_not_blank p`, `ld < lp` and `leaf_index_inside lp ip id`.
 -/
-def parentHashLinked {ld lp: Nat} {id: TreeIndex ld} {ip: TreeIndex (lp+1)}
-  (hInside: leafIndexInside (lp+1) ip id.val)
-  (d: TreeSync Bytes tkt ld id) (hd: nodeHasParentHash d) (p: TreeSync Bytes tkt (lp+1) ip) (hp: nodeNotBlank p): Bool
-:=
-  parentHashCorrect hInside d hd p hp && lastUpdateCorrect hInside d p hp
+def parentHashLinked {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt (lp+1)): Bool :=
+  parentHashCorrect d p && lastUpdateCorrect d p
 
 /--
+Port of `node_has_parent_hash_link_aux`.
 Search a parent-hash link to `p` from `d` or below.
-`d` lies inside `p` (`hInside`), and is strictly below it (`hl`).
+MLS* requires `node_not_blank p`, `ld < lp` and `leaf_index_inside lp ip id`.
 -/
-def nodeHasParentHashLinkAux {lp: Nat} {ip: TreeIndex (lp+1)} (p: TreeSync Bytes tkt (lp+1) ip) (hp: nodeNotBlank p):
-  {ld: Nat} → {id: TreeIndex ld} → (d: TreeSync Bytes tkt ld id) → ld + 1 ≤ lp + 1 → leafIndexInside (lp+1) ip id.val → Bool
-  | _, _, .leaf none, _, _ => false
-  | _, _, .leaf (some lp'), _, hInside =>
-    if hd: lp'.data.source == .commit then parentHashLinked hInside (.leaf (some lp')) hd p hp else false
-  | _, _, .node (some c) left right, _, hInside =>
-    parentHashLinked hInside (.node (some c) left right) rfl p hp
-  | _, _, .node none left right, hl, hInside =>
-    nodeHasParentHashLinkAux p hp left (by omega) (leafIndexInside_left_of_inside hInside) ||
-    nodeHasParentHashLinkAux p hp right (by omega) (leafIndexInside_right_of_inside (by omega) hInside)
-
-theorem leafIndexInside_self_left {l: Nat} (i: TreeIndex (l+1)): leafIndexInside (l+1) i i.left.val := by
-  apply (leafIndexInside_iff _ _ _).mpr
-  simp only [TreeIndex.left]
-  have := Nat.two_pow_pos (l+1)
-  omega
-
-theorem leafIndexInside_self_right {l: Nat} (i: TreeIndex (l+1)): leafIndexInside (l+1) i i.right.val := by
-  apply (leafIndexInside_iff _ _ _).mpr
-  simp only [TreeIndex.right]
-  have: 2^(l+1) = 2^l * 2 := Nat.pow_succ 2 l
-  have := Nat.two_pow_pos l
-  omega
-
-def nodeHasParentHashLink {lp: Nat} {ip: TreeIndex (lp+1)} (p: TreeSync Bytes tkt (lp+1) ip) (hp: nodeNotBlank p): Bool :=
-  match p, hp with
-  | .node (some _) left right, hp =>
-    nodeHasParentHashLinkAux (.node (some _) left right) hp left (by omega) (leafIndexInside_self_left ip) ||
-    nodeHasParentHashLinkAux (.node (some _) left right) hp right (by omega) (leafIndexInside_self_right ip)
+def nodeHasParentHashLinkAux  {ld: Nat} (d: TreeSync Bytes tkt ld) {lp: Nat} (p: TreeSync Bytes tkt (lp+1)): Bool :=
+  match d.intoLeftRightView with
+  | .leaf none _ => false
+  | .leaf (some _) _ => parentHashLinked d p
+  | .node (some _) _ _ => parentHashLinked d p
+  | .node none left right => nodeHasParentHashLinkAux left p || nodeHasParentHashLinkAux right p
 
 /--
+Port of `node_has_parent_hash_link`.
+MLS* requires `node_not_blank p`.
+-/
+def nodeHasParentHashLink {lp: Nat} (p: TreeSync Bytes tkt (lp+1)): Bool :=
+  match p.intoLeftRightView with
+  | .node _ left right => nodeHasParentHashLinkAux left p || nodeHasParentHashLinkAux right p
+
+/--
+Port of `parent_hash_invariant`.
 The parent-hash invariant:
 every non-blank node has a parent-hash link coming from a node below it.
 -/
-def parentHashInvariant: {lp: Nat} → {ip: TreeIndex lp} → TreeSync Bytes tkt lp ip → Bool
-  | _, _, .leaf _ => true
-  | _, _, .node none left right =>
+def parentHashInvariant {lp: Nat} (t: TreeSync Bytes tkt lp): Bool :=
+  match t.intoLeftRightView with
+  | .leaf _ _ => true
+  | .node none left right =>
     parentHashInvariant left && parentHashInvariant right
-  | _, _, .node (some c) left right =>
-    parentHashInvariant left && parentHashInvariant right && nodeHasParentHashLink (.node (some c) left right) rfl
+  | .node (some _) left right =>
+    parentHashInvariant left && parentHashInvariant right && nodeHasParentHashLink t
 
 end CryptoBytes
 

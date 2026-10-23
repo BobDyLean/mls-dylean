@@ -10,7 +10,9 @@ import Mls.Crypto.Builtins
 import Mls.Crypto.Derived
 import Mls.NetworkTypes
 import Mls.Tree
+import Mls.Tree.Lemmas
 import Mls.TreeCommon
+import Mls.TreeCommon.Lemmas
 import Mls.TreeSync.NetworkTypes
 import Mls.TreeSync.Types
 import Mls.TreeSync.TreeHash

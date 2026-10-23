@@ -23,22 +23,30 @@ open Mls Mls.TreeSync Mls.TreeKEM
 open Mls.Test
 open Mls.Test.FromExt.CryptoBasics
 
-def computeTreeHashes [CryptoBytes ByteArray]: {l: Nat} → {i: TreeIndex l} → TreeSync ByteArray tkt l i → IO (List ByteArray)
-  | _, _, t@(Tree.leaf _) => do
+/-- Port of `compute_tree_hashes`. -/
+def computeTreeHashes [CryptoBytes ByteArray] {l: Nat} (t: TreeSync ByteArray tkt l): IO (List ByteArray) :=
+  match t.intoLeftRightView with
+  | .leaf _ _ => do
     pure [← extractResult (treeHash t)]
-  | _, _, t@(Tree.node _ left right) => do
+  | .node _ left right => do
     let myHash ← extractResult (treeHash t)
     pure ((← computeTreeHashes left) ++ [myHash] ++ (← computeTreeHashes right))
 
-/-- The node index (in the array representation of the tree) of the subtree of height `l` starting at leaf `i`. -/
+/--
+Port of `node_index_to_node_index`.
+The node index (in the array representation of the tree) of the subtree of height `l` starting at leaf `i`.
+-/
 def nodeIndexToNodeIndex (n: NodeIndex): Nat :=
-  2 * n.2.val + 2^n.1 - 1
+  2 * n.position + 2^n.levels - 1
 
-def computeResolutions [BytesLike ByteArray]: {l: Nat} → {i: TreeIndex l} → TreeSync ByteArray tkt l i → List (List Nat)
-  | _, _, t@(Tree.leaf _) => [(resolution t).map nodeIndexToNodeIndex]
-  | _, _, t@(Tree.node _ left right) =>
+/-- Port of `compute_resolutions`. -/
+def computeResolutions [BytesLike ByteArray] {l: Nat} (t: TreeSync ByteArray tkt l): List (List Nat) :=
+  match t.intoLeftRightView with
+  | .leaf _ _ => [(resolution t).map nodeIndexToNodeIndex]
+  | .node _ left right =>
     computeResolutions left ++ [(resolution t).map nodeIndexToNodeIndex] ++ computeResolutions right
 
+/-- Port of `test_tree_validation_one`. -/
 def testTreeValidationOne (t: TreeValidationTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
   | .protocolError _ =>
@@ -70,6 +78,7 @@ def testTreeValidationOne (t: TreeValidationTest): IO Bool := do
       checkEqual "resolution" toString (expectedResolution.map UInt32.toNat) myResolution
     pure true
 
+/-- Port of `test_tree_validation`. -/
 def testTreeValidation: List TreeValidationTest → IO Nat :=
   testList "Tree Validation" testTreeValidationOne
 

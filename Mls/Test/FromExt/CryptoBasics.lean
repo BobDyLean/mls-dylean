@@ -21,12 +21,14 @@ def checkLabel (label: String): IO Unit :=
   else
     throw (IO.userError "Error: malformed label")
 
+/-- Port of `test_ref_hash`. -/
 def testRefHash (t: CryptoBasicsRefHash): IO Unit := do
   checkLabel t.label
   let value ← hexStringToBytes t.value
   let out ← extractResult (refHash t.label value)
   checkEqual "ref hash" bytesToHexString (← hexStringToBytes t.out) out
 
+/-- Port of `test_expand_with_label`. -/
 def testExpandWithLabel (t: CryptoBasicsExpandWithLabel): IO Unit := do
   checkLabel t.label
   let secret ← hexStringToBytes t.secret
@@ -34,18 +36,21 @@ def testExpandWithLabel (t: CryptoBasicsExpandWithLabel): IO Unit := do
   let out ← extractResult (expandWithLabel secret t.label context t.length.toNat)
   checkEqual "expand with label" bytesToHexString (← hexStringToBytes t.out) out
 
+/-- Port of `test_derive_secret`. -/
 def testDeriveSecret (t: CryptoBasicsDeriveSecret): IO Unit := do
   checkLabel t.label
   let secret ← hexStringToBytes t.secret
   let out ← extractResult (deriveSecret secret t.label)
   checkEqual "derive secret" bytesToHexString (← hexStringToBytes t.out) out
 
+/-- Port of `test_derive_tree_secret`. -/
 def testDeriveTreeSecret (t: CryptoBasicsDeriveTreeSecret): IO Unit := do
   checkLabel t.label
   let secret ← hexStringToBytes t.secret
   let out ← extractResult (deriveTreeSecret secret t.label t.generation.toNat t.length.toNat)
   checkEqual "derive tree secret" bytesToHexString (← hexStringToBytes t.out) out
 
+/-- Port of `test_sign_with_label`. -/
 def testSignWithLabel (t: CryptoBasicsSignWithLabel): IO Unit := do
   let priv ← hexStringToBytes t.priv
   let pub ← hexStringToBytes t.pub
@@ -61,6 +66,7 @@ def testSignWithLabel (t: CryptoBasicsSignWithLabel): IO Unit := do
   if !signatureRoundtripOk then
     throw (IO.userError "test_sign_with_label: wrong signature roundtrip")
 
+/-- Port of `test_encrypt_with_label`. -/
 def testEncryptWithLabel (t: CryptoBasicsEncryptWithLabel): IO Unit := do
   let priv ← hexStringToBytes t.priv
   let pub ← hexStringToBytes t.pub
@@ -86,6 +92,7 @@ open Mls Mls.Test
 def uint16ToCiphersuite (x: UInt16): Result AvailableCiphersuite :=
   availableCiphersuiteFromNetwork (CipherSuite.ofUInt16 x)
 
+/-- Port of `test_crypto_basics_one`. -/
 def testCryptoBasicsOne (t: CryptoBasicsTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
   | .protocolError _ =>
@@ -103,6 +110,7 @@ def testCryptoBasicsOne (t: CryptoBasicsTest): IO Bool := do
     testEncryptWithLabel t.encryptWithLabel
     pure true
 
+/-- Port of `test_crypto_basics`. -/
 def testCryptoBasics: List CryptoBasicsTest → IO Nat :=
   testList "Crypto Basics" testCryptoBasicsOne
 
