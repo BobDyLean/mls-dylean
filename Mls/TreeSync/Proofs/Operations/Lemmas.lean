@@ -34,7 +34,8 @@ theorem treeAdd_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat) (lp: LeafN
     treeAdd (t.child li) li lp = .success newChild ∧
     t' = (ChildSiblingView.node newContent newChild (t.sibling li)).pack ∧
     newContent.map (·.unmergedLeaves.val) = t.nodeContent.map (insertSorted li.toUInt32 ·.unmergedLeaves.val) ∧
-    (t.nodeContent.isSome → li < 2^32)
+    (t.nodeContent.isSome → li < 2^32) ∧
+    newContent.map (fun c => (c.content, c.parentHash)) = t.nodeContent.map (fun c => (c.content, c.parentHash))
 := by
   unfold treeAdd at h
   simp only [Tree.intoChildSiblingView_eq] at h
@@ -64,6 +65,36 @@ theorem leafAt_treeAdd {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (lp: LeafNod
     obtain ⟨_, _, h1, rfl, -⟩ := treeAdd_succ t li lp t' h
     grind [leafAt.eq_def]
 
+@[simp] theorem unAddP_position {l: Nat} (t: TreeSync Bytes tkt l) (pred: Nat → Bool):
+  (unAddP t pred).position = t.position
+:= by
+  induction t using Tree.leftRightInduction <;> unfold unAddP <;> simp_all
+
+grind_pattern unAddP_position => (unAddP t pred).position
+
+theorem unAddP_zero (t: TreeSync Bytes tkt 0) (pred: Nat → Bool):
+  unAddP t pred = (LeftRightView.leaf (if pred t.position then t.leafContent else none) t.position).pack
+:= by
+  grind [unAddP]
+
+/-- `unAddP` of a node, through the child / sibling view for any leaf index `li`. -/
+theorem unAddP_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat) (pred: Nat → Bool):
+  (unAddP t pred).child li = unAddP (t.child li) pred ∧
+  (unAddP t pred).sibling li = unAddP (t.sibling li) pred ∧
+  (unAddP t pred).nodeContent.map (·.unmergedLeaves.val) =
+    t.nodeContent.map (·.unmergedLeaves.val.filter (fun x => pred x.toNat)) ∧
+  (unAddP t pred).nodeContent.map (fun c => (c.content, c.parentHash)) =
+    t.nodeContent.map (fun c => (c.content, c.parentHash))
+:= by
+  have e := unAddP.eq_def t pred
+  simp only [Tree.intoLeftRightView_eq] at e
+  rw [e]
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · grind [LeftRightView.child_pack]
+  · grind [LeftRightView.child_pack]
+  · cases t.nodeContent <;> simp
+  · cases t.nodeContent <;> simp
+
 end BytesLike
 
 section CryptoBytes
@@ -78,6 +109,61 @@ theorem computeNewNpAndPh_unmergedLeaves {l: Nat}
 := by
   unfold computeNewNpAndPh mkMlsBytes Result.error at h
   split at h <;> cases optExtContent <;> simp at h <;> grind
+
+theorem computeNewNpAndPh_spec {l: Nat}
+  (optExtContent: Option tkt.NodeContent) (sibling: TreeSync Bytes tkt l) (parentParentHash: Bytes)
+  (newOptContent: Option (ParentNode Bytes tkt)) (newParentParentHash: Bytes)
+  (h: computeNewNpAndPh optExtContent sibling parentParentHash = .success (newOptContent, newParentParentHash)):
+  match optExtContent with
+  | none => newOptContent = none ∧ newParentParentHash = parentParentHash
+  | some extContent =>
+    ∃ content, newOptContent = some content ∧
+      content.content = extContent ∧ content.parentHash.val = parentParentHash ∧ content.unmergedLeaves.val = [] ∧
+      computeParentHash extContent parentParentHash sibling = .success newParentParentHash
+:= by
+  unfold computeNewNpAndPh mkMlsBytes Result.error at h
+  split at h <;> cases optExtContent <;> simp at h <;> grind
+
+theorem computeLeafParentHashFromPath_node {PathLeaf: Type} {l: Nat}
+  (t: TreeSync Bytes tkt (l+1)) (li: Nat) (optExtContent: Option tkt.NodeContent)
+  (pNext: Path PathLeaf (Option tkt.NodeContent) l) (parentParentHash: Bytes)
+  (newOptContent: Option (ParentNode Bytes tkt)) (newParentParentHash: Bytes)
+  (h: computeNewNpAndPh optExtContent (t.sibling li) parentParentHash = .success (newOptContent, newParentParentHash)):
+  computeLeafParentHashFromPath t li (.node optExtContent pNext) parentParentHash =
+    computeLeafParentHashFromPath (t.child li) li pNext newParentParentHash
+:= by
+  conv => lhs; unfold computeLeafParentHashFromPath
+  simp [h, Bind.bind, Result.bind]
+
+theorem pathIsFilterValid_node {PathLeaf: Type} {l: Nat}
+  (t: TreeSync Bytes tkt (l+1)) (li: Nat) (optExtContent: Option tkt.NodeContent)
+  (pNext: Path PathLeaf (Option tkt.NodeContent) l):
+  pathIsFilterValid t li (.node optExtContent pNext) =
+    ((optExtContent.isSome || isTreeEmpty (t.sibling li)) && pathIsFilterValid (t.child li) li pNext)
+:= by
+  conv => lhs; unfold pathIsFilterValid
+  simp
+
+theorem applyPathAux_zero
+  (t: TreeSync Bytes tkt 0) (li: Nat) (lp: LeafNode Bytes tkt) (parentParentHash: Bytes)
+  (t': TreeSync Bytes tkt 0) (h: applyPathAux t li (.leaf lp) parentParentHash = .success t'):
+  t' = (ChildSiblingView.leaf (some lp) t.position).pack
+:= by
+  unfold applyPathAux at h
+  simp_all
+
+theorem applyPathAux_node {l: Nat}
+  (t: TreeSync Bytes tkt (l+1)) (li: Nat) (optExtContent: Option tkt.NodeContent) (pNext: PathSync Bytes tkt l)
+  (parentParentHash: Bytes)
+  (t': TreeSync Bytes tkt (l+1)) (h: applyPathAux t li (.node optExtContent pNext) parentParentHash = .success t'):
+  ∃ newOptContent newParentParentHash newChild,
+    computeNewNpAndPh optExtContent (t.sibling li) parentParentHash = .success (newOptContent, newParentParentHash) ∧
+    applyPathAux (t.child li) li pNext newParentParentHash = .success newChild ∧
+    t' = (ChildSiblingView.node newOptContent newChild (t.sibling li)).pack
+:= by
+  unfold applyPathAux at h
+  simp at h
+  grind
 
 theorem applyPathAux_succ {l: Nat}
   (t: TreeSync Bytes tkt (l+1)) (li: Nat) (p: PathSync Bytes tkt (l+1)) (parentParentHash: Bytes)

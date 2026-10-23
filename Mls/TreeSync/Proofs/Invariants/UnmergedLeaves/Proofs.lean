@@ -103,7 +103,7 @@ theorem unmergedLeavesOk_treeTruncate {l: Nat} (t: TreeSync Bytes tkt (l+1)) (h:
 theorem unmergedLeavesSorted_insertSorted (x: UInt32) (l: List UInt32) (h: unmergedLeavesSorted l):
   unmergedLeavesSorted (insertSorted x l)
 := by
-  induction l <;> grind [unmergedLeavesSorted, insertSorted, List.pairwise_cons, mem_insertSorted]
+  induction l <;> grind [unmergedLeavesSorted, insertSorted, List.pairwise_cons]
 
 /-- Port of `unmerged_leaf_consistent_not_in_tree`. -/
 theorem unmergedLeafConsistent_of_not_mem {l: Nat} (t: TreeSync Bytes tkt l) (li: UInt32)
@@ -122,7 +122,7 @@ theorem unmergedLeafConsistent_treeAdd_self {l: Nat} (t: TreeSync Bytes tkt l) (
   | node t ih =>
     obtain ⟨newContent, _, h1, rfl, h2, -⟩ := treeAdd_succ t li lp t' h
     have := unmergedLeafConsistent_of_not_mem (t.sibling li) li.toUInt32 (by grind [UInt32.toNat_ofNat_of_lt'])
-    cases _: t.nodeContent <;> grind [unmergedLeafConsistent_succ _ li, mem_insertSorted]
+    cases _: t.nodeContent <;> grind [unmergedLeafConsistent_succ _ li]
 
 /-- Port of `unmerged_leaf_consistent_tree_add_other`. -/
 theorem unmergedLeafConsistent_treeAdd_other {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (lp: LeafNode Bytes tkt)
@@ -133,7 +133,7 @@ theorem unmergedLeafConsistent_treeAdd_other {l: Nat} (t: TreeSync Bytes tkt l) 
   | leaf t => simp
   | node t ih =>
     obtain ⟨newContent, _, h1, rfl, h2, -⟩ := treeAdd_succ t li lp t' h
-    grind [unmergedLeafConsistent_succ _ li, mem_insertSorted, Tree.containsLeafIndex]
+    grind [unmergedLeafConsistent_succ _ li, Tree.containsLeafIndex]
 
 /-- Port of `unmerged_leaves_ok_tree_add`. -/
 theorem unmergedLeavesOk_treeAdd {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (lp: LeafNode Bytes tkt)
@@ -145,12 +145,11 @@ theorem unmergedLeavesOk_treeAdd {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (l
   | node t ih =>
     obtain ⟨newContent, _, h1, rfl, h2, h3⟩ := treeAdd_succ t li lp t' h
     simp only [unmergedLeavesOk_succ _ li, Bool.and_eq_true] at hok ⊢
-    have := ih _ h1 (t.mem_child_self hli) hok.1.2
     have := unmergedLeafConsistent_treeAdd_self t li lp _ h
     have := fun li' => unmergedLeafConsistent_treeAdd_other t li lp li' _ h
     have := fun li' => leafAt_treeAdd t li lp li' _ h hli
     cases _: t.nodeContent <;>
-      grind [unmergedLeafExists, Tree.containsLeafIndex, mem_insertSorted, unmergedLeavesSorted_insertSorted]
+      grind [unmergedLeafExists, Tree.containsLeafIndex, unmergedLeavesSorted_insertSorted]
 
 end BytesLike
 

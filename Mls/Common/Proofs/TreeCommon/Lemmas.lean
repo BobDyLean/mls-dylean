@@ -19,6 +19,8 @@ theorem mem_insertSorted (x: UInt32) (l: List UInt32) (elem: UInt32):
 := by
   induction l <;> grind [insertSorted]
 
+grind_pattern mem_insertSorted => elem ∈ insertSorted x l
+
 /-! ## `treeChangePath`, `treeUpdate` and `treeRemove` -/
 
 @[simp] theorem treeChangePath_position {l: Nat} (t: Tree Leaf Node l) (li: Nat) (leafContent: Leaf) (nodeContent: Node):

@@ -274,6 +274,35 @@ grind_pattern Tree.child_pack_replaceChild_of_child_eq_sibling =>
 where
   guard t.child li' = t.sibling li
 
+/-- If `li'` is in the same child as `li`, the sibling for `li'` is untouched. -/
+@[simp] theorem Tree.sibling_pack_replaceChild_of_child_eq_child {l: Nat} (t: Tree Leaf Node (l+1)) (li li': Nat)
+  (content: Node) (c: Tree Leaf Node l) (hc: c.position = (t.child li).position) (h: t.child li' = t.child li):
+  (ChildSiblingView.node content c (t.sibling li)).pack.sibling li' = t.sibling li
+:= by
+  obtain ⟨p, bt⟩ := t
+  cases bt
+  grind [Tree.pack_replaceChild_node, Tree.child_node, Tree.sibling_node]
+
+grind_pattern Tree.sibling_pack_replaceChild_of_child_eq_child =>
+  (ChildSiblingView.node content c (t.sibling li)).pack.sibling li'
+where
+  guard t.child li' = t.child li
+
+/-- If `li'` is in the sibling of `li`, the sibling for `li'` is the new child. -/
+@[simp] theorem Tree.sibling_pack_replaceChild_of_child_eq_sibling {l: Nat} (t: Tree Leaf Node (l+1)) (li li': Nat)
+  (content: Node) (c: Tree Leaf Node l) (hc: c.position = (t.child li).position) (h: t.child li' = t.sibling li):
+  (ChildSiblingView.node content c (t.sibling li)).pack.sibling li' = c
+:= by
+  obtain ⟨p, bt⟩ := t
+  cases bt
+  obtain ⟨pc, bc⟩ := c
+  grind [Tree.pack_replaceChild_node, Tree.child_node, Tree.sibling_node]
+
+grind_pattern Tree.sibling_pack_replaceChild_of_child_eq_sibling =>
+  (ChildSiblingView.node content c (t.sibling li)).pack.sibling li'
+where
+  guard t.child li' = t.sibling li
+
 /-! ## Leaf indices in the child or the sibling -/
 
 theorem Tree.mem_child_self {l: Nat} (t: Tree Leaf Node (l+1)) {li: Nat} (hli: t.containsLeafIndex li):
@@ -282,6 +311,8 @@ theorem Tree.mem_child_self {l: Nat} (t: Tree Leaf Node (l+1)) {li: Nat} (hli: t
   obtain ⟨p, bt⟩ := t
   cases bt
   grind [Tree.child_node, Tree.containsLeafIndex, Nat.pow_succ]
+
+grind_pattern Tree.mem_child_self => (t.child li).containsLeafIndex li
 
 theorem Tree.not_mem_sibling_self {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat):
   ¬ (t.sibling li).containsLeafIndex li
@@ -307,6 +338,117 @@ theorem eq_of_containsLeafIndex_zero {t: Tree Leaf Node 0} {li li': Nat}
   (hli: t.containsLeafIndex li) (hli': t.containsLeafIndex li'): li = li'
 := by
   grind [Tree.containsLeafIndex]
+
+grind_pattern eq_of_containsLeafIndex_zero =>
+  t.containsLeafIndex li,
+  t.containsLeafIndex li'
+
+/-- The child for the position of a tree is its left half. -/
+theorem Tree.child_position {l: Nat} (t: Tree Leaf Node (l+1)): t.child t.position = t.left := by
+  grind
+
+grind_pattern Tree.child_position => t.child t.position
+
+theorem Tree.sibling_position {l: Nat} (t: Tree Leaf Node (l+1)): t.sibling t.position = t.right := by
+  grind
+
+grind_pattern Tree.sibling_position => t.sibling t.position
+
+@[simp] theorem LeftRightView.pack_node_left_right {l: Nat} (t: Tree Leaf Node (l+1)):
+  (LeftRightView.node t.nodeContent t.left t.right).pack = t
+:= by
+  obtain ⟨p, bt⟩ := t
+  cases bt
+  rfl
+
+theorem Tree.containsLeafIndex_position {l: Nat} (t: Tree Leaf Node l): t.containsLeafIndex t.position := by
+  grind [Tree.containsLeafIndex]
+
+grind_pattern Tree.containsLeafIndex_position => t.containsLeafIndex t.position
+
+theorem Tree.containsLeafIndex_of_mem_child {l: Nat} (t: Tree Leaf Node (l+1)) {li li': Nat}
+  (h: (t.child li).containsLeafIndex li'):
+  t.containsLeafIndex li'
+:= by
+  grind [Tree.containsLeafIndex, Nat.pow_succ]
+
+grind_pattern Tree.containsLeafIndex_of_mem_child => (t.child li).containsLeafIndex li'
+
+theorem Tree.containsLeafIndex_of_mem_sibling {l: Nat} (t: Tree Leaf Node (l+1)) {li li': Nat}
+  (h: (t.sibling li).containsLeafIndex li'):
+  t.containsLeafIndex li'
+:= by
+  grind [Tree.containsLeafIndex, Nat.pow_succ]
+
+grind_pattern Tree.containsLeafIndex_of_mem_sibling => (t.sibling li).containsLeafIndex li'
+
+/-- A leaf index `li'` in the child for `li` has the same child. -/
+theorem Tree.child_eq_of_mem_child {l: Nat} (t: Tree Leaf Node (l+1)) {li li': Nat}
+  (h: (t.child li).containsLeafIndex li'):
+  t.child li' = t.child li
+:= by
+  grind [Tree.containsLeafIndex]
+
+grind_pattern Tree.child_eq_of_mem_child =>
+  t.child li',
+  (t.child li).containsLeafIndex li'
+
+/-- A leaf index `li'` in the sibling of `li` has the sibling as child. -/
+theorem Tree.child_eq_sibling_of_mem_sibling {l: Nat} (t: Tree Leaf Node (l+1)) {li li': Nat}
+  (h: (t.sibling li).containsLeafIndex li'):
+  t.child li' = t.sibling li
+:= by
+  grind [Tree.containsLeafIndex]
+
+grind_pattern Tree.child_eq_sibling_of_mem_sibling =>
+  t.child li',
+  (t.sibling li).containsLeafIndex li'
+
+/-- A leaf index `li'` in the child for `li` has the same sibling. -/
+theorem Tree.sibling_eq_of_mem_child {l: Nat} (t: Tree Leaf Node (l+1)) {li li': Nat}
+  (h: (t.child li).containsLeafIndex li'):
+  t.sibling li' = t.sibling li
+:= by
+  grind [Tree.containsLeafIndex]
+
+grind_pattern Tree.sibling_eq_of_mem_child =>
+  t.sibling li',
+  (t.child li).containsLeafIndex li'
+
+/-- A leaf index `li'` in the sibling of `li` has the child for `li` as sibling. -/
+theorem Tree.sibling_eq_child_of_mem_sibling {l: Nat} (t: Tree Leaf Node (l+1)) {li li': Nat}
+  (h: (t.sibling li).containsLeafIndex li'):
+  t.sibling li' = t.child li
+:= by
+  grind [Tree.containsLeafIndex]
+
+grind_pattern Tree.sibling_eq_child_of_mem_sibling =>
+  t.sibling li',
+  (t.sibling li).containsLeafIndex li'
+
+/-! ## Extensionality -/
+
+theorem Tree.ext_zero {t1 t2: Tree Leaf Node 0}
+  (hp: t1.position = t2.position) (hc: t1.leafContent = t2.leafContent):
+  t1 = t2
+:= by
+  obtain ⟨p1, ⟨c1⟩⟩ := t1
+  obtain ⟨p2, ⟨c2⟩⟩ := t2
+  simp_all [Tree.leafContent]
+
+/-- Two nodes are equal when their positions, contents, children and siblings for some leaf index `li` are. -/
+theorem Tree.ext_succ {l: Nat} {t1 t2: Tree Leaf Node (l+1)} (li: Nat)
+  (hp: t1.position = t2.position) (hc: t1.nodeContent = t2.nodeContent)
+  (hchild: t1.child li = t2.child li) (hsibling: t1.sibling li = t2.sibling li):
+  t1 = t2
+:= by
+  obtain ⟨p1, bt1⟩ := t1
+  obtain ⟨p2, bt2⟩ := t2
+  cases bt1
+  cases bt2
+  simp only [Tree.child_node, Tree.sibling_node, Tree.nodeContent_node] at *
+  subst hp hc
+  split at hchild <;> simp_all
 
 /-! ## Induction principles -/
 

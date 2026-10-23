@@ -72,6 +72,7 @@ def unAddP {l: Nat} (t: TreeSync Bytes tkt l) (pred: Nat → Bool): TreeSync Byt
         omega⟩
     }
     (LeftRightView.node newOptContent (unAddP left pred) (unAddP right pred)).pack
+termination_by l
 
 end BytesLike
 
