@@ -1,4 +1,4 @@
-import Mls.Crypto.Derived
+import Mls.Common.Code.Crypto.Derived
 import Mls.TreeDEM.Keys
 import Mls.Test.Types
 import Mls.Test.Utils

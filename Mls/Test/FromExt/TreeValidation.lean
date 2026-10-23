@@ -1,9 +1,9 @@
-import Mls.TreeSync.TreeHash
-import Mls.TreeSync.Invariants.ValidLeaves
-import Mls.TreeSync.Invariants.UnmergedLeaves
-import Mls.TreeSync.Invariants.ParentHash
-import Mls.TreeKEM.NetworkTypes
-import Mls.Glue.NetworkBinder
+import Mls.TreeSync.Code.TreeHash
+import Mls.TreeSync.Code.Invariants.ValidLeaves
+import Mls.TreeSync.Code.Invariants.UnmergedLeaves
+import Mls.TreeSync.Code.Invariants.ParentHash
+import Mls.TreeKEM.Code.NetworkTypes
+import Mls.Glue.Code.NetworkBinder
 import Mls.Test.FromExt.CryptoBasics
 import Mls.Test.Types
 import Mls.Test.Utils

@@ -1,4 +1,4 @@
-import Mls.Bootstrap.NetworkTypes
+import Mls.Bootstrap.Code.NetworkTypes
 
 /-!
 Port of `MLS.TreeDEM.NetworkTypes`.

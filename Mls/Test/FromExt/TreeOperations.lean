@@ -1,7 +1,7 @@
-import Mls.TreeSync.Operations
-import Mls.TreeKEM.NetworkTypes
+import Mls.TreeSync.Code.Operations
+import Mls.TreeKEM.Code.NetworkTypes
 import Mls.TreeDEM.NetworkTypes
-import Mls.Glue.NetworkBinder
+import Mls.Glue.Code.NetworkBinder
 import Mls.Test.Types
 import Mls.Test.Utils
 

@@ -1,4 +1,4 @@
-import Mls.Crypto.Derived
+import Mls.Common.Code.Crypto.Derived
 
 /-!
 Port of `MLS.TreeDEM.Keys` (the parts needed by the ported tests).

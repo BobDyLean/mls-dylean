@@ -1,5 +1,5 @@
-import Mls.Tree
-import Mls.TreeSync.NetworkTypes
+import Mls.Common.Code.Tree
+import Mls.TreeSync.Code.NetworkTypes
 
 /-!
 Port of `MLS.TreeSync.Types`.

@@ -1,5 +1,5 @@
-import Mls.TreeSync.Types
-import Mls.Crypto.Derived
+import Mls.TreeSync.Code.Types
+import Mls.Common.Code.Crypto.Derived
 
 /-!
 Port of `MLS.NetworkBinder` (the parts needed by the ported tests).

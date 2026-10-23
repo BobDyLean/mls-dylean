@@ -1,5 +1,5 @@
 import Mls.Comparse.Bytes
-import Mls.Result
+import Mls.Common.Code.Result
 import OpenSSL
 
 /-!

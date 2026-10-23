@@ -1,5 +1,5 @@
-import Mls.Crypto.Derived
-import Mls.TreeSync.Types
+import Mls.Common.Code.Crypto.Derived
+import Mls.TreeSync.Code.Types
 
 /-!
 Port of `MLS.TreeSync.TreeHash`.

@@ -1,6 +1,6 @@
-import Mls.TreeCommon
-import Mls.MiscLemmas
-import Mls.TreeSync.ParentHash
+import Mls.Common.Code.TreeCommon
+import Mls.Common.Proofs.MiscLemmas
+import Mls.TreeSync.Code.ParentHash
 
 /-!
 Port of `MLS.TreeSync.Operations`.

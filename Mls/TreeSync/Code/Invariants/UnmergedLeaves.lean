@@ -1,4 +1,4 @@
-import Mls.TreeSync.Types
+import Mls.TreeSync.Code.Types
 
 /-!
 Port of `MLS.TreeSync.Invariants.UnmergedLeaves`.

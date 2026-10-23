@@ -1,5 +1,5 @@
-import Mls.NetworkTypes
-import Mls.Crypto.Builtins
+import Mls.Common.Code.NetworkTypes
+import Mls.Common.Code.Crypto.Builtins
 
 /-!
 Port of `MLS.Crypto.Derived`.

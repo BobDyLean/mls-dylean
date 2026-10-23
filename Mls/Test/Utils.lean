@@ -1,6 +1,6 @@
 import Lean.Data.Json
 import Mls.Comparse.Bytes
-import Mls.Result
+import Mls.Common.Code.Result
 
 /-!
 Port of `MLS.Test.Utils` (the parts needed by the ported tests).

@@ -1,4 +1,4 @@
-import Mls.TreeSync.Operations
+import Mls.TreeSync.Code.Operations
 
 /-!
 Port of `MLS.TreeSync.Invariants.ParentHash`.

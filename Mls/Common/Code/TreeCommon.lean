@@ -1,4 +1,4 @@
-import Mls.Tree
+import Mls.Common.Code.Tree
 
 /-!
 Port of `MLS.TreeCommon`.
