@@ -26,7 +26,7 @@ lean_lib OpenSSL where
 /-! ## MLS -/
 
 @[default_target]
-lean_lib Mls
+lean_lib MLS
 
 @[default_target]
 lean_exe mls where

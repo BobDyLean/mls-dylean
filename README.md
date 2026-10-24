@@ -1,4 +1,4 @@
-# MLS-Lean
+# MLS-DyLean
 
 Port of [MLS\*](https://github.com/Inria-Prosecco/mls-star), from [F\*](https://github.com/FStarLang/FStar)/[DY\*](https://github.com/REPROSEC/dolev-yao-star-extrinsic) to [Lean](https://github.com/leanprover/lean4)/[DyLean](https://github.com/BobDyLean/dylean).
 
