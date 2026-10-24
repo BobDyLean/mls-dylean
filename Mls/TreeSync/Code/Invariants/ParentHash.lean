@@ -82,9 +82,13 @@ def resolution {l: Nat} (t: TreeSync Bytes tkt l): List NodeIndex :=
   | .node none left right => resolution left ++ resolution right
   | .node (some content) _ _ => t.nodeIndex :: unmergedResolution content.unmergedLeaves.val
 
-/-- The unmerged leaves of a non-blank node. -/
-def unmergedLeavesOf {l: Nat} (p: TreeSync Bytes tkt (l+1)): List UInt32 :=
-  match p.intoLeftRightView with
+/--
+Port of `unmerged_leaves_of` (from `MLS.TreeSync.Proofs.ParentHashGuarantees`).
+The unmerged leaves of a node (empty for leaves and blank nodes).
+-/
+def unmergedLeavesOf {l: Nat} (t: TreeSync Bytes tkt l): List UInt32 :=
+  match t.intoLeftRightView with
+  | .leaf _ _ => []
   | .node none _ _ => []
   | .node (some content) _ _ => content.unmergedLeaves.val
 

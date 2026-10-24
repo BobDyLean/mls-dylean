@@ -44,6 +44,10 @@ deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.H
 
 abbrev MlsBytes (Bytes: Type) [BytesLike Bytes] := {b: Bytes // mlsNatPred (BytesLike.length b)}
 
+/-- The empty `MlsBytes`. -/
+def MlsBytes.empty: MlsBytes Bytes :=
+  ⟨BytesLike.empty, by simp [mlsNatPred, BytesLike.empty_length]⟩
+
 def MlsBytes.mf: NonExtensibleMessageFormat Bytes (MlsBytes Bytes) :=
   .lengthPrefix mlsNatPred MlsNat.mf .bytes
 

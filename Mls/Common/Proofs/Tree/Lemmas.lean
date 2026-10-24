@@ -426,6 +426,17 @@ grind_pattern Tree.sibling_eq_child_of_mem_sibling =>
   t.sibling li',
   (t.sibling li).containsLeafIndex li'
 
+/-- The child and the sibling for `li` are disjoint. -/
+theorem Tree.not_mem_sibling_of_mem_child {l: Nat} (t: Tree Leaf Node (l+1)) {li li': Nat}
+  (h: (t.child li).containsLeafIndex li'):
+  ¬ (t.sibling li).containsLeafIndex li'
+:= by
+  grind [Tree.containsLeafIndex]
+
+grind_pattern Tree.not_mem_sibling_of_mem_child =>
+  (t.sibling li).containsLeafIndex li',
+  (t.child li).containsLeafIndex li'
+
 /-! ## Extensionality -/
 
 theorem Tree.ext_zero {t1 t2: Tree Leaf Node 0}
@@ -470,6 +481,11 @@ theorem Tree.sigma_eq_succ {l1 l2: Nat} (t1: Tree Leaf Node (l1+1)) (t2: Tree Le
   obtain ⟨_, ⟨_⟩⟩ := t2
   simp [Tree.left, Tree.right, Tree.nodeContent, Tree.intoLeftRightView]
   grind
+
+@[simp] theorem ChildSiblingView.pack_node_child_sibling {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat):
+  (ChildSiblingView.node t.nodeContent (t.child li) (t.sibling li)).pack = t
+:= by
+  apply Tree.ext_succ li <;> simp
 
 /-! ## Induction principles -/
 

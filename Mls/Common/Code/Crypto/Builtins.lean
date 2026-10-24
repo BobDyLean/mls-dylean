@@ -12,7 +12,7 @@ Port-specific differences:
 - `AvailableCiphersuite` contains all the cipher suites of RFC 9420, not only the two supported by HACL*.
 - ECDSA signatures use deterministic nonces (RFC 6979), so `sign_sign` ignores its entropy (as for EdDSA).
 - The fields of `crypto_bytes` that only carry proofs (e.g. `hash_hash_pre`, `*_length_bound`)
-  are not ported yet, as well as `debug_bytes_to_string`.
+  are not ported yet, except `hash_output_length_bound` (`hashHash_ne_empty`), checked at runtime by the concrete instance, as well as `debug_bytes_to_string`.
 - `bytes_hasEq` is `DecidableEq Bytes`.
 - Refined types such as `lbytes bytes n` are not used in the signatures of `CryptoBytes`:
   lengths are checked at runtime by the concrete instance.
@@ -42,6 +42,8 @@ class CryptoBytes (Bytes: Type) extends BytesLike Bytes where
   ciphersuite: AvailableCiphersuite
 
   hashHash: Bytes → Result Bytes
+  /-- Port of `hash_output_length_bound`. -/
+  hashHash_ne_empty (buf: Bytes): hashHash buf ≠ .success BytesLike.empty
   hashOutputLength: Nat
 
   kdfLength: Nat
@@ -146,7 +148,15 @@ def mkConcreteCryptoBytes (acs: AvailableCiphersuite): CryptoBytes ByteArray :=
 
     ciphersuite := acs
 
-    hashHash buf := Result.fromOption "hash_hash: Hash.hash failed" (Hash.hash cs.kdfHash buf)
+    hashHash buf := do
+      let h ← Result.fromOption "hash_hash: Hash.hash failed" (Hash.hash cs.kdfHash buf)
+      -- Checked at runtime, to prove `hashHash_ne_empty`.
+      if h.size = 0 then Result.internalFailure "hash_hash: empty output" else pure h
+    hashHash_ne_empty buf := by
+      simp only [Bind.bind, Result.bind]
+      split <;> try split
+      all_goals simp_all [Result.internalFailure, pure, Result.fromOption, Result.error]
+      exact ‹¬_ = ByteArray.empty›
     hashOutputLength := cs.kdfHash.hashLength
 
     kdfLength := cs.kdfHash.hashLength

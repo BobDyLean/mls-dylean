@@ -29,6 +29,7 @@ import Mls.TreeSync.Proofs.Invariants.ParentHash.Proofs
 import Mls.TreeSync.Proofs.Invariants.ValidLeaves.Proofs
 import Mls.TreeSync.Proofs.TreeHash.Proofs
 import Mls.TreeSync.Proofs.ParentHash.Proofs
+import Mls.TreeSync.Proofs.ParentHashGuarantees
 import Mls.TreeKEM.Code.NetworkTypes
 import Mls.Bootstrap.Code.NetworkTypes
 import Mls.TreeDEM.NetworkTypes

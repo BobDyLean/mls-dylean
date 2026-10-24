@@ -191,6 +191,25 @@ theorem applyPathAux_position {l: Nat}
 
 grind_pattern applyPathAux_position => applyPathAux t li p parentParentHash, t'.position
 
+/-- Port of `leaf_at_apply_path_aux`. -/
+theorem leafAt_applyPathAux {l: Nat}
+  (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l) (parentParentHash: Bytes) (li': Nat)
+  (t': TreeSync Bytes tkt l) (h: applyPathAux t li p parentParentHash = .success t')
+  (hli: t.containsLeafIndex li) (hli': t.containsLeafIndex li'):
+  leafAt t' li' = if li = li' then some p.getPathLeaf else leafAt t li'
+:= by
+  induction t, hli, hli' using Tree.commonPathInduction li li' generalizing parentParentHash with
+  | leaf t =>
+    cases p
+    rw [applyPathAux_zero t li _ parentParentHash t' h]
+    unfold leafAt
+    simp_all [Path.getPathLeaf]
+  | _ t =>
+    cases p with
+    | node optExtContent pNext =>
+      obtain ⟨_, _, _, -, h1, rfl⟩ := applyPathAux_node t li optExtContent pNext parentParentHash t' h
+      grind [leafAt.eq_def, Path.getPathLeaf]
+
 end CryptoBytes
 
 end Mls.TreeSync

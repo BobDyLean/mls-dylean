@@ -660,6 +660,13 @@ theorem getParentHashOf_zero (t: TreeSync Bytes tkt 0) (h: t.leafContent = none)
   subst h
   rfl
 
+theorem getParentHashOf_leaf (t: TreeSync Bytes tkt 0) (ln: LeafNode Bytes tkt) (h: t.leafContent = some ln):
+  getParentHashOf t = if h: ln.data.source == .commit then some (ln.data.parentHash.get h) else none
+:= by
+  obtain ⟨_, ⟨c⟩⟩ := t
+  subst h
+  rfl
+
 theorem getParentHashOf_treeAdd {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat) (content: LeafNode Bytes tkt)
   (t': TreeSync Bytes tkt (l+1)) (h: treeAdd t li content = .success t'):
   getParentHashOf t' = getParentHashOf t
@@ -1079,13 +1086,6 @@ theorem resolution_eq_nil_of_isTreeEmpty {l: Nat} (t: TreeSync Bytes tkt l) (h: 
     rw [isTreeEmpty_succ t t.position] at h
     grind [resolution_succ]
 
-theorem getParentHashOf_leaf (t: TreeSync Bytes tkt 0) (ln: LeafNode Bytes tkt) (h: t.leafContent = some ln):
-  getParentHashOf t = if h: ln.data.source == .commit then some (ln.data.parentHash.get h) else none
-:= by
-  obtain ⟨_, ⟨c⟩⟩ := t
-  subst h
-  rfl
-
 /--
 Port of `find_parent_hash_link_aux` and `find_parent_hash_link_aux_misc_properties`.
 The subtree `d` is the one computed by `find_parent_hash_link_aux`.
@@ -1163,6 +1163,24 @@ theorem parentHashCorrect_applyPathAux {l ld: Nat}
   grind [parentHashCorrect_iff, unAdd_nil]
 
 /--
+`d` is the subtree computed by `find_parent_hash_link` (see `exists_subtree_applyPathAux`):
+it is parent-hash linked to the new node.
+-/
+theorem parentHashLinkedP_applyPathAux {l ld: Nat}
+  (t: TreeSync Bytes tkt (l+1)) (li: Nat) (extContent: tkt.NodeContent) (pNext: PathSync Bytes tkt l)
+  (parentParentHash: Bytes) (t': TreeSync Bytes tkt (l+1)) (d: TreeSync Bytes tkt ld) (ph: MlsBytes Bytes)
+  (h: applyPathAux t li (.node (some extContent) pNext) parentParentHash = .success t')
+  (hsub: d.IsSubtreeOf (t'.child li)) (hres: resolution (t'.child li) = [d.nodeIndex])
+  (hgph: getParentHashOf d = some ph)
+  (hcomp: computeParentHash extContent parentParentHash (t.sibling li) = .success ph.val):
+  ParentHashLinkedP d t'
+:= by
+  have hm: (t.child li).containsLeafIndex d.position := by grind [Tree.containsLeafIndex]
+  have := parentHashCorrect_applyPathAux t li extContent pNext parentParentHash t' d ph h hm hgph hcomp
+  have := lastUpdateCorrect_applyPathAux t li extContent pNext parentParentHash t' d h hm hres
+  grind [ParentHashLinkedP, parentHashLinked, Tree.IsSubtreeOf.of_child]
+
+/--
 Port of the `Some` case of `parent_hash_invariantP_apply_path_aux`,
 with `find_parent_hash_link` and `find_parent_hash_link_misc_properties`.
 MLS* requires `path_node_not_blank p`: here, the root of the path is `some extContent`.
@@ -1182,14 +1200,10 @@ theorem nodeHasParentHashLinkP_applyPathAux {l: Nat}
   obtain ⟨ld, d, hl, hph, hsub, hgph, hres⟩ := exists_subtree_applyPathAux _ li pNext _ newChild hchild hvalid hfilter.2
   obtain ⟨ph, hph', rfl⟩: ∃ ph, getParentHashOf d = some ph ∧ ph.val = newParentParentHash := by
     cases hg: getParentHashOf d <;> simp_all
-  have hm: (t.child li).containsLeafIndex d.position := by grind [Tree.containsLeafIndex]
-  apply nodeHasParentHashLinkP_intro (d := d)
-  · grind
-  · grind
-  · apply Tree.IsSubtreeOf.of_child (li := li)
-    grind
-  · apply lastUpdateCorrect_applyPathAux t li extContent pNext parentParentHash t' d <;> grind
-  · apply parentHashCorrect_applyPathAux t li extContent pNext parentParentHash t' d ph <;> grind
+  intro _
+  refine ⟨ld, d, ?_⟩
+  have := parentHashLinkedP_applyPathAux t li extContent pNext parentParentHash t' d ph h
+  grind
 
 /-- Port of `parent_hash_invariantP_apply_path_aux`. -/
 theorem parentHashInvariantP_applyPathAux {l: Nat}
