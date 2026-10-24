@@ -1,5 +1,5 @@
-import MLS.TreeSync.Proofs.Invariants.ParentHash.Proofs
-import MLS.TreeSync.Proofs.ParentHash.Proofs
+import MLS.TreeSync.Proofs.Invariants.ParentHash
+import MLS.TreeSync.Proofs.ParentHash
 
 /-!
 Port of `MLS.TreeSync.Proofs.ParentHashGuarantees`.

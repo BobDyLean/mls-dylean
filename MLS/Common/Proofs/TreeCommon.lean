@@ -1,5 +1,5 @@
 import MLS.Common.Code.TreeCommon
-import MLS.Common.Proofs.Tree.Lemmas
+import MLS.Common.Proofs.Tree
 
 /-!
 Port of `MLS.TreeCommon.Lemmas`.

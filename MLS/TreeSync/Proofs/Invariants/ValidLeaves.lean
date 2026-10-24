@@ -1,5 +1,5 @@
 import MLS.TreeSync.Code.Invariants.ValidLeaves
-import MLS.TreeSync.Proofs.Operations.Lemmas
+import MLS.TreeSync.Proofs.Operations
 
 /-!
 Port of `MLS.TreeSync.Invariants.ValidLeaves.Proofs`.

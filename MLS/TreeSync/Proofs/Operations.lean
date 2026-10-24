@@ -1,5 +1,5 @@
-import MLS.Common.Proofs.Result.Lemmas
-import MLS.Common.Proofs.TreeCommon.Lemmas
+import MLS.Common.Proofs.Crypto.Derived
+import MLS.Common.Proofs.TreeCommon
 import MLS.TreeSync.Code.Operations
 
 /-!

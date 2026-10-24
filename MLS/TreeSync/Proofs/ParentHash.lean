@@ -1,11 +1,11 @@
 import MLS.TreeSync.Code.ParentHash
-import MLS.TreeSync.Proofs.TreeHash.Proofs
+import MLS.TreeSync.Proofs.TreeHash
 
 /-!
 Port of `MLS.TreeSync.ParentHash.Proofs`.
 
 Port-specific differences:
-- As `tree_hash_inj` (see `MLS.TreeSync.Proofs.TreeHash.Proofs`), MLS*'s `compute_parent_hash_inj`
+- As `tree_hash_inj` (see `MLS.TreeSync.Proofs.TreeHash`), MLS*'s `compute_parent_hash_inj`
   is split into the function `computeParentHashInj` and its correctness theorem `computeParentHashInj_spec`.
 - `computeParentHashInj` does not use decidable equality on the inputs:
   it compares the serialized parent hash inputs, and otherwise returns the result of `treeHashInj`

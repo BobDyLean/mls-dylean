@@ -1,5 +1,5 @@
 import MLS.TreeSync.Code.Invariants.ParentHash
-import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves.Proofs
+import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves
 
 /-!
 Port of `MLS.TreeSync.Invariants.ParentHash.Proofs`.

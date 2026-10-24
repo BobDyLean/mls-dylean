@@ -1,6 +1,6 @@
 import MLS.TreeSync.Code.TreeHash
-import MLS.Common.Proofs.Tree.Lemmas
-import MLS.Common.Proofs.Result.Lemmas
+import MLS.Common.Proofs.Tree
+import MLS.Common.Proofs.Crypto.Derived
 import MLS.Common.Proofs.Crypto.HashCollision
 
 /-!
