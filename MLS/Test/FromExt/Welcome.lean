@@ -1,4 +1,4 @@
-import MLS.TreeDEM.NetworkTypes
+import MLS.TreeDEM.Code.NetworkTypes
 import MLS.Bootstrap.Code.Welcome
 import MLS.TreeKEM.Code.KeySchedule
 import MLS.Test.FromExt.CryptoBasics

@@ -1,4 +1,4 @@
-import MLS.TreeDEM.NetworkTypes
+import MLS.TreeDEM.Code.NetworkTypes
 import MLS.Test.Types
 import MLS.Test.Utils
 

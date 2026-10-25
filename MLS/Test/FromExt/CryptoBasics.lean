@@ -1,5 +1,5 @@
 import MLS.Common.Code.Crypto.Derived
-import MLS.TreeDEM.Keys
+import MLS.TreeDEM.Code.Keys
 import MLS.Test.Types
 import MLS.Test.Utils
 

@@ -1,6 +1,6 @@
 import MLS.TreeSync.Code.Operations
 import MLS.TreeKEM.Code.NetworkTypes
-import MLS.TreeDEM.NetworkTypes
+import MLS.TreeDEM.Code.NetworkTypes
 import MLS.Glue.Code.NetworkBinder
 import MLS.Test.Types
 import MLS.Test.Utils

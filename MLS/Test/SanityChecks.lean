@@ -1,4 +1,4 @@
-import MLS.TreeDEM.NetworkTypes
+import MLS.TreeDEM.Code.NetworkTypes
 
 /-!
 Sanity checks: every message format of the NetworkTypes is non-ambiguous,

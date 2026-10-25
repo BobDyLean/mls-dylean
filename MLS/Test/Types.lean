@@ -72,6 +72,55 @@ structure TreeOperationsTest where
   proposalSender: UInt32
   treeAfter: String
 
+/-! ## Secret Tree -/
+
+structure SecretTreeSenderData where
+  senderDataSecret: String
+  ciphertext: String
+  key: String
+  nonce: String
+
+structure SecretTreeLeaf where
+  generation: UInt32
+  handshakeKey: String
+  handshakeNonce: String
+  applicationKey: String
+  applicationNonce: String
+
+structure SecretTreeTest where
+  cipherSuite: UInt16
+  senderData: SecretTreeSenderData
+  encryptionSecret: String
+  leaves: List (List SecretTreeLeaf)
+
+/-! ## Message Protection -/
+
+structure MessageProtectionTest where
+  cipherSuite: UInt16
+
+  groupId: String
+  epoch: UInt64
+  treeHash: String
+  confirmedTranscriptHash: String
+
+  signaturePriv: String
+  signaturePub: String
+
+  encryptionSecret: String
+  senderDataSecret: String
+  membershipKey: String
+
+  proposal: String
+  proposalPub: String
+  proposalPriv: String
+
+  commit: String
+  commitPub: String
+  commitPriv: String
+
+  application: String
+  applicationPriv: String
+
 /-! ## Key Schedule -/
 
 structure KeyscheduleTestEpochInput where
@@ -119,6 +168,18 @@ structure PskTest where
   cipherSuite: UInt16
   psks: List PskTestPsk
   pskSecret: String
+
+/-! ## Transcript Hashes -/
+
+structure TranscriptHashesTest where
+  cipherSuite: UInt16
+
+  confirmationKey: String
+  authenticatedContent: String
+  interimTranscriptHashBefore: String
+
+  confirmedTranscriptHashAfter: String
+  interimTranscriptHashAfter: String
 
 /-! ## Welcome -/
 
@@ -186,8 +247,11 @@ inductive TestType where
   | cryptoBasics
   | treeValidation
   | treeOperations
+  | secretTree
+  | messageProtection
   | keySchedule
   | preSharedKeys
+  | transcriptHashes
   | welcome
   | treekem
   | messages
@@ -196,8 +260,11 @@ inductive Testsuite where
   | cryptoBasicsTest: List CryptoBasicsTest → Testsuite
   | treeValidationTest: List TreeValidationTest → Testsuite
   | treeOperationsTest: List TreeOperationsTest → Testsuite
+  | secretTreeTest: List SecretTreeTest → Testsuite
+  | messageProtectionTest: List MessageProtectionTest → Testsuite
   | keyScheduleTest: List KeyscheduleTest → Testsuite
   | preSharedKeysTest: List PskTest → Testsuite
+  | transcriptHashesTest: List TranscriptHashesTest → Testsuite
   | welcomeTest: List WelcomeTest → Testsuite
   | treekemTest: List TreeKEMTest → Testsuite
   | messagesTest: List MessagesTest → Testsuite

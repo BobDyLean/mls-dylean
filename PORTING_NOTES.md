@@ -86,3 +86,8 @@ and would enforce that
 and (2) the `i`th bytestring has length `l[i]`.
 This parameter is now removed,
 and the functions that consume randomness can fail.
+
+## Changes in the cryptography interface
+
+The reuse guard in TreeDEM used to rely on `unsafe_split` + `xor`.
+Now, there is instead a dedicated `applyReuseGuard` function.

@@ -9,6 +9,9 @@ import MLS.Test.FromExt.TreeKEM
 import MLS.Test.FromExt.KeySchedule
 import MLS.Test.FromExt.PreSharedKeys
 import MLS.Test.FromExt.Welcome
+import MLS.Test.FromExt.SecretTree
+import MLS.Test.FromExt.MessageProtection
+import MLS.Test.FromExt.TranscriptHashes
 import OpenSSL.Test
 
 /-!
@@ -29,6 +32,9 @@ open MLS.Test.FromExt.TreeKEM
 open MLS.Test.FromExt.KeySchedule
 open MLS.Test.FromExt.PreSharedKeys
 open MLS.Test.FromExt.Welcome
+open MLS.Test.FromExt.SecretTree
+open MLS.Test.FromExt.MessageProtection
+open MLS.Test.FromExt.TranscriptHashes
 
 /-- Port of `run_tests`. -/
 def runTests {a: Type} (testVectorsDir: System.FilePath) (name: String) (ty: TestType)
@@ -54,6 +60,18 @@ def runTreeValidationTests (testVectorsDir: System.FilePath): IO Unit :=
 def runTreeOperationsTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Tree Operations" .treeOperations (fun | .treeOperationsTest l => some l | _ => none) testTreeOperations
 
+/-- Port of `run_secret_tree_tests`. -/
+def runSecretTreeTests (testVectorsDir: System.FilePath): IO Unit :=
+  runTests testVectorsDir "Secret Tree" .secretTree (fun | .secretTreeTest l => some l | _ => none) testSecretTree
+
+/-- Port of `run_message_protection_tests`. -/
+def runMessageProtectionTests (testVectorsDir: System.FilePath): IO Unit :=
+  runTests testVectorsDir "Message Protection" .messageProtection (fun | .messageProtectionTest l => some l | _ => none) testMessageProtection
+
+/-- Port of `run_transcript_hashes_tests`. -/
+def runTranscriptHashesTests (testVectorsDir: System.FilePath): IO Unit :=
+  runTests testVectorsDir "Transcript Hashes" .transcriptHashes (fun | .transcriptHashesTest l => some l | _ => none) testTranscriptHashes
+
 /-- Port of `run_keyschedule_tests`. -/
 def runKeyscheduleTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Key Schedule" .keySchedule (fun | .keyScheduleTest l => some l | _ => none) testKeyschedule
@@ -78,8 +96,11 @@ def runMessagesTests (testVectorsDir: System.FilePath): IO Unit :=
 def main (testVectorsDir: System.FilePath): IO Unit := do
   OpenSSL.Test.main
   runCryptoBasicsTests testVectorsDir
+  runSecretTreeTests testVectorsDir
+  runMessageProtectionTests testVectorsDir
   runKeyscheduleTests testVectorsDir
   runPskTests testVectorsDir
+  runTranscriptHashesTests testVectorsDir
   runWelcomeTests testVectorsDir
   runTreeValidationTests testVectorsDir
   runTreeOperationsTests testVectorsDir

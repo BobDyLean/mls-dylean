@@ -11,6 +11,10 @@ Port-specific differences:
   It is not meant to be secure, and is used for testing.
 - `AvailableCiphersuite` contains all the cipher suites of RFC 9420, not only the two supported by HACL*.
 - ECDSA signatures use deterministic nonces (RFC 6979), so `sign_sign` ignores its entropy (as for EdDSA).
+  ECDSA signature keys shorter than the scalar length are left-padded with zeros
+  (the P-521 key of the message-protection test vectors has its leading zero byte stripped).
+- MLS*'s field `xor` is replaced by the field `applyReuseGuard` (MLS*'s `apply_reuse_guard`, its only use),
+  implemented by the instances.
 - The fields of `crypto_bytes` that only carry proofs (e.g. `hash_hash_pre`, `*_length_bound`)
   are not ported yet, except `hash_output_length_bound` (`hashHash_ne_empty`), checked at runtime by the concrete instance, as well as `debug_bytes_to_string`.
 - `bytes_hasEq` is `DecidableEq Bytes`.
@@ -73,6 +77,14 @@ class CryptoBytes (Bytes: Type) extends BytesLike Bytes where
   hmacHmac: (key: Bytes) → (data: Bytes) → Result Bytes
 
   stringToBytes: String → Bytes
+  /--
+  Port of `apply_reuse_guard` (from `MLS.TreeDEM.Message.Framing`),
+  which replaces MLS*'s field `xor` (only used by `apply_reuse_guard`):
+  XOR the first 4 bytes of `nonce` with `reuseGuard`.
+  MLS* requires `reuse_guard` to have length `4` and `nonce` to have length `aead_nonce_length` (at least `4`);
+  otherwise, this function fails.
+  -/
+  applyReuseGuard: (reuseGuard: Bytes) → (nonce: Bytes) → Result Bytes
 
 attribute [reducible, instance] CryptoBytes.decEq
 
@@ -142,6 +154,12 @@ def signatureFunctions (a: Signature.Algorithm): SignatureFunctions where
     pure (pk, randSlice)
   signSignMinEntropyLength := 0
   signSign sk msg _ :=
+    -- ECDSA private keys are big-endian scalars: shorter keys (e.g. with their leading zero bytes stripped) are left-padded.
+    let sk :=
+      match a with
+      | .ecdsaP256Sha256 | .ecdsaP384Sha384 | .ecdsaP521Sha512 =>
+        if sk.size < a.secretKeyLength then ⟨Array.replicate (a.secretKeyLength - sk.size) 0⟩ ++ sk else sk
+      | .ed25519 | .ed448 => sk
     if sk.size != a.secretKeyLength then
       Result.error "sign_sign: bad signature key size"
     else
@@ -235,6 +253,12 @@ def mkConcreteCryptoBytes (acs: AvailableCiphersuite): CryptoBytes ByteArray :=
     hmacHmac key data := Result.fromOption "hmac_hmac: HMAC.hmac failed" (Hash.hmac cs.kdfHash key data)
 
     stringToBytes s := s.toUTF8
+    applyReuseGuard reuseGuard nonce :=
+      if reuseGuard.size != 4 || nonce.size < 4 then
+        Result.internalFailure "apply_reuse_guard: bad reuse guard or nonce length"
+      else
+        let newNonceHead: ByteArray := ⟨((nonce.extract 0 4).data.zip reuseGuard.data).map (fun (x1, x2) => x1 ^^^ x2)⟩
+        pure (newNonceHead ++ nonce.extract 4 nonce.size)
   }
 
 end MLS

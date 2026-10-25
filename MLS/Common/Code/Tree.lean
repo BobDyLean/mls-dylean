@@ -34,6 +34,31 @@ structure Tree (Leaf Node: Type) (l: Nat) where
   position: Nat
   bareTree: BareTree Leaf Node l
 
+/-! ## Positions -/
+
+/-!
+Functions computing positions, for code that has no tree to recurse on (e.g. `leafKdf`).
+Functions on trees use the views instead.
+-/
+
+/-- Port of `left_index`: the position of the left child of a tree at position `i`. -/
+def leftIndex (i: Nat): Nat :=
+  i
+
+/--
+Port of `right_index`: the position of the right child of a tree of height `l` at position `i`.
+MLS* requires `0 < l`.
+-/
+def rightIndex (l i: Nat): Nat :=
+  i + 2^(l-1)
+
+/--
+Port of `is_left_leaf`: whether the leaf `li` is in the left child of a tree of height `l` at position `i`.
+MLS* requires `0 < l`.
+-/
+def isLeftLeaf (l i li: Nat): Bool :=
+  li < i + 2^(l-1)
+
 /-- Port of `node_index`: the height and position of a subtree. -/
 structure NodeIndex where
   levels: Nat

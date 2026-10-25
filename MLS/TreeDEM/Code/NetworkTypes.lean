@@ -591,7 +591,10 @@ deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.H
 
 /-! ## FramedContentTBS -/
 
-/-- Whether the `FramedContentTBS` contains the group context. -/
+/--
+Port of `knows_group_context` (from `MLS.TreeDEM.Message.Framing`).
+Whether the `FramedContentTBS` contains the group context.
+-/
 def Sender.hasGroupContext: Sender → Bool
   | .member .. | .newMemberCommit => true
   | .external .. | .newMemberProposal => false

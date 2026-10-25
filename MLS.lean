@@ -45,8 +45,12 @@ import MLS.TreeKEM.Code.API
 import MLS.Bootstrap.Code.NetworkTypes
 import MLS.Bootstrap.Code.KeyPackageRef
 import MLS.Bootstrap.Code.Welcome
-import MLS.TreeDEM.NetworkTypes
-import MLS.TreeDEM.Keys
+import MLS.TreeDEM.Code.NetworkTypes
+import MLS.TreeDEM.Code.Keys
+import MLS.TreeDEM.Code.Message.Framing
+import MLS.TreeDEM.Code.Message.Transcript
+import MLS.TreeDEM.Code.API.Types
+import MLS.TreeDEM.Code.API
 import MLS.Glue.Code.NetworkBinder
 import MLS.Glue.Code.TreeSyncTreeKEMBinder
 import MLS.Test.SanityChecks

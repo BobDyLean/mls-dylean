@@ -395,6 +395,14 @@ def StaticOption.mk {b: Bool} {a: Type} (x: a): StaticOption b a :=
 def StaticOption.get {a: Type}: {b: Bool} → StaticOption b a → b = true → a
   | true, x, _ => x
 
+/--
+Build a static option in a monad, computing its content only when it is present.
+Useful when `b` is not a constructor (e.g. `content.sender.isMember`).
+-/
+def StaticOption.mkM {m: Type → Type} [Pure m] {a: Type}: (b: Bool) → (b = true → m a) → m (StaticOption b a)
+  | true, x => x rfl
+  | false, _ => pure ()
+
 def StaticOption.mf
   {a: Type} (b: Bool) (mf: NonExtensibleMessageFormat Bytes a)
   : NonExtensibleMessageFormat Bytes (StaticOption b a)

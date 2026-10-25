@@ -98,6 +98,56 @@ def parseTreeOperationsTest (json: Json): Except String TreeOperationsTest := do
     treeAfter := ← json.getObjValAs? String "tree_after"
   }
 
+/-! ## Secret Tree -/
+
+def parseSecretTreeLeaf (json: Json): Except String SecretTreeLeaf := do
+  return {
+    generation := ← json.getObjValAs? UInt32 "generation"
+    handshakeKey := ← json.getObjValAs? String "handshake_key"
+    handshakeNonce := ← json.getObjValAs? String "handshake_nonce"
+    applicationKey := ← json.getObjValAs? String "application_key"
+    applicationNonce := ← json.getObjValAs? String "application_nonce"
+  }
+
+def parseSecretTreeTest (json: Json): Except String SecretTreeTest := do
+  let senderData ← json.getObjVal? "sender_data"
+  return {
+    cipherSuite := ← json.getObjValAs? UInt16 "cipher_suite"
+    senderData := {
+      senderDataSecret := ← senderData.getObjValAs? String "sender_data_secret"
+      ciphertext := ← senderData.getObjValAs? String "ciphertext"
+      key := ← senderData.getObjValAs? String "key"
+      nonce := ← senderData.getObjValAs? String "nonce"
+    }
+    encryptionSecret := ← json.getObjValAs? String "encryption_secret"
+    leaves := ← (← json.getObjValAs? (List (List Json)) "leaves").mapM (·.mapM parseSecretTreeLeaf)
+  }
+
+/-! ## Message Protection -/
+
+def parseMessageProtectionTest (json: Json): Except String MessageProtectionTest := do
+  let get (field: String): Except String String := json.getObjValAs? String field
+  return {
+    cipherSuite := ← json.getObjValAs? UInt16 "cipher_suite"
+    groupId := ← get "group_id"
+    epoch := ← json.getObjValAs? UInt64 "epoch"
+    treeHash := ← get "tree_hash"
+    confirmedTranscriptHash := ← get "confirmed_transcript_hash"
+    signaturePriv := ← get "signature_priv"
+    signaturePub := ← get "signature_pub"
+    encryptionSecret := ← get "encryption_secret"
+    senderDataSecret := ← get "sender_data_secret"
+    membershipKey := ← get "membership_key"
+    proposal := ← get "proposal"
+    proposalPub := ← get "proposal_pub"
+    proposalPriv := ← get "proposal_priv"
+    commit := ← get "commit"
+    commitPub := ← get "commit_pub"
+    commitPriv := ← get "commit_priv"
+    application := ← get "application"
+    applicationPriv := ← get "application_priv"
+  }
+
 /-! ## Key Schedule -/
 
 def parseKeyscheduleTestEpoch (json: Json): Except String (KeyscheduleTestEpochInput × KeyscheduleTestEpochOutput) := do
@@ -150,6 +200,19 @@ def parsePskTest (json: Json): Except String PskTest := do
     cipherSuite := ← json.getObjValAs? UInt16 "cipher_suite"
     psks := ← (← json.getObjValAs? (List Json) "psks").mapM parsePskTestPsk
     pskSecret := ← json.getObjValAs? String "psk_secret"
+  }
+
+/-! ## Transcript Hashes -/
+
+def parseTranscriptHashesTest (json: Json): Except String TranscriptHashesTest := do
+  let get (field: String): Except String String := json.getObjValAs? String field
+  return {
+    cipherSuite := ← json.getObjValAs? UInt16 "cipher_suite"
+    confirmationKey := ← get "confirmation_key"
+    authenticatedContent := ← get "authenticated_content"
+    interimTranscriptHashBefore := ← get "interim_transcript_hash_before"
+    confirmedTranscriptHashAfter := ← get "confirmed_transcript_hash_after"
+    interimTranscriptHashAfter := ← get "interim_transcript_hash_after"
   }
 
 /-! ## Welcome -/
@@ -229,8 +292,11 @@ def getFilename: TestType → String
   | .cryptoBasics => "test_vectors/data/crypto-basics.json"
   | .treeValidation => "test_vectors/data/tree-validation.json"
   | .treeOperations => "test_vectors/data/tree-operations.json"
+  | .secretTree => "test_vectors/data/secret-tree.json"
+  | .messageProtection => "test_vectors/data/message-protection.json"
   | .keySchedule => "test_vectors/data/key-schedule.json"
   | .preSharedKeys => "test_vectors/data/psk_secret.json"
+  | .transcriptHashes => "test_vectors/data/transcript-hashes.json"
   | .welcome => "test_vectors/data/welcome.json"
   | .treekem => "test_vectors/data/treekem.json"
   | .messages => "test_vectors/data/messages.json"
@@ -249,6 +315,15 @@ def getTestsuite (testVectorsDir: System.FilePath) (typ: TestType): IO Testsuite
   | .treeOperations =>
     let tests ← IO.ofExcept (l.toList.mapM parseTreeOperationsTest |>.mapError (s!"parse_tree_operations_test: incorrect test vector format: {·}"))
     return .treeOperationsTest tests
+  | .secretTree =>
+    let tests ← IO.ofExcept (l.toList.mapM parseSecretTreeTest |>.mapError (s!"parse_secret_tree_test: incorrect test vector format: {·}"))
+    return .secretTreeTest tests
+  | .messageProtection =>
+    let tests ← IO.ofExcept (l.toList.mapM parseMessageProtectionTest |>.mapError (s!"parse_message_protection_test: incorrect test vector format: {·}"))
+    return .messageProtectionTest tests
+  | .transcriptHashes =>
+    let tests ← IO.ofExcept (l.toList.mapM parseTranscriptHashesTest |>.mapError (s!"parse_transcript_hashes_test: incorrect test vector format: {·}"))
+    return .transcriptHashesTest tests
   | .keySchedule =>
     let tests ← IO.ofExcept (l.toList.mapM parseKeyscheduleTest |>.mapError (s!"parse_keyschedule_test: incorrect test vector format: {·}"))
     return .keyScheduleTest tests

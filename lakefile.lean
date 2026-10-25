@@ -69,7 +69,17 @@ target pskSecretTestVector pkg : System.FilePath :=
 target welcomeTestVector pkg : System.FilePath :=
   fetchTestVector pkg "welcome"
 
+target secretTreeTestVector pkg : System.FilePath :=
+  fetchTestVector pkg "secret-tree"
+
+target messageProtectionTestVector pkg : System.FilePath :=
+  fetchTestVector pkg "message-protection"
+
+target transcriptHashesTestVector pkg : System.FilePath :=
+  fetchTestVector pkg "transcript-hashes"
+
 @[test_driver]
 lean_exe «mls-test» where
   root := `TestMain
-  needs := #[cryptoBasicsTestVector, treeValidationTestVector, treeOperationsTestVector, messagesTestVector, treekemTestVector, keyScheduleTestVector, pskSecretTestVector, welcomeTestVector]
+  needs := #[cryptoBasicsTestVector, treeValidationTestVector, treeOperationsTestVector, messagesTestVector, treekemTestVector, keyScheduleTestVector, pskSecretTestVector, welcomeTestVector,
+    secretTreeTestVector, messageProtectionTestVector, transcriptHashesTestVector]
