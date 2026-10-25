@@ -12,12 +12,14 @@ import MLS.Common.Code.Crypto.Derived
 import MLS.Common.Proofs.Crypto.Derived
 import MLS.Common.Proofs.Crypto.HashCollision
 import MLS.Common.Code.NetworkTypes
+import MLS.Common.Code.Extensions
 import MLS.Common.Code.Tree
 import MLS.Common.Proofs.Tree
 import MLS.Common.Code.TreeCommon
 import MLS.Common.Proofs.TreeCommon
 import MLS.TreeSync.Code.NetworkTypes
 import MLS.TreeSync.Code.Types
+import MLS.TreeSync.Code.Extensions
 import MLS.TreeSync.Code.TreeHash
 import MLS.TreeSync.Code.ParentHash
 import MLS.TreeSync.Code.Operations

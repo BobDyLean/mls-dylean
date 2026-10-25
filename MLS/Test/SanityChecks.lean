@@ -1,4 +1,5 @@
 import MLS.TreeDEM.Code.NetworkTypes
+import MLS.TreeSync.Code.Extensions
 
 /-!
 Sanity checks: every message format of the NetworkTypes is non-ambiguous,
@@ -124,6 +125,10 @@ example: ((Node.mf tkt) : NonExtensibleMessageFormat Bytes _).ParseConsumes := i
 example: ((RatchetTree.mf tkt) : NonExtensibleMessageFormat Bytes _).IsNonAmbiguous := inferInstance
 example: ((RatchetTree.mf tkt) : NonExtensibleMessageFormat Bytes _).HasUniqueRepresentation := inferInstance
 example: ((RatchetTree.mf tkt) : NonExtensibleMessageFormat Bytes _).ParseConsumes := inferInstance
+
+example: (ApplicationIdExt.mf (Bytes := Bytes)).IsNonAmbiguous := inferInstance
+example: (ApplicationIdExt.mf (Bytes := Bytes)).HasUniqueRepresentation := inferInstance
+example: (ApplicationIdExt.mf (Bytes := Bytes)).ParseConsumes := inferInstance
 
 /-! ## TreeKEM -/
 
