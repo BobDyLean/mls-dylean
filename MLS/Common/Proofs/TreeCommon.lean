@@ -123,4 +123,28 @@ theorem findEmptyLeaf_treeExtend {l: Nat} (t: Tree (Option Leaf) (Option Node) l
   simp only [LeftRightView.pack, Tree.intoLeftRightView]
   split <;> simp_all [mkBlankTree]
 
+/-! ## Leaf list -/
+
+theorem length_getLeafList {Leaf Node: Type} {l: Nat} (t: Tree Leaf Node l):
+  (getLeafList t).length = 2^l
+:= by
+  induction t using Tree.leftRightInduction <;> rw [getLeafList.eq_def] <;> simp_all <;> grind
+
+/--
+Port of `index_get_leaf_list`.
+Stated with `[ind]?`, which also gives the length of the list.
+-/
+theorem index_getLeafList {Leaf Node: Type} {l: Nat} (t: Tree Leaf Node l) (ind: Nat) (h: ind < 2^l):
+  (getLeafList t)[ind]? = some (leafAt t (t.position + ind))
+:= by
+  induction t using Tree.leftRightInduction generalizing ind with
+  | leaf t => simp_all [getLeafList.eq_def, leafAt.eq_def]
+  | node t ihl ihr =>
+    rw [getLeafList.eq_def, leafAt.eq_def]
+    simp only [Tree.intoLeftRightView_eq, Tree.intoChildSiblingView_eq, List.getElem?_append, length_getLeafList]
+    split
+    · grind
+    · have := ihr (ind - (getLeafList t.left).length) (by grind [length_getLeafList])
+      grind [length_getLeafList]
+
 end MLS
