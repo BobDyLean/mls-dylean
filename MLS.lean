@@ -64,5 +64,6 @@ import MLS.TreeDEM.Code.API
 import MLS.Glue.Code.NetworkBinder
 import MLS.Glue.Code.TreeSyncTreeKEMBinder
 import MLS.Glue.Proofs.NetworkBinder.Properties
+import MLS.Glue.Proofs.TreeSyncTreeKEMBinder
 import MLS.Test.SanityChecks
 import MLS.Test

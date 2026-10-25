@@ -8,8 +8,8 @@ Port of `MLS.TreeKEM.API`.
 Port-specific differences:
 - The namespace is `MLS.TreeKEM.API`: `MLS.TreeKEM.API.Tree` and `MLS.TreeKEM.API.KeySchedule`
   are referred to as `Tree` and `KeySchedule` (MLS*'s module abbreviations `T` and `KS`).
-- The invariants of the state are not ported (see `MLS.TreeKEM.API.Tree`):
-  preconditions of MLS* are documented in the docstrings.
+- The invariants of the state and the refinements of the API types are predicates `*.Valid`,
+  in `MLS.TreeKEM.Proofs.API`: preconditions of MLS* are documented in the docstrings.
 - `export` is a Lean keyword: the function is named `«export»`.
 -/
 
@@ -87,8 +87,8 @@ def remove {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (i: Nat): TreeKEMStat
 /--
 Port of `full_commit_args`.
 The refinements of MLS* (`commit_leaf_ind < pow2 st.levels`, `commit_leaf_ind <> leaf_ind`,
-`path_filtering_ok st.tree path` and `~(List.Tot.memP leaf_ind excluded_leaves)`) are not ported,
-see `Tree.commit`.
+`path_filtering_ok st.tree path` and `~(List.Tot.memP leaf_ind excluded_leaves)`) are the predicate
+`FullCommitArgs.Valid` (in `MLS.TreeKEM.Proofs.API`), see `Tree.commit`.
 -/
 structure FullCommitArgs {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) where
   commitLeafInd: Nat
@@ -161,7 +161,8 @@ structure PendingCreateCommit2 (Bytes: Type) (leafInd: Nat) where
 
 /--
 Port of `continue_create_commit_result`.
-The refinement `path_filtering_ok st.tree_state.tree update_path` is not ported.
+The refinement `path_filtering_ok st.tree_state.tree update_path` is the predicate `ContinueCreateCommitResult.Valid`
+(in `MLS.TreeKEM.Proofs.API`).
 -/
 structure ContinueCreateCommitResult {leafInd: Nat} (st: TreeKEMState Bytes leafInd) where
   updatePath: PathKEM Bytes st.treeState.levels

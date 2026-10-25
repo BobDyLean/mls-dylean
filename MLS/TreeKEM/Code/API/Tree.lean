@@ -5,8 +5,8 @@ import MLS.TreeKEM.Code.API.Tree.Types
 Port of `MLS.TreeKEM.API.Tree`.
 
 Port-specific differences:
-- The invariants of the state (see `TreeKEMTreeState`) are not ported,
-  hence neither are the lemmas proving that the functions preserve them.
+- The invariants of the state (see `TreeKEMTreeState`) are the predicate `TreeKEMTreeState.Valid`,
+  preserved by the functions of this module (see `MLS.TreeKEM.Proofs.API.Tree`).
   Preconditions of MLS* are documented in the docstrings: when they are not met,
   the functions fail or return a state that does not satisfy MLS*'s invariants.
 - Trees of the state are assumed to be at position `0` (MLS*'s `treekem bytes levels 0`).
@@ -170,8 +170,9 @@ def prepareCreateCommitEntropyLengths (Bytes: Type) [CryptoBytes Bytes]: List Na
 
 /--
 Port of `pending_commit`.
-The refinements `path_filtering_ok st.tree path_secrets` and
-`forget_path_secrets path_secrets == generate_forgotten_path_secrets st.tree leaf_ind` are not ported.
+The refinement `path_filtering_ok st.tree path_secrets` is the predicate `PendingCommit.Valid`
+(in `MLS.TreeKEM.Proofs.API.Tree`); the refinement
+`forget_path_secrets path_secrets == generate_forgotten_path_secrets st.tree leaf_ind` is not ported.
 -/
 structure PendingCommit {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) where
   pathSecrets: PathSecrets Bytes st.levels
@@ -200,7 +201,8 @@ def finalizeCreateCommitEntropyLengths {leafInd: Nat} (st: TreeKEMTreeState Byte
 
 /--
 Port of `create_commit_result`.
-The refinement `path_filtering_ok st.tree update_path` is not ported.
+The refinement `path_filtering_ok st.tree update_path` is the predicate `CreateCommitResult.Valid`
+(in `MLS.TreeKEM.Proofs.API.Tree`).
 -/
 structure CreateCommitResult {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) where
   newState: TreeKEMTreeState Bytes leafInd

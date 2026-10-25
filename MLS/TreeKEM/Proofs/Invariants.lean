@@ -1,4 +1,5 @@
 import MLS.Common.Proofs.Result
+import MLS.Common.Proofs.Crypto.Derived
 import MLS.Common.Proofs.TreeCommon
 import MLS.TreeKEM.Code.Operations
 import MLS.Glue.Proofs.NetworkBinder.Properties
@@ -161,6 +162,24 @@ theorem treeApplyPath_succ {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (oupn: Op
   induction t using Tree.childInduction li with
   | leaf t => simp [treeApplyPath_zero]
   | node t ih => cases p; rw [treeApplyPath_succ]; simp [ih]
+
+@[simp] theorem child_treeApplyPath {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (oupn: Option (UpdatePathNode Bytes)) (pNext: PathKEM Bytes l):
+  (treeApplyPath t li (.node oupn pNext)).child li = treeApplyPath (t.child li) li pNext
+:= by
+  rw [treeApplyPath_succ]
+  simp
+
+@[simp] theorem sibling_treeApplyPath {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (oupn: Option (UpdatePathNode Bytes)) (pNext: PathKEM Bytes l):
+  (treeApplyPath t li (.node oupn pNext)).sibling li = t.sibling li
+:= by
+  rw [treeApplyPath_succ]
+  simp
+
+@[simp] theorem nodeContent_treeApplyPath {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (oupn: Option (UpdatePathNode Bytes)) (pNext: PathKEM Bytes l):
+  (treeApplyPath t li (.node oupn pNext)).nodeContent = oupn.map fun upn => { publicKey := upn.encryptionKey.val, unmergedLeaves := [] }
+:= by
+  rw [treeApplyPath_succ]
+  simp
 
 /-- Port of `leaf_at_tree_apply_path`. -/
 theorem leafAt_treeApplyPath {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: PathKEM Bytes l) (li': Nat)
@@ -346,15 +365,33 @@ theorem pathFilteringOk_generatePathSecrets {l: Nat} (t: TreeKEM Bytes l) (leafS
     obtain ⟨pNext, myPathSecret, h1, rfl⟩ := generatePathSecrets_succ t leafSk pathSecret0 li p commitSecret h
     cases h': isTreeEmpty (t.sibling li) <;> simp_all
 
+theorem encryptPathSecrets_zero (t: TreeKEM Bytes 0) (li: Nat) (leafIkm: Bytes)
+  (groupContext: GroupContext Bytes) (rand: Randomness Bytes) (res: PathKEM Bytes 0) (priv: TreeKEMPriv Bytes 0)
+  (h: encryptPathSecrets t li (.leaf leafIkm) groupContext rand = .success (res, priv)):
+  ∃ sk, CryptoBytes.hpkeGenKeypair leafIkm = .success (sk, res.getPathLeaf.publicKey)
+:= by
+  rw [encryptPathSecrets.eq_def] at h
+  simp only [Tree.intoChildSiblingView_zero, Result.bind_eq_success, Result.pure_eq_success] at h
+  grind [Path.getPathLeaf]
+
 theorem encryptPathSecrets_succ {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (opn: Option Bytes) (pNext: PathSecrets Bytes l)
   (groupContext: GroupContext Bytes) (rand: Randomness Bytes) (res: PathKEM Bytes (l+1)) (priv: TreeKEMPriv Bytes (l+1))
   (h: encryptPathSecrets t li (.node opn pNext) groupContext rand = .success (res, priv)):
   ∃ oupn resNext optSk privNext rand',
     encryptPathSecrets (t.child li) li pNext groupContext rand' = .success (resNext, privNext) ∧
-    res = .node oupn resNext ∧ priv = .node optSk privNext ∧ oupn.isSome = opn.isSome
+    res = .node oupn resNext ∧ priv = .node optSk privNext ∧ oupn.isSome = opn.isSome ∧
+    ∀ pathSecret ∈ opn, ∃ upn ∈ oupn, ∃ sk, deriveKeypairFromPathSecret pathSecret = .success (sk, upn.encryptionKey.val)
 := by
   rw [encryptPathSecrets.eq_def] at h
-  cases opn <;> simp only [Tree.intoChildSiblingView_eq, Result.bind_eq_success, Result.pure_eq_success] at h <;> grind
+  cases opn with
+  | none => simp only [Tree.intoChildSiblingView_eq, Result.bind_eq_success, Result.pure_eq_success] at h; grind
+  | some pathSecret =>
+    simp only [Tree.intoChildSiblingView_eq, Result.bind_eq_success, Result.pure_eq_success, mkMlsBytes_eq_success] at h
+    obtain ⟨⟨_, rand'⟩, -, ⟨resNext, privNext⟩, h1, -, -, cts, -, ⟨sk, _⟩, h2, pk, rfl, h3⟩ := h
+    refine ⟨some { encryptionKey := pk, encryptedPathSecret := cts }, resNext, some sk, privNext, rand', ?_⟩
+    dsimp only at h1 h3
+    obtain ⟨rfl, rfl⟩ := Prod.mk.inj h3
+    simp [h1, h2]
 
 /--
 Port of `path_filtering_ok_encrypt_path_secrets`.
@@ -372,7 +409,7 @@ theorem pathFilteringOk_encryptPathSecrets {l: Nat} (refT t: TreeKEM Bytes l) (l
   | leaf refT => simp
   | node refT ih =>
     cases p with | node opn pNext =>
-    obtain ⟨oupn, resNext, optSk, privNext, rand', h1, rfl, rfl, hsome⟩ :=
+    obtain ⟨oupn, resNext, optSk, privNext, rand', h1, rfl, rfl, hsome, -⟩ :=
       encryptPathSecrets_succ t li opn pNext groupContext rand res priv h
     simp only [pathFilteringOk_succ, Bool.and_eq_true] at hfilter ⊢
     refine ⟨by grind [Option.isNone_iff_eq_none, Option.isSome_iff_ne_none], ?_⟩

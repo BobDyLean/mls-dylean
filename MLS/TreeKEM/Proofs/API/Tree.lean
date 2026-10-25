@@ -109,14 +109,20 @@ termination_by st.levels
 decreasing_by grind
 
 /-- MLS* requires `i < pow2 st.levels` (here `hi`) and `i <> leaf_ind`. -/
-theorem remove_valid {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (i: Nat)
+theorem removeAux_valid {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (i: Nat)
   (hi: st.tree.containsLeafIndex i) (hne: i ≠ leafInd) (hst: st.Valid):
-  (remove st i).Valid
+  (removeAux st i).Valid
 := by
-  apply fullyTruncate_valid
   unfold TreeKEMTreeState.Valid treekemPrivInvariant at *
   simp only [removeAux, treeRemove]
   grind [treekemInvariant_treeChangePath, leafAt_treeChangePath, Tree.containsLeafIndex]
+
+/-- MLS* requires `i < pow2 st.levels` (here `hi`) and `i <> leaf_ind`. -/
+theorem remove_valid {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (i: Nat)
+  (hi: st.tree.containsLeafIndex i) (hne: i ≠ leafInd) (hst: st.Valid):
+  (remove st i).Valid
+:=
+  fullyTruncate_valid _ (removeAux_valid st i hi hne hst)
 
 end NoCrypto
 
@@ -125,6 +131,23 @@ section CryptoBytes
 variable [CryptoBytes Bytes]
 
 /-! ## Welcome -/
+
+/-- The state returned by `welcome` contains the tree `t`. -/
+theorem welcome_success {l: Nat} (t: TreeKEM Bytes l) (leafDecryptionKey: Bytes) (optPathSecretAndInviterInd: Option (Bytes × Nat))
+  (leafInd: Nat) (st: TreeKEMTreeState Bytes leafInd)
+  (h: welcome t leafDecryptionKey optPathSecretAndInviterInd leafInd = .success st):
+  ∃ priv, { levels := l, tree := t, priv } = st
+:= by
+  unfold welcome at h
+  split at h
+  · simp only [Result.bind_eq_success, Result.pure_eq_success] at h
+    grind
+  · split at h
+    · simp [Result.error] at h
+    · split at h
+      · simp [Result.error] at h
+      · simp only [Result.bind_eq_success, Result.pure_eq_success] at h
+        grind
 
 /--
 MLS* requires `treekem_invariant t`, `leaf_ind < pow2 l` and `Some? (leaf_at t leaf_ind)`,
@@ -136,21 +159,25 @@ theorem welcome_valid {l: Nat} (t: TreeKEM Bytes l) (leafDecryptionKey: Bytes) (
   (hpos: t.position = 0) (hinv: treekemInvariant t) (hli: t.containsLeafIndex leafInd) (hleaf: (leafAt t leafInd).isSome):
   st.Valid
 := by
-  unfold welcome at h
-  have: ∃ priv, { levels := l, tree := t, priv } = st := by
-    split at h
-    · simp only [Result.bind_eq_success, Result.pure_eq_success] at h
-      grind
-    · split at h
-      · simp [Result.error] at h
-      · split at h
-        · simp [Result.error] at h
-        · simp only [Result.bind_eq_success, Result.pure_eq_success] at h
-          grind
-  obtain ⟨priv, rfl⟩ := this
+  obtain ⟨priv, rfl⟩ := welcome_success t _ _ leafInd st h
   exact ⟨hpos, hinv, hli, hleaf⟩
 
 /-! ## Process commit -/
+
+/-- The state returned by `commit`: the path is applied on the tree. -/
+theorem commit_success {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (li: Nat) (p: PathKEM Bytes st.levels)
+  (excludedLeaves: List Nat) (groupContext: GroupContext Bytes) (res: TreeKEMTreeState Bytes leafInd) (commitSecret: Bytes)
+  (h: commit st li p excludedLeaves groupContext = .success (res, commitSecret)):
+  ∃ newPriv, res = { st with tree := treeApplyPath st.tree li p, priv := newPriv }
+:= by
+  unfold commit at h
+  dsimp only at h
+  split at h
+  · simp [Result.error] at h
+  · simp only [Result.bind_eq_success] at h
+    obtain ⟨⟨_, _⟩, -, h⟩ := h
+    obtain ⟨⟨newPriv, _⟩, -, rfl, -⟩ := h
+    exact ⟨newPriv, rfl⟩
 
 /--
 MLS* requires `li < pow2 st.levels` (here `hli`), `li <> leaf_ind`, `path_filtering_ok st.tree p`
@@ -163,15 +190,9 @@ theorem commit_valid {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (li: Na
   (_hexcluded: leafInd ∉ excludedLeaves) (hst: st.Valid):
   res.Valid
 := by
-  unfold commit at h
-  dsimp only at h
-  split at h
-  · simp [Result.error] at h
-  · simp only [Result.bind_eq_success] at h
-    obtain ⟨⟨_, _⟩, -, h⟩ := h
-    obtain ⟨⟨newPriv, _⟩, -, rfl, -⟩ := h
-    unfold TreeKEMTreeState.Valid treekemPrivInvariant at *
-    grind [treeApplyPath_position, treekemInvariant_treeApplyPath, leafAt_treeApplyPath, Tree.containsLeafIndex]
+  obtain ⟨newPriv, rfl⟩ := commit_success st li p excludedLeaves groupContext res commitSecret h
+  unfold TreeKEMTreeState.Valid treekemPrivInvariant at *
+  grind [treeApplyPath_position, treekemInvariant_treeApplyPath, leafAt_treeApplyPath, Tree.containsLeafIndex]
 
 /-! ## Create commit -/
 
@@ -184,6 +205,20 @@ theorem prepareCreateCommit_valid {leafInd: Nat} (st: TreeKEMTreeState Bytes lea
   obtain ⟨_, -, _, -, ⟨pathSecrets, commitSecret⟩, h1, _, -, rfl, -⟩ := h
   exact pathFilteringOk_generatePathSecrets _ _ _ _ _ _ h1
 
+/-- The result of `finalizeCreateCommit`: the path secrets are encrypted, and the update path is applied on the tree. -/
+theorem finalizeCreateCommit_success {leafInd: Nat} {st: TreeKEMTreeState Bytes leafInd}
+  (pending: PendingCommit st) (addedLeaves: List Nat) (groupContext: GroupContext Bytes) (randomness: Randomness Bytes)
+  (res: CreateCommitResult st)
+  (h: finalizeCreateCommit pending addedLeaves groupContext randomness = .success res):
+  ∃ newPriv,
+    encryptPathSecrets (unAdd st.tree addedLeaves) leafInd pending.pathSecrets groupContext randomness =
+      .success (res.updatePath, newPriv) ∧
+    res.newState = { st with tree := treeApplyPath st.tree leafInd res.updatePath, priv := newPriv }
+:= by
+  simp only [finalizeCreateCommit, Result.bind_eq_success, Result.pure_eq_success] at h
+  obtain ⟨⟨updatePath, newPriv⟩, h1, _, -, rfl⟩ := h
+  exact ⟨newPriv, h1, rfl⟩
+
 theorem finalizeCreateCommit_valid {leafInd: Nat} {st: TreeKEMTreeState Bytes leafInd}
   (pending: PendingCommit st) (addedLeaves: List Nat) (groupContext: GroupContext Bytes) (randomness: Randomness Bytes)
   (res: CreateCommitResult st)
@@ -191,10 +226,10 @@ theorem finalizeCreateCommit_valid {leafInd: Nat} {st: TreeKEMTreeState Bytes le
   (hpend: pending.Valid) (hst: st.Valid):
   res.Valid
 := by
-  simp only [finalizeCreateCommit, Result.bind_eq_success, Result.pure_eq_success] at h
-  obtain ⟨⟨updatePath, newPriv⟩, h1, _, -, rfl⟩ := h
+  obtain ⟨newPriv, h1, hres⟩ := finalizeCreateCommit_success pending addedLeaves groupContext randomness res h
   have := pathFilteringOk_encryptPathSecrets st.tree _ leafInd _ _ _ _ _ h1 (by simp [unAdd]) hpend
   unfold CreateCommitResult.Valid TreeKEMTreeState.Valid at *
+  rw [hres]
   grind [treeApplyPath_position, treekemInvariant_treeApplyPath, treekemPrivInvariant_treeApplyPath, treekemPrivInvariant]
 
 end CryptoBytes
