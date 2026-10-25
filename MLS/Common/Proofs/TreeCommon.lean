@@ -14,7 +14,7 @@ namespace MLS
 
 variable {Leaf Node: Type}
 
-theorem mem_insertSorted (x: UInt32) (l: List UInt32) (elem: UInt32):
+theorem mem_insertSorted {α: Type} [LT α] [DecidableLT α] [DecidableEq α] (x: α) (l: List α) (elem: α):
   elem ∈ insertSorted x l ↔ elem = x ∨ elem ∈ l
 := by
   induction l <;> grind [insertSorted]
@@ -36,6 +36,31 @@ theorem leafAt_treeChangePath {l: Nat} (t: Tree Leaf Node l) (li: Nat) (leafCont
   leafAt (treeChangePath t li leafContent nodeContent) li' = if li = li' then leafContent else leafAt t li'
 := by
   induction t, hli, hli' using Tree.commonPathInduction li li' <;> unfold leafAt treeChangePath <;> simp_all
+
+theorem treeChangePath_succ {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
+  treeChangePath t li leafContent nodeContent =
+    (ChildSiblingView.node nodeContent (treeChangePath (t.child li) li leafContent nodeContent) (t.sibling li)).pack
+:= by
+  rw [treeChangePath.eq_def]
+  simp
+
+@[simp] theorem child_treeChangePath {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
+  (treeChangePath t li leafContent nodeContent).child li = treeChangePath (t.child li) li leafContent nodeContent
+:= by
+  rw [treeChangePath_succ]
+  simp
+
+@[simp] theorem sibling_treeChangePath {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
+  (treeChangePath t li leafContent nodeContent).sibling li = t.sibling li
+:= by
+  rw [treeChangePath_succ]
+  simp
+
+@[simp] theorem nodeContent_treeChangePath {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
+  (treeChangePath t li leafContent nodeContent).nodeContent = nodeContent
+:= by
+  rw [treeChangePath_succ]
+  simp
 
 /-- Port of `leaf_at_tree_update`. -/
 theorem leafAt_treeUpdate {l: Nat} (t: Tree (Option Leaf) (Option Node) l) (li: Nat) (leafContent: Leaf) (li': Nat)

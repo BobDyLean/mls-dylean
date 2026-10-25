@@ -49,6 +49,9 @@ import MLS.TreeKEM.Code.API.KeySchedule.Types
 import MLS.TreeKEM.Code.API.KeySchedule
 import MLS.TreeKEM.Code.API.Types
 import MLS.TreeKEM.Code.API
+import MLS.TreeKEM.Proofs.Invariants
+import MLS.TreeKEM.Proofs.API.Tree
+import MLS.TreeKEM.Proofs.API
 import MLS.Bootstrap.Code.NetworkTypes
 import MLS.Bootstrap.Code.KeyPackageRef
 import MLS.Bootstrap.Code.Welcome
@@ -60,5 +63,6 @@ import MLS.TreeDEM.Code.API.Types
 import MLS.TreeDEM.Code.API
 import MLS.Glue.Code.NetworkBinder
 import MLS.Glue.Code.TreeSyncTreeKEMBinder
+import MLS.Glue.Proofs.NetworkBinder.Properties
 import MLS.Test.SanityChecks
 import MLS.Test
