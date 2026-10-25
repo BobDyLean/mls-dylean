@@ -366,6 +366,14 @@ theorem Tree.containsLeafIndex_position {l: Nat} (t: Tree Leaf Node l): t.contai
 
 grind_pattern Tree.containsLeafIndex_position => t.containsLeafIndex t.position
 
+/-- Trees of the same height and position contain the same leaf indices. -/
+theorem Tree.containsLeafIndex_of_position_eq {Leaf' Node': Type} {l: Nat}
+  (t: Tree Leaf Node l) (t': Tree Leaf' Node' l) (li: Nat)
+  (hpos: t.position = t'.position) (hli: t.containsLeafIndex li):
+  t'.containsLeafIndex li
+:= by
+  grind [Tree.containsLeafIndex]
+
 theorem Tree.containsLeafIndex_of_mem_child {l: Nat} (t: Tree Leaf Node (l+1)) {li li': Nat}
   (h: (t.child li).containsLeafIndex li'):
   t.containsLeafIndex li'

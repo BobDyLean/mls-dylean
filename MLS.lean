@@ -26,10 +26,12 @@ import MLS.TreeSync.Code.Operations
 import MLS.TreeSync.Code.Invariants.ValidLeaves
 import MLS.TreeSync.Code.Invariants.UnmergedLeaves
 import MLS.TreeSync.Code.Invariants.ParentHash
+import MLS.TreeSync.Code.Invariants.AuthService
 import MLS.TreeSync.Proofs.Operations
 import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves
 import MLS.TreeSync.Proofs.Invariants.ParentHash
 import MLS.TreeSync.Proofs.Invariants.ValidLeaves
+import MLS.TreeSync.Proofs.Invariants.AuthService
 import MLS.TreeSync.Proofs.TreeHash
 import MLS.TreeSync.Proofs.ParentHash
 import MLS.TreeSync.Proofs.ParentHashGuarantees
