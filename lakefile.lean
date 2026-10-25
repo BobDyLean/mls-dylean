@@ -23,6 +23,11 @@ lean_lib OpenSSL where
   moreLinkObjs := #[opensslLean]
   moreLinkArgs := #["-lcrypto"]
 
+/-! ## DY* compatibility layer for DyLean (`DySlop/`) -/
+
+@[default_target]
+lean_lib DySlop
+
 /-! ## MLS -/
 
 @[default_target]
