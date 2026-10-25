@@ -43,6 +43,8 @@ import MLS.TreeKEM.Code.API.KeySchedule
 import MLS.TreeKEM.Code.API.Types
 import MLS.TreeKEM.Code.API
 import MLS.Bootstrap.Code.NetworkTypes
+import MLS.Bootstrap.Code.KeyPackageRef
+import MLS.Bootstrap.Code.Welcome
 import MLS.TreeDEM.NetworkTypes
 import MLS.TreeDEM.Keys
 import MLS.Glue.Code.NetworkBinder

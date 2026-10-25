@@ -8,6 +8,7 @@ import MLS.Test.FromExt.TreeOperations
 import MLS.Test.FromExt.TreeKEM
 import MLS.Test.FromExt.KeySchedule
 import MLS.Test.FromExt.PreSharedKeys
+import MLS.Test.FromExt.Welcome
 import OpenSSL.Test
 
 /-!
@@ -27,6 +28,7 @@ open MLS.Test.FromExt.TreeOperations
 open MLS.Test.FromExt.TreeKEM
 open MLS.Test.FromExt.KeySchedule
 open MLS.Test.FromExt.PreSharedKeys
+open MLS.Test.FromExt.Welcome
 
 /-- Port of `run_tests`. -/
 def runTests {a: Type} (testVectorsDir: System.FilePath) (name: String) (ty: TestType)
@@ -60,6 +62,10 @@ def runKeyscheduleTests (testVectorsDir: System.FilePath): IO Unit :=
 def runPskTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Pre-Shared Keys" .preSharedKeys (fun | .preSharedKeysTest l => some l | _ => none) testPsk
 
+/-- Port of `run_welcome_tests`. -/
+def runWelcomeTests (testVectorsDir: System.FilePath): IO Unit :=
+  runTests testVectorsDir "Welcome" .welcome (fun | .welcomeTest l => some l | _ => none) testWelcome
+
 /-- Port of `run_treekem_tests`. -/
 def runTreekemTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "TreeKEM" .treekem (fun | .treekemTest l => some l | _ => none) testTreekem
@@ -74,6 +80,7 @@ def main (testVectorsDir: System.FilePath): IO Unit := do
   runCryptoBasicsTests testVectorsDir
   runKeyscheduleTests testVectorsDir
   runPskTests testVectorsDir
+  runWelcomeTests testVectorsDir
   runTreeValidationTests testVectorsDir
   runTreeOperationsTests testVectorsDir
   runTreekemTests testVectorsDir

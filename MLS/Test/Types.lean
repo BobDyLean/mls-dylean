@@ -120,6 +120,15 @@ structure PskTest where
   psks: List PskTestPsk
   pskSecret: String
 
+/-! ## Welcome -/
+
+structure WelcomeTest where
+  cipherSuite: UInt16
+  initPriv: String
+  signerPub: String
+  keyPackage: String
+  welcome: String
+
 /-! ## TreeKEM -/
 
 structure TreeKEMLeafPathSecret where
@@ -179,6 +188,7 @@ inductive TestType where
   | treeOperations
   | keySchedule
   | preSharedKeys
+  | welcome
   | treekem
   | messages
 
@@ -188,6 +198,7 @@ inductive Testsuite where
   | treeOperationsTest: List TreeOperationsTest → Testsuite
   | keyScheduleTest: List KeyscheduleTest → Testsuite
   | preSharedKeysTest: List PskTest → Testsuite
+  | welcomeTest: List WelcomeTest → Testsuite
   | treekemTest: List TreeKEMTest → Testsuite
   | messagesTest: List MessagesTest → Testsuite
 

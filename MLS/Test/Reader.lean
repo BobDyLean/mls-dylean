@@ -152,6 +152,17 @@ def parsePskTest (json: Json): Except String PskTest := do
     pskSecret := ← json.getObjValAs? String "psk_secret"
   }
 
+/-! ## Welcome -/
+
+def parseWelcomeTest (json: Json): Except String WelcomeTest := do
+  return {
+    cipherSuite := ← json.getObjValAs? UInt16 "cipher_suite"
+    initPriv := ← json.getObjValAs? String "init_priv"
+    signerPub := ← json.getObjValAs? String "signer_pub"
+    keyPackage := ← json.getObjValAs? String "key_package"
+    welcome := ← json.getObjValAs? String "welcome"
+  }
+
 /-! ## TreeKEM -/
 
 def parseTreeKEMLeafPathSecret (json: Json): Except String TreeKEMLeafPathSecret := do
@@ -220,6 +231,7 @@ def getFilename: TestType → String
   | .treeOperations => "test_vectors/data/tree-operations.json"
   | .keySchedule => "test_vectors/data/key-schedule.json"
   | .preSharedKeys => "test_vectors/data/psk_secret.json"
+  | .welcome => "test_vectors/data/welcome.json"
   | .treekem => "test_vectors/data/treekem.json"
   | .messages => "test_vectors/data/messages.json"
 
@@ -243,6 +255,9 @@ def getTestsuite (testVectorsDir: System.FilePath) (typ: TestType): IO Testsuite
   | .preSharedKeys =>
     let tests ← IO.ofExcept (l.toList.mapM parsePskTest |>.mapError (s!"parse_psk_test: incorrect test vector format: {·}"))
     return .preSharedKeysTest tests
+  | .welcome =>
+    let tests ← IO.ofExcept (l.toList.mapM parseWelcomeTest |>.mapError (s!"parse_welcome_test: incorrect test vector format: {·}"))
+    return .welcomeTest tests
   | .treekem =>
     let tests ← IO.ofExcept (l.toList.mapM parseTreeKEMTest |>.mapError (s!"parse_treekem_test: incorrect test vector format: {·}"))
     return .treekemTest tests

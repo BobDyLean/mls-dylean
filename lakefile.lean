@@ -66,7 +66,10 @@ target keyScheduleTestVector pkg : System.FilePath :=
 target pskSecretTestVector pkg : System.FilePath :=
   fetchTestVector pkg "psk_secret"
 
+target welcomeTestVector pkg : System.FilePath :=
+  fetchTestVector pkg "welcome"
+
 @[test_driver]
 lean_exe «mls-test» where
   root := `TestMain
-  needs := #[cryptoBasicsTestVector, treeValidationTestVector, treeOperationsTestVector, messagesTestVector, treekemTestVector, keyScheduleTestVector, pskSecretTestVector]
+  needs := #[cryptoBasicsTestVector, treeValidationTestVector, treeOperationsTestVector, messagesTestVector, treekemTestVector, keyScheduleTestVector, pskSecretTestVector, welcomeTestVector]
