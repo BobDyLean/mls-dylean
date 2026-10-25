@@ -45,7 +45,8 @@ def PkePred.Later [BytesInvariants] (lpred: PkePred): Prop :=
 @[expose, reducible]
 public
 def PkePred.splitParams: SplitPredicate.Params where
-  keyType := "PkeKey"
+  KeyUsage := Usage
+  getTag := SplitPredicate.usageTag "PkeKey"
   Data := Bytes × Bytes
   LocalPred := PkePred
   apply lpred := fun [BytesWellFormed] [GetUsage] [GetLabel] skUsg data tr =>
@@ -80,7 +81,8 @@ theorem PkePred.Local.pred_single
     skUsg.tag = tag →
     PkePred.Local.pred (Locals.single (tag := tag) lpred) skUsg pk msg tr = PkePred.pred (self := lpred) skUsg pk msg tr
 :=
-  SplitPredicate.Params.Local.pred_single PkePred.splitParams (tag := tag) lpred skUsg (pk, msg) tr
+  fun h_type h_tag =>
+    SplitPredicate.Params.Local.pred_single PkePred.splitParams (tag := tag) lpred skUsg (pk, msg) tr (SplitPredicate.usageTag_eq_some h_type h_tag)
 
 /-- Port of `has_pke_predicate`. -/
 public
@@ -99,7 +101,7 @@ instance PkePred.Has.ofHasStep
 where
   pred_eq skUsg pk msg tr h_type h_tag := by
     rw [h.pred_eq skUsg pk msg tr h_type (HasStep.mem_tags l1 l2 _ h_tag)]
-    exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 skUsg (pk, msg) tr h_type h_tag
+    exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 skUsg (pk, msg) tr _ (SplitPredicate.usageTag_eq_some h_type rfl) h_tag
 
 /-- Port of `mk_pke_predicate`. -/
 @[expose, instance_reducible]

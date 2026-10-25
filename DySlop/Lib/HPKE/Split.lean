@@ -16,19 +16,35 @@ public meta import DySlop.Lib.Utils.SplitFunction
 
 open DY
 open DySlop.SplitFunction
+open DySlop.SplitPredicate
 
 namespace DySlop.HPKE
 
 variable [BytesFunctor] [ExecTraceTypes] [ProofTraceTypes]
 
+/-- Port of `split_hpke_predicate_params`. -/
+@[expose, reducible]
+public
+def HpkePred.splitParams: SplitPredicate.Params where
+  KeyUsage := String × Bytes
+  getTag usage := some usage.1
+  -- the message, the info, the associated data
+  Data := Bytes × Bytes × Bytes
+  LocalPred := HpkePred
+  apply lpred := fun [BytesWellFormed] [GetUsage] [GetLabel] usage data tr =>
+    HpkePred.pred (self := lpred) usage data.1 data.2.1 data.2.2 tr
+  dataWellFormed := fun [BytesWellFormed] tr data =>
+    data.1.WellFormed tr ∧ data.2.1.WellFormed tr ∧ data.2.2.WellFormed tr
+  LocalPredLater := fun [BytesInvariants] lpred =>
+    lpred.Later
+  apply_later := fun [BytesInvariants] _ h [BytesWellFormedLater] [GetUsageLater] [GetLabelLater] usage data tr1 tr2 h_wf h_le h_pred =>
+    h usage data.1 data.2.1 data.2.2 tr1 tr2 h_wf.1 h_wf.2.1 h_wf.2.2 h_le h_pred
+
 /-- Local HPKE predicates for the usage tags `tags` (DY*'s `list (string & hpke_crypto_predicate)`). -/
 public
-abbrev HpkePred.Local (tags: List String) := Locals (fun _: String => HpkePred) tags
+abbrev HpkePred.Local (tags: List String) := HpkePred.splitParams.Local tags
 
-/--
-  The HPKE predicate defined by local HPKE predicates
-  (DY*'s `mk_global_crypto_predicate split_hpke_predicate_params`).
--/
+/-- The HPKE predicate defined by local HPKE predicates (DY*'s `mk_global_crypto_predicate split_hpke_predicate_params`). -/
 @[expose]
 public
 def HpkePred.Local.pred {tags: List String} (l: HpkePred.Local tags)
@@ -36,9 +52,7 @@ def HpkePred.Local.pred {tags: List String} (l: HpkePred.Local tags)
   (usage: String × Bytes) (msg info ad: Bytes) (tr: ProofTrace)
   : Prop
 :=
-  match findLocalFun l.list usage.1 with
-  | some ⟨_, lpred⟩ => HpkePred.pred (self := lpred) usage msg info ad tr
-  | none => False
+  SplitPredicate.Params.Local.pred l usage (msg, info, ad) tr
 
 public
 theorem HpkePred.Local.pred_single
@@ -48,20 +62,8 @@ theorem HpkePred.Local.pred_single
   : usage.1 = tag →
     HpkePred.Local.pred (Locals.single (tag := tag) lpred) usage msg info ad tr =
     HpkePred.pred (self := lpred) usage msg info ad tr
-:= by
-  intro h
-  simp [HpkePred.Local.pred, Locals.single, findLocalFun, h]
-
-public
-theorem HpkePred.Local.pred_of_hasStep
-  {tags1 tags2: List String} (l1: HpkePred.Local tags1) (l2: HpkePred.Local tags2) [h: HasStep l1 l2]
-  [BytesWellFormed] [GetUsage] [GetLabel]
-  (usage: String × Bytes) (msg info ad: Bytes) (tr: ProofTrace)
-  : usage.1 ∈ tags1 →
-    l2.pred usage msg info ad tr = l1.pred usage msg info ad tr
-:= by
-  intro h_tag
-  simp [HpkePred.Local.pred, h.findLocalFun_eq usage.1 h_tag]
+:= fun h =>
+  SplitPredicate.Params.Local.pred_single HpkePred.splitParams lpred usage (msg, info, ad) tr (by simp [h])
 
 /-- Port of `has_hpke_predicate`. -/
 public
@@ -79,7 +81,7 @@ instance HpkePred.Has.ofHasStep
 where
   pred_eq usage msg info ad tr h_tag := by
     rw [h.pred_eq usage msg info ad tr (HasStep.mem_tags l1 l2 _ h_tag)]
-    exact HpkePred.Local.pred_of_hasStep l1 l2 usage msg info ad tr h_tag
+    exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 usage (msg, info, ad) tr _ rfl h_tag
 
 /-- Port of `mk_hpke_predicate`. -/
 @[expose, instance_reducible]
@@ -99,7 +101,7 @@ theorem HpkePred.ofLocal_has {tags: List String} (l: HpkePred.Local tags):
 /-- Local HPKE predicates stay true when the trace grows. -/
 public
 abbrev HpkePred.LocalProof [BytesInvariants] {tags: List String} (l: HpkePred.Local tags): Prop :=
-  l.All (fun _ lpred => HpkePred.Later lpred)
+  SplitPredicate.Params.Local.Later l
 
 public
 theorem HpkePred.LocalProof.single
@@ -107,7 +109,7 @@ theorem HpkePred.LocalProof.single
   : lpred.Later →
     HpkePred.LocalProof (Locals.single (tag := tag) lpred)
 :=
-  Locals.All.single (prop := fun _ lpred => HpkePred.Later lpred)
+  Locals.All.single (prop := fun _ lpred => HpkePred.splitParams.LocalPredLater lpred)
 
 public
 theorem HpkePred.LocalProof.combine
@@ -127,15 +129,8 @@ theorem HpkePred.LocalProof.toGlobal
 := by
   intro h
   letI := HpkePred.ofLocal l
-  refine ⟨fun usage msg info ad tr1 tr2 h_msg h_info h_ad h_le h_pred => ?_⟩
-  change l.pred usage msg info ad tr1 at h_pred
-  change l.pred usage msg info ad tr2
-  unfold HpkePred.Local.pred at *
-  split at h_pred
-  · rename_i h_find
-    have := h _ (mem_of_findLocalFun_eq_some _ _ _ h_find)
-    grind
-  · grind
+  exact ⟨fun usage msg info ad tr1 tr2 h_msg h_info h_ad h_le =>
+    SplitPredicate.Params.Local.Later.pred_later _ l h usage (msg, info, ad) tr1 tr2 ⟨h_msg, h_info, h_ad⟩ h_le⟩
 
 end DySlop.HPKE
 

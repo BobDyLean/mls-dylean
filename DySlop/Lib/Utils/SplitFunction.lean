@@ -323,6 +323,95 @@ theorem Locals.toFun_of_hasStep
   intro h_decode h_tag
   simp [Locals.toFun, mkGlobalFun, h_decode, h.findLocalFun_eq tag h_tag]
 
+/--
+  The local function for the tag `tag` applied to `raw`, or `default` if there is none
+  (DY*'s `params.apply_local_fun local_fun raw_data`, where `local_fun` is found in a list of local functions).
+-/
+@[expose]
+public
+def Locals.apply {tags: List P.Tag} (l: Locals P.LocalFun tags) (tag: P.Tag) (raw: P.RawInput) (default: P.Output): P.Output :=
+  match findLocalFun l.list tag with
+  | some ⟨_, localFun⟩ => P.applyLocal localFun raw
+  | none => default
+
+/-- Port of `mk_global_fun_eq`. -/
+public
+theorem Locals.toFun_eq
+  {tags: List P.Tag} (l: Locals P.LocalFun tags) (x: P.Input) (tag: P.Tag) (raw: P.RawInput)
+  : P.decode x = some (tag, raw) →
+    Locals.toFun P l x = Locals.apply P l tag raw (P.default x)
+:= by
+  intro h
+  simp [Locals.toFun, mkGlobalFun, Locals.apply, h]
+
+public
+theorem Locals.toFun_eq_default
+  {tags: List P.Tag} (l: Locals P.LocalFun tags) (x: P.Input)
+  : P.decode x = none →
+    Locals.toFun P l x = P.default x
+:= by
+  intro h
+  simp [Locals.toFun, mkGlobalFun, h]
+
+public
+theorem Locals.apply_single
+  {tag: P.Tag} (localFun: P.LocalFun tag) (raw: P.RawInput) (default: P.Output)
+  : Locals.apply P (Locals.single localFun) tag raw default = P.applyLocal localFun raw
+:= by
+  simp [Locals.apply, Locals.single, findLocalFun]
+
+public
+theorem Locals.apply_of_hasStep
+  {tags1 tags2: List P.Tag} (l1: Locals P.LocalFun tags1) (l2: Locals P.LocalFun tags2) [h: HasStep l1 l2]
+  (tag: P.Tag) (raw: P.RawInput) (default: P.Output)
+  : tag ∈ tags1 →
+    Locals.apply P l2 tag raw default = Locals.apply P l1 tag raw default
+:= by
+  intro h_tag
+  simp [Locals.apply, h.findLocalFun_eq tag h_tag]
+
+/--
+  A relation between the local functions on two inputs is a relation between their applications
+  (e.g. a local predicate stays true when the trace grows).
+-/
+public
+theorem Locals.apply_rel
+  {tags: List P.Tag} (l: Locals P.LocalFun tags) (tag: P.Tag) (raw1 raw2: P.RawInput) (default1 default2: P.Output)
+  (R: P.Output → P.Output → Prop)
+  (local_: ∀ x ∈ l.list, R (P.applyLocal x.2 raw1) (P.applyLocal x.2 raw2))
+  (default: R default1 default2)
+  : R (Locals.apply P l tag raw1 default1) (Locals.apply P l tag raw2 default2)
+:= by
+  unfold Locals.apply
+  split
+  · rename_i h_find
+    exact local_ _ (mem_of_findLocalFun_eq_some _ _ _ h_find)
+  · exact default
+
+/-- Port of `has_local_fun`: the function `g` coincides with the local functions `l` on their tags. -/
+@[expose]
+public
+def HasLocal (g: P.Input → P.Output) {tags: List P.Tag} (l: Locals P.LocalFun tags): Prop :=
+  ∀ x tag raw,
+    P.decode x = some (tag, raw) →
+    tag ∈ tags →
+    g x = Locals.apply P l tag raw (P.default x)
+
+/-- Port of `mk_global_fun_correct`. -/
+public
+theorem Locals.toFun_hasLocal {tags: List P.Tag} (l: Locals P.LocalFun tags): P.HasLocal (Locals.toFun P l) l :=
+  fun x tag raw h_decode _ => Locals.toFun_eq P l x tag raw h_decode
+
+public
+theorem HasLocal.of_hasStep
+  (g: P.Input → P.Output) {tags1 tags2: List P.Tag} (l1: Locals P.LocalFun tags1) (l2: Locals P.LocalFun tags2) [HasStep l1 l2]
+  : P.HasLocal g l2 →
+    P.HasLocal g l1
+:= by
+  intro h x tag raw h_decode h_tag
+  rw [h x tag raw h_decode (HasStep.mem_tags l1 l2 tag h_tag)]
+  exact Locals.apply_of_hasStep P l1 l2 tag raw _ h_tag
+
 end Params
 
 end DySlop.SplitFunction

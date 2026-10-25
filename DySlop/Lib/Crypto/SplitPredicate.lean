@@ -31,18 +31,39 @@ structure PredInstances where
   [usage: GetUsage]
   [label: GetLabel]
 
+/--
+  DY*'s `get_usage` for key usages of type `keyType` (e.g. `sk_usage:usage{SigKey? sk_usage}`):
+  the tag of the usage, or `none` for usages of another type.
+-/
+@[expose, reducible]
+public
+def usageTag (keyType: String) (usg: Usage): Option String :=
+  if usg.type = keyType then some usg.tag else none
+
+omit [ExecTraceTypes] [ProofTraceTypes] in
+public
+theorem usageTag_eq_some {keyType: String} {usg: Usage} {tag: String}
+  : usg.type = keyType →
+    usg.tag = tag →
+    usageTag keyType usg = some tag
+:= by
+  intro h_type h_tag
+  simp [usageTag, h_type, h_tag]
+
 /-- Port of `split_crypto_predicate_parameters`. -/
 public
 structure Params where
+  /-- DY*'s `key_usage_t`. -/
+  KeyUsage: Type
   /--
-    The type of the key usages, e.g. `"SigKey"`.
-    DY*'s `key_usage_t` and `get_usage`: the tag of a key usage `usg` with `usg.type = keyType` is `usg.tag`.
+    DY*'s `get_usage`: the tag of a key usage.
+    It is `none` on the key usages excluded by the refinement of DY*'s `key_usage_t` (see `usageTag`).
   -/
-  keyType: String
+  getTag: KeyUsage → Option String
   Data: Type
   LocalPred: Type
   /-- DY*'s `apply_local_pred`. -/
-  apply: LocalPred → [BytesWellFormed] → [GetUsage] → [GetLabel] → Usage → Data → ProofTrace → Prop
+  apply: LocalPred → [BytesWellFormed] → [GetUsage] → [GetLabel] → KeyUsage → Data → ProofTrace → Prop
   /-- DY*'s `data_well_formed`. -/
   dataWellFormed: [BytesWellFormed] → ProofTrace → Data → Prop
   /-- The proof that a local predicate stays true when the trace grows. -/
@@ -66,14 +87,13 @@ variable (C: Params)
 public
 def toSplitFunctionParams: SplitFunction.Params where
   Tag := String
-  Input := PredInstances × Usage × C.Data × ProofTrace
-  RawInput := PredInstances × Usage × C.Data × ProofTrace
+  Input := PredInstances × C.KeyUsage × C.Data × ProofTrace
+  RawInput := PredInstances × C.KeyUsage × C.Data × ProofTrace
   Output := Prop
   decode x :=
-    if x.2.1.type = C.keyType then
-      some (x.2.1.tag, x)
-    else
-      none
+    match C.getTag x.2.1 with
+    | some tag => some (tag, x)
+    | none => none
   LocalFun _ := C.LocalPred
   applyLocal lpred x := @C.apply lpred x.1.wf x.1.usage x.1.label x.2.1 x.2.2.1 x.2.2.2
   default _ := False
@@ -87,40 +107,44 @@ abbrev Local (tags: List String) := Locals (fun _: String => C.LocalPred) tags
 public
 def Local.pred {C: Params} {tags: List String} (l: C.Local tags)
   [BytesWellFormed] [GetUsage] [GetLabel]
-  (keyUsg: Usage) (data: C.Data) (tr: ProofTrace)
+  (keyUsg: C.KeyUsage) (data: C.Data) (tr: ProofTrace)
   : Prop
 :=
   SplitFunction.Params.Locals.toFun C.toSplitFunctionParams l (⟨⟩, keyUsg, data, tr)
 
 public
+theorem decode_eq_some
+  [BytesWellFormed] [GetUsage] [GetLabel]
+  (keyUsg: C.KeyUsage) (data: C.Data) (tr: ProofTrace) (tag: String)
+  : C.getTag keyUsg = some tag →
+    C.toSplitFunctionParams.decode (⟨⟩, keyUsg, data, tr) = some (tag, (⟨⟩, keyUsg, data, tr))
+:= by
+  intro h
+  simp [h]
+
+public
 theorem Local.pred_single
   {tag: String} (lpred: C.LocalPred)
   [BytesWellFormed] [GetUsage] [GetLabel]
-  (keyUsg: Usage) (data: C.Data) (tr: ProofTrace)
-  : keyUsg.type = C.keyType →
-    keyUsg.tag = tag →
+  (keyUsg: C.KeyUsage) (data: C.Data) (tr: ProofTrace)
+  : C.getTag keyUsg = some tag →
     Local.pred (C := C) (Locals.single (tag := tag) lpred) keyUsg data tr =
     C.apply lpred keyUsg data tr
 := by
-  intro h_type h_tag
-  subst h_tag
-  unfold Local.pred
-  exact SplitFunction.Params.Locals.toFun_single C.toSplitFunctionParams (tag := keyUsg.tag) lpred
-    (⟨⟩, keyUsg, data, tr) (⟨⟩, keyUsg, data, tr) (by simp [toSplitFunctionParams, h_type])
+  intro h
+  exact SplitFunction.Params.Locals.toFun_single C.toSplitFunctionParams lpred _ _ (C.decode_eq_some keyUsg data tr tag h)
 
 public
 theorem Local.pred_of_hasStep
   {tags1 tags2: List String} (l1: C.Local tags1) (l2: C.Local tags2) [HasStep l1 l2]
   [BytesWellFormed] [GetUsage] [GetLabel]
-  (keyUsg: Usage) (data: C.Data) (tr: ProofTrace)
-  : keyUsg.type = C.keyType →
-    keyUsg.tag ∈ tags1 →
+  (keyUsg: C.KeyUsage) (data: C.Data) (tr: ProofTrace) (tag: String)
+  : C.getTag keyUsg = some tag →
+    tag ∈ tags1 →
     l2.pred keyUsg data tr = l1.pred keyUsg data tr
 := by
-  intro h_type h_tag
-  unfold Local.pred
-  exact SplitFunction.Params.Locals.toFun_of_hasStep C.toSplitFunctionParams l1 l2
-    (⟨⟩, keyUsg, data, tr) keyUsg.tag (⟨⟩, keyUsg, data, tr) (by simp [toSplitFunctionParams, h_type]) h_tag
+  intro h h_tag
+  exact SplitFunction.Params.Locals.toFun_of_hasStep C.toSplitFunctionParams l1 l2 _ tag _ (C.decode_eq_some keyUsg data tr tag h) h_tag
 
 /-- The local predicates stay true when the trace grows. -/
 public
@@ -140,17 +164,16 @@ theorem Local.Later.pred_later
       l.pred keyUsg data tr2
 := by
   intro h _ _ _ keyUsg data tr1 tr2 h_wf h_le
-  apply SplitFunction.Params.mkGlobalFun_induction C.toSplitFunctionParams l.list (⟨⟩, keyUsg, data, tr1) (fun (out: Prop) => out → l.pred keyUsg data tr2)
-  · intro tag lpred raw h_find h_decode h_pred
-    simp only [toSplitFunctionParams, Option.ite_none_right_eq_some, Option.some.injEq] at h_decode
-    obtain ⟨h_type, rfl, rfl⟩ := h_decode
-    have := C.apply_later lpred (h _ (mem_of_findLocalFun_eq_some _ _ _ h_find)) keyUsg data tr1 tr2 h_wf h_le h_pred
-    unfold Local.pred SplitFunction.Params.Locals.toFun
-    rw [SplitFunction.Params.mkGlobalFun_of_findLocalFun _ l.list _ lpred (⟨⟩, keyUsg, data, tr2)]
-    · exact this
-    · simp [toSplitFunctionParams, h_type]
-    · exact h_find
-  · simp
+  unfold Local.pred
+  cases h_tag: C.getTag keyUsg with
+  | none => simp [SplitFunction.Params.Locals.toFun_eq_default, h_tag]
+  | some tag =>
+    rw [SplitFunction.Params.Locals.toFun_eq C.toSplitFunctionParams l _ tag _ (C.decode_eq_some keyUsg data tr1 tag h_tag),
+      SplitFunction.Params.Locals.toFun_eq C.toSplitFunctionParams l _ tag _ (C.decode_eq_some keyUsg data tr2 tag h_tag)]
+    apply SplitFunction.Params.Locals.apply_rel C.toSplitFunctionParams l tag _ _ _ _ (fun p1 p2 => p1 → p2)
+    · intro x h_mem
+      exact C.apply_later x.2 (h x h_mem) keyUsg data tr1 tr2 h_wf h_le
+    · exact id
 
 end Params
 

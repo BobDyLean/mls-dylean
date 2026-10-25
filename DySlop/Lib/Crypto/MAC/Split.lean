@@ -45,7 +45,8 @@ def MacPred.Later [BytesInvariants] (lpred: MacPred): Prop :=
 @[expose, reducible]
 public
 def MacPred.splitParams: SplitPredicate.Params where
-  keyType := "MacKey"
+  KeyUsage := Usage
+  getTag := SplitPredicate.usageTag "MacKey"
   Data := Bytes × Bytes
   LocalPred := MacPred
   apply lpred := fun [BytesWellFormed] [GetUsage] [GetLabel] keyUsg data tr =>
@@ -80,7 +81,8 @@ theorem MacPred.Local.pred_single
     keyUsg.tag = tag →
     MacPred.Local.pred (Locals.single (tag := tag) lpred) keyUsg key msg tr = MacPred.pred (self := lpred) keyUsg key msg tr
 :=
-  SplitPredicate.Params.Local.pred_single MacPred.splitParams (tag := tag) lpred keyUsg (key, msg) tr
+  fun h_type h_tag =>
+    SplitPredicate.Params.Local.pred_single MacPred.splitParams (tag := tag) lpred keyUsg (key, msg) tr (SplitPredicate.usageTag_eq_some h_type h_tag)
 
 /-- Port of `has_mac_predicate`. -/
 public
@@ -99,7 +101,7 @@ instance MacPred.Has.ofHasStep
 where
   pred_eq keyUsg key msg tr h_type h_tag := by
     rw [h.pred_eq keyUsg key msg tr h_type (HasStep.mem_tags l1 l2 _ h_tag)]
-    exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 keyUsg (key, msg) tr h_type h_tag
+    exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 keyUsg (key, msg) tr _ (SplitPredicate.usageTag_eq_some h_type rfl) h_tag
 
 /-- Port of `mk_mac_predicate`. -/
 @[expose, instance_reducible]

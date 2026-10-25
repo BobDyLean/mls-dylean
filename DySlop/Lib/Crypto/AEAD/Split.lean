@@ -47,7 +47,8 @@ def AeadPred.Later [BytesInvariants] (lpred: AeadPred): Prop :=
 @[expose, reducible]
 public
 def AeadPred.splitParams: SplitPredicate.Params where
-  keyType := "AeadKey"
+  KeyUsage := Usage
+  getTag := SplitPredicate.usageTag "AeadKey"
   Data := Bytes × Bytes × Bytes × Bytes
   LocalPred := AeadPred
   apply lpred := fun [BytesWellFormed] [GetUsage] [GetLabel] keyUsg data tr =>
@@ -82,7 +83,8 @@ theorem AeadPred.Local.pred_single
     keyUsg.tag = tag →
     AeadPred.Local.pred (Locals.single (tag := tag) lpred) keyUsg key nonce msg ad tr = AeadPred.pred (self := lpred) keyUsg key nonce msg ad tr
 :=
-  SplitPredicate.Params.Local.pred_single AeadPred.splitParams (tag := tag) lpred keyUsg (key, nonce, msg, ad) tr
+  fun h_type h_tag =>
+    SplitPredicate.Params.Local.pred_single AeadPred.splitParams (tag := tag) lpred keyUsg (key, nonce, msg, ad) tr (SplitPredicate.usageTag_eq_some h_type h_tag)
 
 /-- Port of `has_aead_predicate`. -/
 public
@@ -101,7 +103,7 @@ instance AeadPred.Has.ofHasStep
 where
   pred_eq keyUsg key nonce msg ad tr h_type h_tag := by
     rw [h.pred_eq keyUsg key nonce msg ad tr h_type (HasStep.mem_tags l1 l2 _ h_tag)]
-    exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 keyUsg (key, nonce, msg, ad) tr h_type h_tag
+    exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 keyUsg (key, nonce, msg, ad) tr _ (SplitPredicate.usageTag_eq_some h_type rfl) h_tag
 
 /-- Port of `mk_aead_predicate`. -/
 @[expose, instance_reducible]

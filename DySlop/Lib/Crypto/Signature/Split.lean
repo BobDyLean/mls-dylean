@@ -45,7 +45,8 @@ def SignPred.Later [BytesInvariants] (lpred: SignPred): Prop :=
 @[expose, reducible]
 public
 def SignPred.splitParams: SplitPredicate.Params where
-  keyType := "SigKey"
+  KeyUsage := Usage
+  getTag := SplitPredicate.usageTag "SigKey"
   Data := Bytes × Bytes
   LocalPred := SignPred
   apply lpred := fun [BytesWellFormed] [GetUsage] [GetLabel] skUsg data tr =>
@@ -80,7 +81,8 @@ theorem SignPred.Local.pred_single
     skUsg.tag = tag →
     SignPred.Local.pred (Locals.single (tag := tag) lpred) skUsg vk msg tr = SignPred.pred (self := lpred) skUsg vk msg tr
 :=
-  SplitPredicate.Params.Local.pred_single SignPred.splitParams (tag := tag) lpred skUsg (vk, msg) tr
+  fun h_type h_tag =>
+    SplitPredicate.Params.Local.pred_single SignPred.splitParams (tag := tag) lpred skUsg (vk, msg) tr (SplitPredicate.usageTag_eq_some h_type h_tag)
 
 /-- Port of `has_sign_predicate`. -/
 public
@@ -99,7 +101,7 @@ instance SignPred.Has.ofHasStep
 where
   pred_eq skUsg vk msg tr h_type h_tag := by
     rw [h.pred_eq skUsg vk msg tr h_type (HasStep.mem_tags l1 l2 _ h_tag)]
-    exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 skUsg (vk, msg) tr h_type h_tag
+    exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 skUsg (vk, msg) tr _ (SplitPredicate.usageTag_eq_some h_type rfl) h_tag
 
 /-- Port of `mk_sign_predicate`. -/
 @[expose, instance_reducible]
