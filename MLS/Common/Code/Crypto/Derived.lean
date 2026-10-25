@@ -257,6 +257,16 @@ def splitRandomness {Bytes: Type}: (l1: List Nat) → Randomness Bytes → Resul
     let (rt1, rl2) ← splitRandomness t1 rt
     pure (mkRandomness (rh, rt1), rl2)
 
+/-! ## Zero vector -/
+
+/-- Port of `mk_zero_vector`. -/
+def mkZeroVector {Bytes: Type} [BytesLike Bytes] (n: Nat): Bytes :=
+  BytesLike.fromByteArray ⟨Array.replicate n 0⟩
+
+/-- Port of `zero_vector`. -/
+def zeroVector: Bytes :=
+  mkZeroVector (CryptoBytes.kdfLength Bytes)
+
 /-! ## Ref hash -/
 
 /--

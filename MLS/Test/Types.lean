@@ -72,6 +72,54 @@ structure TreeOperationsTest where
   proposalSender: UInt32
   treeAfter: String
 
+/-! ## Key Schedule -/
+
+structure KeyscheduleTestEpochInput where
+  treeHash: String
+  commitSecret: String
+  pskSecret: String
+  confirmedTranscriptHash: String
+  exporterLabel: String
+  exporterContext: String
+  exporterLength: UInt32
+
+structure KeyscheduleTestEpochOutput where
+  groupContext: String
+
+  joinerSecret: String
+  welcomeSecret: String
+  initSecret: String
+
+  senderDataSecret: String
+  encryptionSecret: String
+  exporterSecret: String
+  epochAuthenticator: String
+  externalSecret: String
+  confirmationKey: String
+  membershipKey: String
+  resumptionPsk: String
+
+  externalPub: String
+  exportedSecret: String
+
+structure KeyscheduleTest where
+  cipherSuite: UInt16
+  groupId: String
+  initialInitSecret: String
+  epochs: List (KeyscheduleTestEpochInput × KeyscheduleTestEpochOutput)
+
+/-! ## Pre-Shared Keys -/
+
+structure PskTestPsk where
+  pskId: String
+  psk: String
+  pskNonce: String
+
+structure PskTest where
+  cipherSuite: UInt16
+  psks: List PskTestPsk
+  pskSecret: String
+
 /-! ## TreeKEM -/
 
 structure TreeKEMLeafPathSecret where
@@ -129,6 +177,8 @@ inductive TestType where
   | cryptoBasics
   | treeValidation
   | treeOperations
+  | keySchedule
+  | preSharedKeys
   | treekem
   | messages
 
@@ -136,6 +186,8 @@ inductive Testsuite where
   | cryptoBasicsTest: List CryptoBasicsTest → Testsuite
   | treeValidationTest: List TreeValidationTest → Testsuite
   | treeOperationsTest: List TreeOperationsTest → Testsuite
+  | keyScheduleTest: List KeyscheduleTest → Testsuite
+  | preSharedKeysTest: List PskTest → Testsuite
   | treekemTest: List TreeKEMTest → Testsuite
   | messagesTest: List MessagesTest → Testsuite
 

@@ -10,11 +10,12 @@ Port-specific differences:
   Preconditions of MLS* are documented in the docstrings: when they are not met,
   the functions fail or return a state that does not satisfy MLS*'s invariants.
 - Trees of the state are assumed to be at position `0` (MLS*'s `treekem bytes levels 0`).
+- The namespace is `MLS.TreeKEM.API.Tree` (instead of `MLS.TreeKEM`), as its names are reused by `MLS.TreeKEM.API`.
 - `truncate_one` returns an `Option`, which is `none` when its precondition does not hold
   (`fully_truncate` stops there).
 -/
 
-namespace MLS.TreeKEM
+namespace MLS.TreeKEM.API.Tree
 
 open Comparse
 open MLS
@@ -231,4 +232,4 @@ def finalizeCreateCommit {leafInd: Nat} {st: TreeKEMTreeState Bytes leafInd}
     addedLeavesPathSecrets
   }
 
-end MLS.TreeKEM
+end MLS.TreeKEM.API.Tree

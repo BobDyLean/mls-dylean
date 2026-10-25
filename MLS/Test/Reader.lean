@@ -98,6 +98,60 @@ def parseTreeOperationsTest (json: Json): Except String TreeOperationsTest := do
     treeAfter := ← json.getObjValAs? String "tree_after"
   }
 
+/-! ## Key Schedule -/
+
+def parseKeyscheduleTestEpoch (json: Json): Except String (KeyscheduleTestEpochInput × KeyscheduleTestEpochOutput) := do
+  let get (field: String): Except String String := json.getObjValAs? String field
+  let exporter ← json.getObjVal? "exporter"
+  return ({
+    treeHash := ← get "tree_hash"
+    commitSecret := ← get "commit_secret"
+    pskSecret := ← get "psk_secret"
+    confirmedTranscriptHash := ← get "confirmed_transcript_hash"
+    exporterLabel := ← exporter.getObjValAs? String "label"
+    exporterContext := ← exporter.getObjValAs? String "context"
+    exporterLength := ← exporter.getObjValAs? UInt32 "length"
+  }, {
+    groupContext := ← get "group_context"
+    joinerSecret := ← get "joiner_secret"
+    welcomeSecret := ← get "welcome_secret"
+    initSecret := ← get "init_secret"
+    senderDataSecret := ← get "sender_data_secret"
+    encryptionSecret := ← get "encryption_secret"
+    exporterSecret := ← get "exporter_secret"
+    epochAuthenticator := ← get "epoch_authenticator"
+    externalSecret := ← get "external_secret"
+    confirmationKey := ← get "confirmation_key"
+    membershipKey := ← get "membership_key"
+    resumptionPsk := ← get "resumption_psk"
+    externalPub := ← get "external_pub"
+    exportedSecret := ← exporter.getObjValAs? String "secret"
+  })
+
+def parseKeyscheduleTest (json: Json): Except String KeyscheduleTest := do
+  return {
+    cipherSuite := ← json.getObjValAs? UInt16 "cipher_suite"
+    groupId := ← json.getObjValAs? String "group_id"
+    initialInitSecret := ← json.getObjValAs? String "initial_init_secret"
+    epochs := ← (← json.getObjValAs? (List Json) "epochs").mapM parseKeyscheduleTestEpoch
+  }
+
+/-! ## Pre-Shared Keys -/
+
+def parsePskTestPsk (json: Json): Except String PskTestPsk := do
+  return {
+    pskId := ← json.getObjValAs? String "psk_id"
+    psk := ← json.getObjValAs? String "psk"
+    pskNonce := ← json.getObjValAs? String "psk_nonce"
+  }
+
+def parsePskTest (json: Json): Except String PskTest := do
+  return {
+    cipherSuite := ← json.getObjValAs? UInt16 "cipher_suite"
+    psks := ← (← json.getObjValAs? (List Json) "psks").mapM parsePskTestPsk
+    pskSecret := ← json.getObjValAs? String "psk_secret"
+  }
+
 /-! ## TreeKEM -/
 
 def parseTreeKEMLeafPathSecret (json: Json): Except String TreeKEMLeafPathSecret := do
@@ -164,6 +218,8 @@ def getFilename: TestType → String
   | .cryptoBasics => "test_vectors/data/crypto-basics.json"
   | .treeValidation => "test_vectors/data/tree-validation.json"
   | .treeOperations => "test_vectors/data/tree-operations.json"
+  | .keySchedule => "test_vectors/data/key-schedule.json"
+  | .preSharedKeys => "test_vectors/data/psk_secret.json"
   | .treekem => "test_vectors/data/treekem.json"
   | .messages => "test_vectors/data/messages.json"
 
@@ -181,6 +237,12 @@ def getTestsuite (testVectorsDir: System.FilePath) (typ: TestType): IO Testsuite
   | .treeOperations =>
     let tests ← IO.ofExcept (l.toList.mapM parseTreeOperationsTest |>.mapError (s!"parse_tree_operations_test: incorrect test vector format: {·}"))
     return .treeOperationsTest tests
+  | .keySchedule =>
+    let tests ← IO.ofExcept (l.toList.mapM parseKeyscheduleTest |>.mapError (s!"parse_keyschedule_test: incorrect test vector format: {·}"))
+    return .keyScheduleTest tests
+  | .preSharedKeys =>
+    let tests ← IO.ofExcept (l.toList.mapM parsePskTest |>.mapError (s!"parse_psk_test: incorrect test vector format: {·}"))
+    return .preSharedKeysTest tests
   | .treekem =>
     let tests ← IO.ofExcept (l.toList.mapM parseTreeKEMTest |>.mapError (s!"parse_treekem_test: incorrect test vector format: {·}"))
     return .treekemTest tests

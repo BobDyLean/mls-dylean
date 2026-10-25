@@ -149,10 +149,10 @@ def generateMyUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (tsync:
   let ⟨h⟩ ← getLevels st.state l "generate_my_update_path"
   let tsync: TreeSync ByteArray tkt st.state.levels := h ▸ tsync
   let rand := initRandState st.leafInd
-  let (rand, prepareCreateCommitRand) := genRandRandomness rand (prepareCreateCommitEntropyLengths ByteArray)
+  let (rand, prepareCreateCommitRand) := genRandRandomness rand (API.Tree.prepareCreateCommitEntropyLengths ByteArray)
   let (rand, signNonce) := genRandBytes rand (CryptoBytes.signSignMinEntropyLength ByteArray)
   let signatureKey := st.signatureKey
-  let (pendingCreateCommit, preUpdatePath) ← extractResult (prepareCreateCommit st.state prepareCreateCommitRand)
+  let (pendingCreateCommit, preUpdatePath) ← extractResult (API.Tree.prepareCreateCommit st.state prepareCreateCommitRand)
   let updatePathSync ← extractResult (do
     let myNewLeafPackageData ← do
       let optMyLeafPackage := leafAt tsync st.leafInd
@@ -167,8 +167,8 @@ def generateMyUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (tsync:
     if !(extUpdatePath.getPathLeaf.source == .update) then Result.error "" else
     TreeSync.externalPathToPath tsync st.leafInd extUpdatePath groupContext.groupId signatureKey signNonce
   )
-  let (_, finalizeCreateCommitRand) := genRandRandomness rand (finalizeCreateCommitEntropyLengths st.state [])
-  let createCommitResult ← extractResult (finalizeCreateCommit pendingCreateCommit [] groupContext finalizeCreateCommitRand)
+  let (_, finalizeCreateCommitRand) := genRandRandomness rand (API.Tree.finalizeCreateCommitEntropyLengths st.state [])
+  let createCommitResult ← extractResult (API.Tree.finalizeCreateCommit pendingCreateCommit [] groupContext finalizeCreateCommitRand)
   let uncompressedUpdatePath := mlsStarPathsToUpdatePath updatePathSync createCommitResult.updatePath
   pure (← extractResult (compressUpdatePath uncompressedUpdatePath), createCommitResult.commitSecret)
 
@@ -186,7 +186,7 @@ def checkOneMyUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (tsync:
     let treekemPath := updatePathToTreekem uncompressedPath
     if !TreeSync.pathIsValid groupContext.groupId tsync sender treesyncPath then
       throw (IO.userError "check_one_my_update_path: invalid path")
-    let (_, commitSecret) ← extractResult (TreeKEM.commit st.state sender treekemPath [] groupContext)
+    let (_, commitSecret) ← extractResult (API.Tree.commit st.state sender treekemPath [] groupContext)
     checkEqual "commit_secret" bytesToHexString expectedCommitSecret commitSecret
 
 /-- Port of `check_my_update_path`. -/
