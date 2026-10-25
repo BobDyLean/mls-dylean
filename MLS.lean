@@ -35,6 +35,7 @@ import MLS.TreeSync.Proofs.Invariants.ParentHash
 import MLS.TreeSync.Proofs.Invariants.ValidLeaves
 import MLS.TreeSync.Proofs.Invariants.AuthService
 import MLS.TreeSync.Proofs.API
+import MLS.TreeSync.Proofs.API.LeafAt
 import MLS.TreeSync.Proofs.TreeHash
 import MLS.TreeSync.Proofs.ParentHash
 import MLS.TreeSync.Proofs.ParentHashGuarantees

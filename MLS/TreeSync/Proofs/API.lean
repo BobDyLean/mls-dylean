@@ -200,9 +200,9 @@ theorem finalizeCommit_success {st: TreeSyncState Bytes tkt TokenT groupId} {li:
   simp only [finalizeCommit, Result.bind_eq_success, Result.pure_eq_success] at h
   grind
 
-/-- A property preserved by each truncation step is preserved by `fullyTruncateState`. -/
+/-- A property preserved by each truncation step (of a tree whose right subtree is empty) is preserved by `fullyTruncateState`. -/
 theorem fullyTruncateState_preserves (P: TreeSyncState Bytes tkt TokenT groupId → Prop)
-  (hstep: ∀ {l: Nat} (tree: TreeSync Bytes tkt (l+1)) (tokens: ASTokens TokenT (l+1)),
+  (hstep: ∀ {l: Nat} (tree: TreeSync Bytes tkt (l+1)) (tokens: ASTokens TokenT (l+1)), isTreeEmpty tree.right →
     P { levels := l+1, tree, tokens } → P { levels := l, tree := treeTruncate tree, tokens := asTruncate tokens })
   (st: TreeSyncState Bytes tkt TokenT groupId) (h: P st):
   P (fullyTruncateState st)
@@ -211,7 +211,7 @@ theorem fullyTruncateState_preserves (P: TreeSyncState Bytes tkt TokenT groupId 
   | { levels := l+1, tree, tokens } =>
     rw [fullyTruncateState]
     split
-    · exact fullyTruncateState_preserves P hstep _ (hstep tree tokens h)
+    · exact fullyTruncateState_preserves P hstep _ (hstep tree tokens (by assumption) h)
     · exact h
   | { levels := 0, tree, tokens } =>
     simpa [fullyTruncateState] using h
