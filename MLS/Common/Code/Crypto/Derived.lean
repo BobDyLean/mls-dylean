@@ -70,6 +70,27 @@ def mkMlsAsciiString {Bytes: Type} [BytesLike Bytes] (s: String) (funName varNam
   else
     Result.error s!"{funName}: {varName} is not ASCII"
 
+/-- Port of `mk_hpke_public_key`. -/
+def mkHpkePublicKey (b: Bytes) (funName varName: String): Result Bytes :=
+  if BytesLike.length b = CryptoBytes.hpkePublicKeyLength Bytes then
+    pure b
+  else
+    Result.error s!"{funName}: {varName} has bad length"
+
+/-- Port of `mk_hpke_private_key`. -/
+def mkHpkePrivateKey (b: Bytes) (funName varName: String): Result Bytes :=
+  if BytesLike.length b = CryptoBytes.hpkePrivateKeyLength Bytes then
+    pure b
+  else
+    Result.error s!"{funName}: {varName} has bad length"
+
+/-- Port of `mk_hpke_kem_output`. -/
+def mkHpkeKemOutput (b: Bytes) (funName varName: String): Result Bytes :=
+  if BytesLike.length b = CryptoBytes.hpkeKemOutputLength Bytes then
+    pure b
+  else
+    Result.error s!"{funName}: {varName} has bad length"
+
 /-- Port of `mk_nat_lbytes` (for `nat_lbytes 2`). -/
 def mkUInt16 (n: Nat) (funName varName: String): Result UInt16 :=
   if n < 2^16 then pure n.toUInt16 else Result.error s!"{funName}: {varName} too big"
@@ -221,6 +242,20 @@ def encryptWithLabel (pkR: Bytes) (label: String) (context: Bytes) (plaintext: B
 def decryptWithLabel (skR: Bytes) (label: String) (context: Bytes) (kemOutput: Bytes) (ciphertext: Bytes): Result Bytes := do
   let contextBytes ← computeEncryptionContext label context
   CryptoBytes.hpkeDecrypt kemOutput skR contextBytes BytesLike.empty ciphertext
+
+/-! ## Randomness -/
+
+/--
+Port of `split_randomness`.
+`l1` (implicit in MLS*) gives the lengths of the bytes of the first part.
+MLS* requires the randomness to have at least `l1.length` bytes (`randomness bytes (l1@l2)`); otherwise, this function fails.
+-/
+def splitRandomness {Bytes: Type}: (l1: List Nat) → Randomness Bytes → Result (Randomness Bytes × Randomness Bytes)
+  | [], r => pure (mkEmptyRandomness Bytes, r)
+  | _::t1, r => do
+    let (rh, rt) ← destRandomness r
+    let (rt1, rl2) ← splitRandomness t1 rt
+    pure (mkRandomness (rh, rt1), rl2)
 
 /-! ## Ref hash -/
 

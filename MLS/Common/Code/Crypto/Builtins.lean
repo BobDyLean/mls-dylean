@@ -16,6 +16,7 @@ Port-specific differences:
 - `bytes_hasEq` is `DecidableEq Bytes`.
 - Refined types such as `lbytes bytes n` are not used in the signatures of `CryptoBytes`:
   lengths are checked at runtime by the concrete instance.
+- `randomness bytes l` is not indexed by `l` (see `Randomness`).
 -/
 
 namespace MLS
@@ -74,6 +75,34 @@ class CryptoBytes (Bytes: Type) extends BytesLike Bytes where
   stringToBytes: String → Bytes
 
 attribute [reducible, instance] CryptoBytes.decEq
+
+/-! ## Randomness -/
+
+/--
+Port of `randomness`.
+Unlike MLS*, the type is not indexed by the list of the lengths of its bytes:
+taking randomness fails when there is not enough of it, and the lengths are not enforced
+(they are checked at runtime by the concrete instance).
+-/
+structure Randomness (Bytes: Type) where
+  rand: List Bytes
+
+/-- Port of `mk_empty_randomness`. -/
+def mkEmptyRandomness (Bytes: Type): Randomness Bytes :=
+  { rand := [] }
+
+/-- Port of `mk_randomness`. -/
+def mkRandomness {Bytes: Type} (x: Bytes × Randomness Bytes): Randomness Bytes :=
+  { rand := x.1 :: x.2.rand }
+
+/--
+Port of `dest_randomness`.
+MLS* requires the randomness to be non-empty (`randomness bytes (head_size::tail_size)`); otherwise, this function fails.
+-/
+def destRandomness {Bytes: Type} (r: Randomness Bytes): Result (Bytes × Randomness Bytes) :=
+  match r.rand with
+  | [] => Result.internalFailure "dest_randomness: not enough randomness"
+  | head :: tail => pure (head, { rand := tail })
 
 /-! ## Concrete instance -/
 

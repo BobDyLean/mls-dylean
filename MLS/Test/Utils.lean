@@ -1,6 +1,7 @@
 import Lean.Data.Json
 import MLS.Comparse.Bytes
 import MLS.Common.Code.Result
+import MLS.Common.Code.Crypto.Derived
 
 /-!
 Port of `MLS.Test.Utils` (the parts needed by the ported tests).
@@ -70,6 +71,35 @@ def genRandBytes (rng: RandState): Nat → RandState × ByteArray
     let (rng, head) := genRandBits rng 8
     let (rng, tail) := genRandBytes rng size
     (rng, ⟨#[head.toUInt8]⟩ ++ tail)
+
+/-- Port of `gen_rand_randomness`. -/
+def genRandRandomness (rng: RandState): (sizes: List Nat) → RandState × MLS.Randomness ByteArray
+  | [] => (rng, MLS.mkEmptyRandomness ByteArray)
+  | h::t =>
+    let (rng, head) := genRandBytes rng h
+    let (rng, tail) := genRandRandomness rng t
+    (rng, MLS.mkRandomness (head, tail))
+
+/-! ## Group context -/
+
+/-- Port of `gen_group_context`. -/
+def genGroupContext {Bytes: Type} [BytesLike Bytes] (cipherSuite: MLS.AvailableCiphersuite) (groupId: Bytes) (epoch: Nat)
+  (treeHash: Bytes) (confirmedTranscriptHash: Bytes) : IO (MLS.GroupContext Bytes)
+:=
+  let cipherSuite := MLS.availableCiphersuiteToNetwork cipherSuite
+  if h: MLS.mlsNatPred (BytesLike.length groupId) ∧ epoch < 2^64 ∧
+      MLS.mlsNatPred (BytesLike.length treeHash) ∧ MLS.mlsNatPred (BytesLike.length confirmedTranscriptHash) then
+    pure {
+      version := .mls10
+      cipherSuite
+      groupId := ⟨groupId, h.1⟩
+      epoch := epoch.toUInt64
+      treeHash := ⟨treeHash, h.2.2.1⟩
+      confirmedTranscriptHash := ⟨confirmedTranscriptHash, h.2.2.2⟩
+      extensions := ⟨[], by simp [ExtensibleMessageFormat.list, ExtensibleMessageFormat.list.serialize, BytesLike.empty_length, MLS.mlsNatPred]⟩
+    }
+  else
+    throw (IO.userError "gen_group_context: bad data")
 
 /-! ## Hexadecimal strings -/
 

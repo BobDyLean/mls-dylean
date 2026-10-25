@@ -5,6 +5,7 @@ import MLS.Test.FromExt.CryptoBasics
 import MLS.Test.FromExt.Messages
 import MLS.Test.FromExt.TreeValidation
 import MLS.Test.FromExt.TreeOperations
+import MLS.Test.FromExt.TreeKEM
 import OpenSSL.Test
 
 /-!
@@ -21,6 +22,7 @@ open MLS.Test.FromExt.CryptoBasics
 open MLS.Test.FromExt.Messages
 open MLS.Test.FromExt.TreeValidation
 open MLS.Test.FromExt.TreeOperations
+open MLS.Test.FromExt.TreeKEM
 
 /-- Port of `run_tests`. -/
 def runTests {a: Type} (testVectorsDir: System.FilePath) (name: String) (ty: TestType)
@@ -46,6 +48,10 @@ def runTreeValidationTests (testVectorsDir: System.FilePath): IO Unit :=
 def runTreeOperationsTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Tree Operations" .treeOperations (fun | .treeOperationsTest l => some l | _ => none) testTreeOperations
 
+/-- Port of `run_treekem_tests`. -/
+def runTreekemTests (testVectorsDir: System.FilePath): IO Unit :=
+  runTests testVectorsDir "TreeKEM" .treekem (fun | .treekemTest l => some l | _ => none) testTreekem
+
 /-- Port of `run_messages_tests`. -/
 def runMessagesTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Messages" .messages (fun | .messagesTest l => some l | _ => none) testMessages
@@ -56,6 +62,7 @@ def main (testVectorsDir: System.FilePath): IO Unit := do
   runCryptoBasicsTests testVectorsDir
   runTreeValidationTests testVectorsDir
   runTreeOperationsTests testVectorsDir
+  runTreekemTests testVectorsDir
   runMessagesTests testVectorsDir
 
 end MLS.Test

@@ -77,3 +77,12 @@ we provide two *views* of a tree:
 Under the hood, the child/sibling view is defined in terms of left/right view,
 and the left/right view computes the positions `t.left.position = t.position` and `t.right.position = t.position + 2^(l-1)`.
 This allows the function that recurse on trees as clean as in MLS\*.
+
+### Randomness
+
+The type `randomness l` used to take as parameter a list of lengths (`l`),
+and would enforce that
+(1) there exactly `l.length` random bytesring,
+and (2) the `i`th bytestring has length `l[i]`.
+This parameter is now removed,
+and the functions that consume randomness can fail.

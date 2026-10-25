@@ -57,7 +57,10 @@ target treeOperationsTestVector pkg : System.FilePath :=
 target messagesTestVector pkg : System.FilePath :=
   fetchTestVector pkg "messages"
 
+target treekemTestVector pkg : System.FilePath :=
+  fetchTestVector pkg "treekem"
+
 @[test_driver]
 lean_exe «mls-test» where
   root := `TestMain
-  needs := #[cryptoBasicsTestVector, treeValidationTestVector, treeOperationsTestVector, messagesTestVector]
+  needs := #[cryptoBasicsTestVector, treeValidationTestVector, treeOperationsTestVector, messagesTestVector, treekemTestVector]

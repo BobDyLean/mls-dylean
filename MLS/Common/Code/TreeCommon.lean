@@ -96,7 +96,7 @@ def treeExtend {l: Nat} (t: Tree (Option Leaf) (Option Node) l): Tree (Option Le
 /-! ## Add helper -/
 
 /-- Port of `insert_sorted`. -/
-def insertSorted (x: UInt32): List UInt32 → List UInt32
+def insertSorted {α: Type} [LT α] [DecidableLT α] [DecidableEq α] (x: α): List α → List α
   | [] => [x]
   | h::t =>
     if x < h then x::h::t

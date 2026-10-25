@@ -32,9 +32,14 @@ import MLS.TreeSync.Proofs.TreeHash
 import MLS.TreeSync.Proofs.ParentHash
 import MLS.TreeSync.Proofs.ParentHashGuarantees
 import MLS.TreeKEM.Code.NetworkTypes
+import MLS.TreeKEM.Code.Types
+import MLS.TreeKEM.Code.Operations
+import MLS.TreeKEM.Code.API.Tree.Types
+import MLS.TreeKEM.Code.API.Tree
 import MLS.Bootstrap.Code.NetworkTypes
 import MLS.TreeDEM.NetworkTypes
 import MLS.TreeDEM.Keys
 import MLS.Glue.Code.NetworkBinder
+import MLS.Glue.Code.TreeSyncTreeKEMBinder
 import MLS.Test.SanityChecks
 import MLS.Test

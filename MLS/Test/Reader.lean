@@ -19,6 +19,11 @@ instance: FromJson UInt32 where
     let n ← j.getNat?
     if n < 2^32 then pure n.toUInt32 else throw s!"expected uint32, got {n}"
 
+instance: FromJson UInt64 where
+  fromJson? j := do
+    let n ← j.getNat?
+    if n < 2^64 then pure n.toUInt64 else throw s!"expected uint64, got {n}"
+
 /-! ## Crypto Basics -/
 
 def parseCryptoBasicsTest (json: Json): Except String CryptoBasicsTest := do
@@ -93,6 +98,42 @@ def parseTreeOperationsTest (json: Json): Except String TreeOperationsTest := do
     treeAfter := ← json.getObjValAs? String "tree_after"
   }
 
+/-! ## TreeKEM -/
+
+def parseTreeKEMLeafPathSecret (json: Json): Except String TreeKEMLeafPathSecret := do
+  return {
+    node := ← json.getObjValAs? UInt32 "node"
+    pathSecret := ← json.getObjValAs? String "path_secret"
+  }
+
+def parseTreeKEMLeafPrivate (json: Json): Except String TreeKEMLeafPrivate := do
+  return {
+    index := ← json.getObjValAs? UInt32 "index"
+    encryptionPriv := ← json.getObjValAs? String "encryption_priv"
+    signaturePriv := ← json.getObjValAs? String "signature_priv"
+    pathSecrets := ← (← json.getObjValAs? (List Json) "path_secrets").mapM parseTreeKEMLeafPathSecret
+  }
+
+def parseTreeKEMUpdatePath (json: Json): Except String TreeKEMUpdatePath := do
+  return {
+    sender := ← json.getObjValAs? UInt32 "sender"
+    updatePath := ← json.getObjValAs? String "update_path"
+    pathSecrets := ← json.getObjValAs? (List (Option String)) "path_secrets"
+    commitSecret := ← json.getObjValAs? String "commit_secret"
+    treeHashAfter := ← json.getObjValAs? String "tree_hash_after"
+  }
+
+def parseTreeKEMTest (json: Json): Except String TreeKEMTest := do
+  return {
+    cipherSuite := ← json.getObjValAs? UInt16 "cipher_suite"
+    groupId := ← json.getObjValAs? String "group_id"
+    epoch := ← json.getObjValAs? UInt64 "epoch"
+    confirmedTranscriptHash := ← json.getObjValAs? String "confirmed_transcript_hash"
+    ratchetTree := ← json.getObjValAs? String "ratchet_tree"
+    leavesPrivate := ← (← json.getObjValAs? (List Json) "leaves_private").mapM parseTreeKEMLeafPrivate
+    updatePaths := ← (← json.getObjValAs? (List Json) "update_paths").mapM parseTreeKEMUpdatePath
+  }
+
 /-! ## Messages -/
 
 def parseMessagesTest (json: Json): Except String MessagesTest := do
@@ -123,6 +164,7 @@ def getFilename: TestType → String
   | .cryptoBasics => "test_vectors/data/crypto-basics.json"
   | .treeValidation => "test_vectors/data/tree-validation.json"
   | .treeOperations => "test_vectors/data/tree-operations.json"
+  | .treekem => "test_vectors/data/treekem.json"
   | .messages => "test_vectors/data/messages.json"
 
 def getTestsuite (testVectorsDir: System.FilePath) (typ: TestType): IO Testsuite := do
@@ -139,6 +181,9 @@ def getTestsuite (testVectorsDir: System.FilePath) (typ: TestType): IO Testsuite
   | .treeOperations =>
     let tests ← IO.ofExcept (l.toList.mapM parseTreeOperationsTest |>.mapError (s!"parse_tree_operations_test: incorrect test vector format: {·}"))
     return .treeOperationsTest tests
+  | .treekem =>
+    let tests ← IO.ofExcept (l.toList.mapM parseTreeKEMTest |>.mapError (s!"parse_treekem_test: incorrect test vector format: {·}"))
+    return .treekemTest tests
   | .messages =>
     let tests ← IO.ofExcept (l.toList.mapM parseMessagesTest |>.mapError (s!"parse_messages_test: incorrect test vector format: {·}"))
     return .messagesTest tests

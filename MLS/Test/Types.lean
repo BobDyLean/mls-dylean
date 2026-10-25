@@ -72,6 +72,34 @@ structure TreeOperationsTest where
   proposalSender: UInt32
   treeAfter: String
 
+/-! ## TreeKEM -/
+
+structure TreeKEMLeafPathSecret where
+  node: UInt32
+  pathSecret: String
+
+structure TreeKEMLeafPrivate where
+  index: UInt32
+  encryptionPriv: String
+  signaturePriv: String
+  pathSecrets: List TreeKEMLeafPathSecret
+
+structure TreeKEMUpdatePath where
+  sender: UInt32
+  updatePath: String
+  pathSecrets: List (Option String)
+  commitSecret: String
+  treeHashAfter: String
+
+structure TreeKEMTest where
+  cipherSuite: UInt16
+  groupId: String
+  epoch: UInt64
+  confirmedTranscriptHash: String
+  ratchetTree: String
+  leavesPrivate: List TreeKEMLeafPrivate
+  updatePaths: List TreeKEMUpdatePath
+
 /-! ## Messages -/
 
 structure MessagesTest where
@@ -101,12 +129,14 @@ inductive TestType where
   | cryptoBasics
   | treeValidation
   | treeOperations
+  | treekem
   | messages
 
 inductive Testsuite where
   | cryptoBasicsTest: List CryptoBasicsTest → Testsuite
   | treeValidationTest: List TreeValidationTest → Testsuite
   | treeOperationsTest: List TreeOperationsTest → Testsuite
+  | treekemTest: List TreeKEMTest → Testsuite
   | messagesTest: List MessagesTest → Testsuite
 
 end MLS.Test
