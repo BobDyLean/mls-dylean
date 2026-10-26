@@ -43,6 +43,14 @@ def ParentHashInput.mf {Bytes: Type} [BytesLike Bytes] (tkt: TreeKEMTypes Bytes)
   .isomorphic (.prod tkt.mfNodeContent (.prod MlsBytes.mf MlsBytes.mf)) ParentHashInput.f ParentHashInput.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem ParentHashInput.mf.wf_eq {Bytes: Type} [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ParentHashInput Bytes tkt):
+  (ParentHashInput.mf tkt).wf pred x = (
+    tkt.mfNodeContent.wf pred x.content ∧ pred x.parentHash.val ∧ pred x.originalSiblingTreeHash.val
+  )
+:= by
+  simp [ParentHashInput.mf, ParentHashInput.g]
+
 variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes}
 
 /--

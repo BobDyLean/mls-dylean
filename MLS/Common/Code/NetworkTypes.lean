@@ -42,6 +42,13 @@ def MlsNat.mf: NonExtensibleMessageFormat Bytes MlsNat :=
   .isomorphic (.subtype .quicNat (fun n => mlsNatPred n.val)) MlsNat.f MlsNat.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+/-- MLS integers contain no bytes (their well-formedness is trivial). -/
+@[simp]
+theorem MlsNat.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsNat):
+  (MlsNat.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [MlsNat.mf]
+
 abbrev MlsBytes (Bytes: Type) [BytesLike Bytes] := {b: Bytes // mlsNatPred (BytesLike.length b)}
 
 /-- The empty `MlsBytes`. -/
@@ -107,6 +114,14 @@ instance
   dsimp only [MlsList.mf]
   infer_instance
 
+@[simp]
+theorem wf_eq
+  {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes]
+  (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsList mf)
+  : (MlsList.mf mf).wf pred x = ∀ y ∈ x.val, mf.wf pred y
+:= by
+  simp [MlsList.mf]
+
 end MlsList.mf
 
 /-! ## ASCII strings -/
@@ -157,11 +172,23 @@ abbrev HpkePublicKey (Bytes: Type) [BytesLike Bytes] := MlsBytes Bytes
 def HpkePublicKey.mf: NonExtensibleMessageFormat Bytes (HpkePublicKey Bytes) := MlsBytes.mf
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem HpkePublicKey.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: HpkePublicKey Bytes):
+  (HpkePublicKey.mf (Bytes := Bytes)).wf pred x = pred x.val
+:= by
+  simp [HpkePublicKey.mf]
+
 /-- opaque MAC<V>; -/
 abbrev Mac (Bytes: Type) [BytesLike Bytes] := MlsBytes Bytes
 
 def Mac.mf: NonExtensibleMessageFormat Bytes (Mac Bytes) := MlsBytes.mf
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem Mac.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Mac Bytes):
+  (Mac.mf (Bytes := Bytes)).wf pred x = pred x.val
+:= by
+  simp [Mac.mf]
 
 /-! ## ProtocolVersion -/
 
@@ -197,6 +224,12 @@ instance: RightInverse ProtocolVersion.toUInt16 ProtocolVersion.ofUInt16 where
 def ProtocolVersion.mf: NonExtensibleMessageFormat Bytes ProtocolVersion :=
   .isomorphic .uint16BE ProtocolVersion.ofUInt16 ProtocolVersion.toUInt16
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem ProtocolVersion.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ProtocolVersion):
+  (ProtocolVersion.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [ProtocolVersion.mf]
 
 /-! ## CipherSuite -/
 
@@ -245,6 +278,12 @@ def CipherSuite.mf: NonExtensibleMessageFormat Bytes CipherSuite :=
   .isomorphic .uint16BE CipherSuite.ofUInt16 CipherSuite.toUInt16
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem CipherSuite.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: CipherSuite):
+  (CipherSuite.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [CipherSuite.mf]
+
 /-! ## ExtensionType -/
 
 /-- uint16 ExtensionType; -/
@@ -286,6 +325,12 @@ def ExtensionType.mf: NonExtensibleMessageFormat Bytes ExtensionType :=
   .isomorphic .uint16BE ExtensionType.ofUInt16 ExtensionType.toUInt16
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem ExtensionType.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ExtensionType):
+  (ExtensionType.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [ExtensionType.mf]
+
 /-! ## Extension -/
 
 /--
@@ -309,6 +354,12 @@ instance: RightInverse (Extension.g (Bytes := Bytes)) Extension.f := ⟨by intro
 def Extension.mf: NonExtensibleMessageFormat Bytes (Extension Bytes) :=
   .isomorphic (.prod ExtensionType.mf MlsBytes.mf) Extension.f Extension.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem Extension.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Extension Bytes):
+  (Extension.mf (Bytes := Bytes)).wf pred x = pred x.extensionData.val
+:= by
+  simp [Extension.mf, Extension.g]
 
 /-! ## Optional -/
 
@@ -389,6 +440,18 @@ instance
   dsimp only [MlsOption.mf]
   infer_instance
 
+@[simp]
+theorem wf_eq
+  {a: Type} (mf: NonExtensibleMessageFormat Bytes a)
+  (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Option a)
+  : (MlsOption.mf mf).wf pred x = (
+      match x with
+      | none => True
+      | some y => mf.wf pred y
+    )
+:= by
+  cases x <;> simp [MlsOption.mf, MlsOption.g] <;> simp [MlsOption.internalType.mf, MlsOption.internalType]
+
 end MlsOption.mf
 
 /-! ## Static option -/
@@ -442,6 +505,16 @@ instance
   · exact inferInstanceAs (NonExtensibleMessageFormat.unit (Bytes := Bytes)).HasUniqueRepresentation
   · exact inferInstanceAs mf.HasUniqueRepresentation
 
+@[simp]
+theorem wf_eq
+  {a: Type} (b: Bool) (mf: NonExtensibleMessageFormat Bytes a)
+  (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: StaticOption b a)
+  : (StaticOption.mf b mf).wf pred x = ∀ h: b = true, mf.wf pred (x.get h)
+:= by
+  cases b
+  · exact propext ⟨fun _ h => (nomatch h), fun _ => NonExtensibleMessageFormat.unit.wf_eq pred x⟩
+  · simp [StaticOption.mf, StaticOption.get]; rfl
+
 end StaticOption.mf
 
 /-! ## GroupContext -/
@@ -489,6 +562,15 @@ def GroupContext.mf: NonExtensibleMessageFormat Bytes (GroupContext Bytes) :=
       (.prod MlsBytes.mf (.prod MlsBytes.mf (MlsList.mf Extension.mf)))))))
     GroupContext.f GroupContext.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem GroupContext.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: GroupContext Bytes):
+  (GroupContext.mf (Bytes := Bytes)).wf pred x = (
+    pred x.groupId.val ∧ pred x.treeHash.val ∧ pred x.confirmedTranscriptHash.val ∧
+    ∀ e ∈ x.extensions.val, Extension.mf.wf pred e
+  )
+:= by
+  simp [GroupContext.mf, GroupContext.g]
 
 /-! ## ProposalType -/
 
@@ -542,6 +624,12 @@ def ProposalType.mf: NonExtensibleMessageFormat Bytes ProposalType :=
   .isomorphic .uint16BE ProposalType.ofUInt16 ProposalType.toUInt16
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem ProposalType.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ProposalType):
+  (ProposalType.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [ProposalType.mf]
+
 /-! ## SignaturePublicKey -/
 
 /-- opaque SignaturePublicKey<V>; -/
@@ -549,6 +637,12 @@ abbrev SignaturePublicKey (Bytes: Type) [BytesLike Bytes] := MlsBytes Bytes
 
 def SignaturePublicKey.mf: NonExtensibleMessageFormat Bytes (SignaturePublicKey Bytes) := MlsBytes.mf
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem SignaturePublicKey.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: SignaturePublicKey Bytes):
+  (SignaturePublicKey.mf (Bytes := Bytes)).wf pred x = pred x.val
+:= by
+  simp [SignaturePublicKey.mf]
 
 /-! ## CredentialType -/
 
@@ -582,6 +676,12 @@ def CredentialType.mf: NonExtensibleMessageFormat Bytes CredentialType :=
   .isomorphic .uint16BE CredentialType.ofUInt16 CredentialType.toUInt16
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem CredentialType.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: CredentialType):
+  (CredentialType.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [CredentialType.mf]
+
 /-! ## Certificate -/
 
 /--
@@ -593,6 +693,12 @@ abbrev Certificate (Bytes: Type) [BytesLike Bytes] := MlsBytes Bytes
 
 def Certificate.mf: NonExtensibleMessageFormat Bytes (Certificate Bytes) := MlsBytes.mf
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem Certificate.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Certificate Bytes):
+  (Certificate.mf (Bytes := Bytes)).wf pred x = pred x.val
+:= by
+  simp [Certificate.mf]
 
 /-! ## Credential -/
 
@@ -649,5 +755,15 @@ instance: RightInverse (Credential.g (Bytes := Bytes)) Credential.f := ⟨by
 def Credential.mf: NonExtensibleMessageFormat Bytes (Credential Bytes) :=
   .isomorphic (.sigma CredentialType.mf Credential.internalType.mf) Credential.f Credential.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem Credential.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Credential Bytes):
+  (Credential.mf (Bytes := Bytes)).wf pred x = (
+    match x with
+    | .basic identity => pred identity.val
+    | .x509 chain => ∀ c ∈ chain.val, Certificate.mf.wf pred c
+  )
+:= by
+  cases x <;> simp [Credential.mf, Credential.g] <;> simp [Credential.internalType.mf, Credential.internalType]
 
 end MLS

@@ -18,6 +18,18 @@ def tkt: TreeKEMTypes Bytes where
   mfLeafContent := HpkePublicKey.mf
   mfNodeContent := HpkePublicKey.mf
 
+@[simp]
+theorem tkt.mfLeafContent.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: (tkt (Bytes := Bytes)).LeafContent):
+  (tkt (Bytes := Bytes)).mfLeafContent.wf pred x = pred x.val
+:=
+  HpkePublicKey.mf.wf_eq pred x
+
+@[simp]
+theorem tkt.mfNodeContent.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: (tkt (Bytes := Bytes)).NodeContent):
+  (tkt (Bytes := Bytes)).mfNodeContent.wf pred x = pred x.val
+:=
+  HpkePublicKey.mf.wf_eq pred x
+
 /-! ## HPKECiphertext -/
 
 /--
@@ -42,6 +54,14 @@ instance: RightInverse (HpkeCiphertext.g (Bytes := Bytes)) HpkeCiphertext.f := �
 def HpkeCiphertext.mf: NonExtensibleMessageFormat Bytes (HpkeCiphertext Bytes) :=
   .isomorphic (.prod MlsBytes.mf MlsBytes.mf) HpkeCiphertext.f HpkeCiphertext.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem HpkeCiphertext.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: HpkeCiphertext Bytes):
+  (HpkeCiphertext.mf (Bytes := Bytes)).wf pred x = (
+    pred x.kemOutput.val ∧ pred x.ciphertext.val
+  )
+:= by
+  simp [HpkeCiphertext.mf, HpkeCiphertext.g]
 
 /-! ## UpdatePathNode -/
 
@@ -68,6 +88,14 @@ def UpdatePathNode.mf: NonExtensibleMessageFormat Bytes (UpdatePathNode Bytes) :
   .isomorphic (.prod HpkePublicKey.mf (MlsList.mf HpkeCiphertext.mf)) UpdatePathNode.f UpdatePathNode.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem UpdatePathNode.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: UpdatePathNode Bytes):
+  (UpdatePathNode.mf (Bytes := Bytes)).wf pred x = (
+    pred x.encryptionKey.val ∧ ∀ c ∈ x.encryptedPathSecret.val, HpkeCiphertext.mf.wf pred c
+  )
+:= by
+  simp [UpdatePathNode.mf, UpdatePathNode.g]
+
 /-! ## UpdatePath -/
 
 /--
@@ -92,6 +120,14 @@ instance: RightInverse (UpdatePath.g (Bytes := Bytes)) UpdatePath.f := ⟨by int
 def UpdatePath.mf: NonExtensibleMessageFormat Bytes (UpdatePath Bytes) :=
   .isomorphic (.prod (LeafNode.mf tkt) (MlsList.mf UpdatePathNode.mf)) UpdatePath.f UpdatePath.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem UpdatePath.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: UpdatePath Bytes):
+  (UpdatePath.mf (Bytes := Bytes)).wf pred x = (
+    (LeafNode.mf tkt).wf pred x.leafNode ∧ ∀ n ∈ x.nodes.val, UpdatePathNode.mf.wf pred n
+  )
+:= by
+  simp [UpdatePath.mf, UpdatePath.g]
 
 /-! ## PSKs -/
 
@@ -126,6 +162,12 @@ instance: SubsetRightInverse PskType.toUInt8 PskType.ofUInt8 where
 def PskType.mf: NonExtensibleMessageFormat Bytes PskType :=
   .subsetIsomorphic .uint8 PskType.ofUInt8 PskType.toUInt8
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem PskType.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: PskType):
+  (PskType.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [PskType.mf]
 
 /--
 enum {
@@ -162,6 +204,12 @@ instance: SubsetRightInverse ResumptionPskUsage.toUInt8 ResumptionPskUsage.ofUIn
 def ResumptionPskUsage.mf: NonExtensibleMessageFormat Bytes ResumptionPskUsage :=
   .subsetIsomorphic .uint8 ResumptionPskUsage.ofUInt8 ResumptionPskUsage.toUInt8
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem ResumptionPskUsage.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ResumptionPskUsage):
+  (ResumptionPskUsage.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [ResumptionPskUsage.mf]
 
 /--
 struct {
@@ -219,6 +267,16 @@ def PreSharedKeyId.mf: NonExtensibleMessageFormat Bytes (PreSharedKeyId Bytes) :
   .isomorphic (.sigma PskType.mf PreSharedKeyId.internalType.mf) PreSharedKeyId.f PreSharedKeyId.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem PreSharedKeyId.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: PreSharedKeyId Bytes):
+  (PreSharedKeyId.mf (Bytes := Bytes)).wf pred x = (
+    match x with
+    | .external pskId pskNonce => pred pskId.val ∧ pred pskNonce.val
+    | .resumption _ pskGroupId _ pskNonce => pred pskGroupId.val ∧ pred pskNonce.val
+  )
+:= by
+  cases x <;> simp [PreSharedKeyId.mf, PreSharedKeyId.g] <;> simp [PreSharedKeyId.internalType.mf, PreSharedKeyId.internalType]
+
 /--
 struct {
     PreSharedKeyID id;
@@ -243,5 +301,11 @@ instance: RightInverse (PskLabel.g (Bytes := Bytes)) PskLabel.f := ⟨by intro _
 def PskLabel.mf: NonExtensibleMessageFormat Bytes (PskLabel Bytes) :=
   .isomorphic (.prod PreSharedKeyId.mf (.prod .uint16BE .uint16BE)) PskLabel.f PskLabel.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem PskLabel.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: PskLabel Bytes):
+  (PskLabel.mf (Bytes := Bytes)).wf pred x = PreSharedKeyId.mf.wf pred x.id
+:= by
+  simp [PskLabel.mf, PskLabel.g]
 
 end MLS.TreeKEM

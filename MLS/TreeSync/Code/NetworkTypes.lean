@@ -69,6 +69,12 @@ def LeafNodeSource.mf: NonExtensibleMessageFormat Bytes LeafNodeSource :=
   .subsetIsomorphic .uint8 LeafNodeSource.ofUInt8 LeafNodeSource.toUInt8
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem LeafNodeSource.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: LeafNodeSource):
+  (LeafNodeSource.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [LeafNodeSource.mf]
+
 /-! ## Capabilities -/
 
 /--
@@ -115,6 +121,12 @@ def Capabilities.mf: NonExtensibleMessageFormat Bytes (Capabilities Bytes) :=
     Capabilities.f Capabilities.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem Capabilities.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Capabilities Bytes):
+  (Capabilities.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [Capabilities.mf]
+
 /-! ## Lifetime -/
 
 /--
@@ -139,6 +151,12 @@ instance: RightInverse Lifetime.g Lifetime.f := ⟨by intro _; rfl⟩
 def Lifetime.mf: NonExtensibleMessageFormat Bytes Lifetime :=
   .isomorphic (.prod .uint64BE .uint64BE) Lifetime.f Lifetime.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem Lifetime.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Lifetime):
+  (Lifetime.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [Lifetime.mf]
 
 /-! ## LeafNode -/
 
@@ -209,6 +227,15 @@ def LeafNodeData.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes 
     LeafNodeData.f LeafNodeData.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem LeafNodeData.mf.wf_eq (tkt: TreeKEMTypes Bytes) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: LeafNodeData Bytes tkt):
+  (LeafNodeData.mf tkt).wf pred x = (
+    tkt.mfLeafContent.wf pred x.content ∧ pred x.signatureKey.val ∧ Credential.mf.wf pred x.credential ∧
+    (∀ h, pred (x.parentHash.get h).val) ∧ ∀ e ∈ x.extensions.val, Extension.mf.wf pred e
+  )
+:= by
+  simp [LeafNodeData.mf, LeafNodeData.g]
+
 structure LeafNode (Bytes: Type) [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) where
   data: LeafNodeData Bytes tkt
   signature: MlsBytes Bytes
@@ -231,6 +258,14 @@ end LeafNode
 def LeafNode.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (LeafNode Bytes tkt) :=
   .isomorphic (.prod (LeafNodeData.mf tkt) MlsBytes.mf) LeafNode.f LeafNode.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem LeafNode.mf.wf_eq (tkt: TreeKEMTypes Bytes) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: LeafNode Bytes tkt):
+  (LeafNode.mf tkt).wf pred x = (
+    (LeafNodeData.mf tkt).wf pred x.data ∧ pred x.signature.val
+  )
+:= by
+  simp [LeafNode.mf, LeafNode.g]
 
 /-! ## LeafNodeTBS -/
 
@@ -300,6 +335,14 @@ def LeafNodeTBS.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (
     LeafNodeTBS.f LeafNodeTBS.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem LeafNodeTBS.mf.wf_eq (tkt: TreeKEMTypes Bytes) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: LeafNodeTBS Bytes tkt):
+  (LeafNodeTBS.mf tkt).wf pred x = (
+    (LeafNodeData.mf tkt).wf pred x.data ∧ ∀ h, pred (x.groupId.get h).val
+  )
+:= by
+  simp [LeafNodeTBS.mf, LeafNodeTBS.g]
+
 /-! ## ParentNode -/
 
 /--
@@ -334,6 +377,14 @@ def ParentNode.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (P
   .isomorphic (.prod tkt.mfNodeContent (.prod MlsBytes.mf (MlsList.mf .uint32BE))) ParentNode.f ParentNode.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem ParentNode.mf.wf_eq (tkt: TreeKEMTypes Bytes) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ParentNode Bytes tkt):
+  (ParentNode.mf tkt).wf pred x = (
+    tkt.mfNodeContent.wf pred x.content ∧ pred x.parentHash.val
+  )
+:= by
+  simp [ParentNode.mf, ParentNode.g]
+
 /-! ## NodeType -/
 
 /--
@@ -367,6 +418,12 @@ instance: SubsetRightInverse NodeType.toUInt8 NodeType.ofUInt8 where
 def NodeType.mf: NonExtensibleMessageFormat Bytes NodeType :=
   .subsetIsomorphic .uint8 NodeType.ofUInt8 NodeType.toUInt8
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem NodeType.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: NodeType):
+  (NodeType.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [NodeType.mf]
 
 /-! ## Node -/
 
@@ -422,6 +479,16 @@ def Node.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (Node By
   .isomorphic (.sigma NodeType.mf (Node.internalType.mf tkt)) Node.f Node.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem Node.mf.wf_eq (tkt: TreeKEMTypes Bytes) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Node Bytes tkt):
+  (Node.mf tkt).wf pred x = (
+    match x with
+    | .leaf ln => (LeafNode.mf tkt).wf pred ln
+    | .parent pn => (ParentNode.mf tkt).wf pred pn
+  )
+:= by
+  cases x <;> simp [Node.mf, Node.g] <;> simp [Node.internalType.mf, Node.internalType]
+
 /-! ## RatchetTree -/
 
 /-- optional<Node> ratchet_tree<V>; -/
@@ -431,5 +498,11 @@ abbrev RatchetTree (Bytes: Type) [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) :=
 def RatchetTree.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (RatchetTree Bytes tkt) :=
   MlsList.mf (MlsOption.mf (Node.mf tkt))
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem RatchetTree.mf.wf_eq (tkt: TreeKEMTypes Bytes) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: RatchetTree Bytes tkt):
+  (RatchetTree.mf tkt).wf pred x = ∀ n ∈ x.val, (MlsOption.mf (Node.mf tkt)).wf pred n
+:= by
+  simp [RatchetTree.mf]
 
 end MLS.TreeSync

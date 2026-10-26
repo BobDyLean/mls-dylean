@@ -30,6 +30,12 @@ def ApplicationIdExt.mf: NonExtensibleMessageFormat Bytes (ApplicationIdExt Byte
   .isomorphic MlsBytes.mf ApplicationIdExt.f ApplicationIdExt.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem ApplicationIdExt.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ApplicationIdExt Bytes):
+  (ApplicationIdExt.mf (Bytes := Bytes)).wf pred x = pred x.applicationId.val
+:= by
+  simp [ApplicationIdExt.mf, ApplicationIdExt.g]
+
 /-- Port of `get_application_id_extension`. -/
 def getApplicationIdExtension (extensions: List (Extension Bytes)): Option (ApplicationIdExt Bytes) :=
   mkGetExtension .applicationId ApplicationIdExt.mf extensions

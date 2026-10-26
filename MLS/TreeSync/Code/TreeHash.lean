@@ -45,6 +45,12 @@ def LeafNodeTreeHashInput.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageForm
   .isomorphic (.prod .uint32BE (MlsOption.mf (LeafNode.mf tkt))) LeafNodeTreeHashInput.f LeafNodeTreeHashInput.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem LeafNodeTreeHashInput.mf.wf_eq (tkt: TreeKEMTypes Bytes) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: LeafNodeTreeHashInput Bytes tkt):
+  (LeafNodeTreeHashInput.mf tkt).wf pred x = (MlsOption.mf (LeafNode.mf tkt)).wf pred x.leafNode
+:= by
+  simp [LeafNodeTreeHashInput.mf, LeafNodeTreeHashInput.g]
+
 /--
 struct {
     optional<ParentNode> parent_node;
@@ -76,6 +82,14 @@ def ParentNodeTreeHashInput.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFo
   .isomorphic (.prod (MlsOption.mf (ParentNode.mf tkt)) (.prod MlsBytes.mf MlsBytes.mf))
     ParentNodeTreeHashInput.f ParentNodeTreeHashInput.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem ParentNodeTreeHashInput.mf.wf_eq (tkt: TreeKEMTypes Bytes) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ParentNodeTreeHashInput Bytes tkt):
+  (ParentNodeTreeHashInput.mf tkt).wf pred x = (
+    (MlsOption.mf (ParentNode.mf tkt)).wf pred x.parentNode ∧ pred x.leftHash.val ∧ pred x.rightHash.val
+  )
+:= by
+  simp [ParentNodeTreeHashInput.mf, ParentNodeTreeHashInput.g]
 
 /--
 struct {
@@ -128,6 +142,16 @@ end TreeHashInput
 def TreeHashInput.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (TreeHashInput Bytes tkt) :=
   .isomorphic (.sigma NodeType.mf (TreeHashInput.internalType.mf tkt)) TreeHashInput.f TreeHashInput.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem TreeHashInput.mf.wf_eq (tkt: TreeKEMTypes Bytes) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: TreeHashInput Bytes tkt):
+  (TreeHashInput.mf tkt).wf pred x = (
+    match x with
+    | .leaf x => (LeafNodeTreeHashInput.mf tkt).wf pred x
+    | .parent x => (ParentNodeTreeHashInput.mf tkt).wf pred x
+  )
+:= by
+  cases x <;> simp [TreeHashInput.mf, TreeHashInput.g] <;> simp [TreeHashInput.internalType.mf, TreeHashInput.internalType]
 
 end Formats
 

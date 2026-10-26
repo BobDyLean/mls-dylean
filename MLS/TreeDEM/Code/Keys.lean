@@ -27,6 +27,12 @@ def TreeContext.mf {Bytes: Type} [BytesLike Bytes]: NonExtensibleMessageFormat B
   .isomorphic .uint32BE TreeContext.mk TreeContext.generation
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem TreeContext.mf.wf_eq {Bytes: Type} [BytesLike Bytes] (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: TreeContext):
+  (TreeContext.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [TreeContext.mf]
+
 /-- Port of `derive_tree_secret`. -/
 def deriveTreeSecret (secret: Bytes) (label: String) (generation: Nat) (len: Nat): Result Bytes := do
   let generation ← mkUInt32 generation "derive_tree_secret" "generation"

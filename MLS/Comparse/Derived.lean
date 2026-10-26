@@ -114,6 +114,12 @@ def NonExtensibleMessageFormat.uint32BE: NonExtensibleMessageFormat Bytes UInt32
   isomorphic (bitVecBE 4) UInt32.ofBitVec UInt32.toBitVec
 deriving IsNonAmbiguous, HasUniqueRepresentation, ParseConsumes
 
+@[simp]
+theorem NonExtensibleMessageFormat.uint32BE.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: UInt32):
+  (uint32BE: NonExtensibleMessageFormat Bytes UInt32).wf pred x = True
+:= by
+  simp only [uint32BE, isomorphic.wf_eq, bitVecBE.wf_eq]
+
 local instance: @LeftInverse UInt64 (BitVec (8*8)) UInt64.toBitVec UInt64.ofBitVec where
   left_inv := by simp [Function.LeftInverse]
 
@@ -124,6 +130,12 @@ local instance: @RightInverse UInt64 (BitVec (8*8)) UInt64.toBitVec UInt64.ofBit
 def NonExtensibleMessageFormat.uint64BE: NonExtensibleMessageFormat Bytes UInt64 :=
   isomorphic (bitVecBE 8) UInt64.ofBitVec UInt64.toBitVec
 deriving IsNonAmbiguous, HasUniqueRepresentation, ParseConsumes
+
+@[simp]
+theorem NonExtensibleMessageFormat.uint64BE.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: UInt64):
+  (uint64BE: NonExtensibleMessageFormat Bytes UInt64).wf pred x = True
+:= by
+  simp only [uint64BE, isomorphic.wf_eq, bitVecBE.wf_eq]
 
 /-! ## Empty -/
 
@@ -142,6 +154,12 @@ instance: (empty: NonExtensibleMessageFormat Bytes Empty).HasUniqueRepresentatio
 
 instance: (empty: NonExtensibleMessageFormat Bytes Empty).ParseConsumes where
   parse_consumes _ := trivial
+
+@[simp]
+theorem wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Empty):
+  (empty: NonExtensibleMessageFormat Bytes Empty).wf pred x = True
+:=
+  nomatch x
 
 end NonExtensibleMessageFormat.empty
 

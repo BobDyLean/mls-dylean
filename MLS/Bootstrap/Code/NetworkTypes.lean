@@ -56,6 +56,14 @@ def KeyPackageTBS.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes
     KeyPackageTBS.f KeyPackageTBS.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem KeyPackageTBS.mf.wf_eq (tkt: TreeKEMTypes Bytes) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: KeyPackageTBS Bytes tkt):
+  (KeyPackageTBS.mf tkt).wf pred x = (
+    pred x.initKey.val ∧ (LeafNode.mf tkt).wf pred x.leafNode ∧ ∀ e ∈ x.extensions.val, Extension.mf.wf pred e
+  )
+:= by
+  simp [KeyPackageTBS.mf, KeyPackageTBS.g]
+
 /--
 struct {
     ProtocolVersion version;
@@ -90,6 +98,14 @@ def KeyPackage.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (K
   .isomorphic (.prod (KeyPackageTBS.mf tkt) MlsBytes.mf) KeyPackage.f KeyPackage.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem KeyPackage.mf.wf_eq (tkt: TreeKEMTypes Bytes) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: KeyPackage Bytes tkt):
+  (KeyPackage.mf tkt).wf pred x = (
+    (KeyPackageTBS.mf tkt).wf pred x.tbs ∧ pred x.signature.val
+  )
+:= by
+  simp [KeyPackage.mf, KeyPackage.g]
+
 /-! ## Refs -/
 
 /--
@@ -101,6 +117,12 @@ abbrev KeyPackageRef (Bytes: Type) [BytesLike Bytes] := MlsBytes Bytes
 
 def KeyPackageRef.mf: NonExtensibleMessageFormat Bytes (KeyPackageRef Bytes) := MlsBytes.mf
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem KeyPackageRef.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: KeyPackageRef Bytes):
+  (KeyPackageRef.mf (Bytes := Bytes)).wf pred x = pred x.val
+:= by
+  simp [KeyPackageRef.mf]
 
 /-! ## Welcome -/
 
@@ -140,6 +162,14 @@ def GroupInfoTBS.mf: NonExtensibleMessageFormat Bytes (GroupInfoTBS Bytes) :=
     GroupInfoTBS.f GroupInfoTBS.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem GroupInfoTBS.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: GroupInfoTBS Bytes):
+  (GroupInfoTBS.mf (Bytes := Bytes)).wf pred x = (
+    GroupContext.mf.wf pred x.groupContext ∧ (∀ e ∈ x.extensions.val, Extension.mf.wf pred e) ∧ pred x.confirmationTag.val
+  )
+:= by
+  simp [GroupInfoTBS.mf, GroupInfoTBS.g]
+
 /--
 struct {
     GroupContext group_context;
@@ -167,6 +197,14 @@ def GroupInfo.mf: NonExtensibleMessageFormat Bytes (GroupInfo Bytes) :=
   .isomorphic (.prod GroupInfoTBS.mf MlsBytes.mf) GroupInfo.f GroupInfo.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem GroupInfo.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: GroupInfo Bytes):
+  (GroupInfo.mf (Bytes := Bytes)).wf pred x = (
+    GroupInfoTBS.mf.wf pred x.tbs ∧ pred x.signature.val
+  )
+:= by
+  simp [GroupInfo.mf, GroupInfo.g]
+
 /--
 struct {
   opaque path_secret<V>;
@@ -187,6 +225,12 @@ instance: RightInverse (PathSecret.g (Bytes := Bytes)) PathSecret.f := ⟨by int
 def PathSecret.mf: NonExtensibleMessageFormat Bytes (PathSecret Bytes) :=
   .isomorphic MlsBytes.mf PathSecret.f PathSecret.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem PathSecret.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: PathSecret Bytes):
+  (PathSecret.mf (Bytes := Bytes)).wf pred x = pred x.pathSecret.val
+:= by
+  simp [PathSecret.mf, PathSecret.g]
 
 /--
 struct {
@@ -222,6 +266,15 @@ def GroupSecrets.mf: NonExtensibleMessageFormat Bytes (GroupSecrets Bytes) :=
     GroupSecrets.f GroupSecrets.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem GroupSecrets.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: GroupSecrets Bytes):
+  (GroupSecrets.mf (Bytes := Bytes)).wf pred x = (
+    pred x.joinerSecret.val ∧ (MlsOption.mf PathSecret.mf).wf pred x.pathSecret ∧
+    ∀ psk ∈ x.psks.val, PreSharedKeyId.mf.wf pred psk
+  )
+:= by
+  simp [GroupSecrets.mf, GroupSecrets.g]
+
 /--
 struct {
   KeyPackageRef new_member;
@@ -244,6 +297,14 @@ instance: RightInverse (EncryptedGroupSecrets.g (Bytes := Bytes)) EncryptedGroup
 def EncryptedGroupSecrets.mf: NonExtensibleMessageFormat Bytes (EncryptedGroupSecrets Bytes) :=
   .isomorphic (.prod KeyPackageRef.mf HpkeCiphertext.mf) EncryptedGroupSecrets.f EncryptedGroupSecrets.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem EncryptedGroupSecrets.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: EncryptedGroupSecrets Bytes):
+  (EncryptedGroupSecrets.mf (Bytes := Bytes)).wf pred x = (
+    pred x.newMember.val ∧ HpkeCiphertext.mf.wf pred x.encryptedGroupSecrets
+  )
+:= by
+  simp [EncryptedGroupSecrets.mf, EncryptedGroupSecrets.g]
 
 /--
 struct {
@@ -278,5 +339,13 @@ def Welcome.mf: NonExtensibleMessageFormat Bytes (Welcome Bytes) :=
     (.prod CipherSuite.mf (.prod (MlsList.mf EncryptedGroupSecrets.mf) MlsBytes.mf))
     Welcome.f Welcome.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem Welcome.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Welcome Bytes):
+  (Welcome.mf (Bytes := Bytes)).wf pred x = (
+    (∀ s ∈ x.secrets.val, EncryptedGroupSecrets.mf.wf pred s) ∧ pred x.encryptedGroupInfo.val
+  )
+:= by
+  simp [Welcome.mf, Welcome.g]
 
 end MLS.Bootstrap

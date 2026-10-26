@@ -31,6 +31,12 @@ def Add.mf: NonExtensibleMessageFormat Bytes (Add Bytes) :=
   .isomorphic (KeyPackage.mf tkt) Add.mk Add.keyPackage
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem Add.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Add Bytes):
+  (Add.mf (Bytes := Bytes)).wf pred x = (KeyPackage.mf tkt).wf pred x.keyPackage
+:= by
+  simp [Add.mf]
+
 /--
 struct {
     LeafNode leaf_node;
@@ -45,6 +51,12 @@ instance: RightInverse (Update.leafNode (Bytes := Bytes)) Update.mk := ⟨by int
 def Update.mf: NonExtensibleMessageFormat Bytes (Update Bytes) :=
   .isomorphic (LeafNode.mf tkt) Update.mk Update.leafNode
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem Update.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Update Bytes):
+  (Update.mf (Bytes := Bytes)).wf pred x = (LeafNode.mf tkt).wf pred x.leafNode
+:= by
+  simp [Update.mf]
 
 /--
 struct {
@@ -61,6 +73,12 @@ def Remove.mf: NonExtensibleMessageFormat Bytes Remove :=
   .isomorphic .uint32BE Remove.mk Remove.removed
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem Remove.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Remove):
+  (Remove.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [Remove.mf]
+
 /--
 struct {
     PreSharedKeyID psk;
@@ -75,6 +93,12 @@ instance: RightInverse (PreSharedKey.psk (Bytes := Bytes)) PreSharedKey.mk := �
 def PreSharedKey.mf: NonExtensibleMessageFormat Bytes (PreSharedKey Bytes) :=
   .isomorphic PreSharedKeyId.mf PreSharedKey.mk PreSharedKey.psk
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem PreSharedKey.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: PreSharedKey Bytes):
+  (PreSharedKey.mf (Bytes := Bytes)).wf pred x = PreSharedKeyId.mf.wf pred x.psk
+:= by
+  simp [PreSharedKey.mf]
 
 /--
 struct {
@@ -112,6 +136,14 @@ def Reinit.mf: NonExtensibleMessageFormat Bytes (Reinit Bytes) :=
     Reinit.f Reinit.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem Reinit.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Reinit Bytes):
+  (Reinit.mf (Bytes := Bytes)).wf pred x = (
+    pred x.groupId.val ∧ ∀ e ∈ x.extensions.val, Extension.mf.wf pred e
+  )
+:= by
+  simp [Reinit.mf, Reinit.g]
+
 /--
 struct {
   opaque kem_output<V>;
@@ -126,6 +158,12 @@ instance: RightInverse (ExternalInit.kemOutput (Bytes := Bytes)) ExternalInit.mk
 def ExternalInit.mf: NonExtensibleMessageFormat Bytes (ExternalInit Bytes) :=
   .isomorphic MlsBytes.mf ExternalInit.mk ExternalInit.kemOutput
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem ExternalInit.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ExternalInit Bytes):
+  (ExternalInit.mf (Bytes := Bytes)).wf pred x = pred x.kemOutput.val
+:= by
+  simp [ExternalInit.mf]
 
 /--
 struct {
@@ -142,6 +180,12 @@ def GroupContextExtensions.mf: NonExtensibleMessageFormat Bytes (GroupContextExt
   .isomorphic (MlsList.mf Extension.mf) GroupContextExtensions.mk GroupContextExtensions.extensions
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem GroupContextExtensions.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: GroupContextExtensions Bytes):
+  (GroupContextExtensions.mf (Bytes := Bytes)).wf pred x = ∀ e ∈ x.extensions.val, Extension.mf.wf pred e
+:= by
+  simp [GroupContextExtensions.mf]
+
 /-! ## Refs -/
 
 /--
@@ -153,6 +197,12 @@ abbrev ProposalRef (Bytes: Type) [BytesLike Bytes] := MlsBytes Bytes
 
 def ProposalRef.mf: NonExtensibleMessageFormat Bytes (ProposalRef Bytes) := MlsBytes.mf
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem ProposalRef.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ProposalRef Bytes):
+  (ProposalRef.mf (Bytes := Bytes)).wf pred x = pred x.val
+:= by
+  simp [ProposalRef.mf]
 
 /-! ## Message framing -/
 
@@ -229,6 +279,21 @@ def Proposal.mf: NonExtensibleMessageFormat Bytes (Proposal Bytes) :=
   .isomorphic (.sigma ProposalType.mf Proposal.internalType.mf) Proposal.f Proposal.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem Proposal.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Proposal Bytes):
+  (Proposal.mf (Bytes := Bytes)).wf pred x = (
+    match x with
+    | .add x => Add.mf.wf pred x
+    | .update x => Update.mf.wf pred x
+    | .remove _ => True
+    | .psk x => PreSharedKey.mf.wf pred x
+    | .reinit x => Reinit.mf.wf pred x
+    | .externalInit x => ExternalInit.mf.wf pred x
+    | .groupContextExtensions x => GroupContextExtensions.mf.wf pred x
+  )
+:= by
+  cases x <;> simp [Proposal.mf, Proposal.g] <;> simp [Proposal.internalType.mf, Proposal.internalType]
+
 /--
 enum {
   reserved(0),
@@ -294,6 +359,16 @@ def ProposalOrRef.mf: NonExtensibleMessageFormat Bytes (ProposalOrRef Bytes) :=
   .isomorphic (.sigma (.fin8 3 (by decide)) ProposalOrRef.internalType.mf) ProposalOrRef.f ProposalOrRef.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem ProposalOrRef.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ProposalOrRef Bytes):
+  (ProposalOrRef.mf (Bytes := Bytes)).wf pred x = (
+    match x with
+    | .proposal p => Proposal.mf.wf pred p
+    | .reference r => pred r.val
+  )
+:= by
+  cases x <;> simp [ProposalOrRef.mf, ProposalOrRef.g] <;> simp [ProposalOrRef.internalType.mf, ProposalOrRef.internalType]
+
 /--
 struct {
     ProposalOrRef proposals<V>;
@@ -316,6 +391,14 @@ instance: RightInverse (Commit.g (Bytes := Bytes)) Commit.f := ⟨by intro _; rf
 def Commit.mf: NonExtensibleMessageFormat Bytes (Commit Bytes) :=
   .isomorphic (.prod (MlsList.mf ProposalOrRef.mf) (MlsOption.mf UpdatePath.mf)) Commit.f Commit.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem Commit.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Commit Bytes):
+  (Commit.mf (Bytes := Bytes)).wf pred x = (
+    (∀ p ∈ x.proposals.val, ProposalOrRef.mf.wf pred p) ∧ (MlsOption.mf UpdatePath.mf).wf pred x.path
+  )
+:= by
+  simp [Commit.mf, Commit.g]
 
 /--
 enum {
@@ -356,6 +439,12 @@ instance: SubsetRightInverse SenderType.toUInt8 SenderType.ofUInt8 where
 def SenderType.mf: NonExtensibleMessageFormat Bytes SenderType :=
   .subsetIsomorphic .uint8 SenderType.ofUInt8 SenderType.toUInt8
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem SenderType.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: SenderType):
+  (SenderType.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [SenderType.mf]
 
 /--
 struct {
@@ -423,6 +512,12 @@ def Sender.mf: NonExtensibleMessageFormat Bytes Sender :=
   .isomorphic (.sigma SenderType.mf Sender.internalType.mf) Sender.f Sender.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem Sender.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Sender):
+  (Sender.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  cases x <;> simp [Sender.mf, Sender.g] <;> simp [Sender.internalType.mf, Sender.internalType]
+
 /-- uint16 WireFormat; -/
 inductive WireFormat where
   | reserved
@@ -462,6 +557,12 @@ def WireFormat.mf: NonExtensibleMessageFormat Bytes WireFormat :=
   .isomorphic .uint16BE WireFormat.ofUInt16 WireFormat.toUInt16
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem WireFormat.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: WireFormat):
+  (WireFormat.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [WireFormat.mf]
+
 /--
 enum {
     reserved(0),
@@ -497,6 +598,12 @@ instance: SubsetRightInverse ContentType.toUInt8 ContentType.ofUInt8 where
 def ContentType.mf: NonExtensibleMessageFormat Bytes ContentType :=
   .subsetIsomorphic .uint8 ContentType.ofUInt8 ContentType.toUInt8
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem ContentType.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ContentType):
+  (ContentType.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [ContentType.mf]
 
 /-! ## FramedContent -/
 
@@ -543,6 +650,24 @@ instance: ∀ contentType, (MlsUntaggedContent.mf (Bytes := Bytes) contentType).
     dsimp only [MlsUntaggedContent.mf, MlsUntaggedContent]
     infer_instance
 
+@[simp]
+theorem MlsUntaggedContent.mf.wf_application (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsUntaggedContent Bytes .application):
+  (MlsUntaggedContent.mf .application).wf pred x = pred x.val
+:=
+  MlsBytes.mf.wf_eq pred x
+
+@[simp]
+theorem MlsUntaggedContent.mf.wf_proposal (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsUntaggedContent Bytes .proposal):
+  (MlsUntaggedContent.mf .proposal).wf pred x = Proposal.mf.wf pred x
+:= by
+  simp [MlsUntaggedContent.mf, MlsUntaggedContent]
+
+@[simp]
+theorem MlsUntaggedContent.mf.wf_commit (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsUntaggedContent Bytes .commit):
+  (MlsUntaggedContent.mf .commit).wf pred x = Commit.mf.wf pred x
+:= by
+  simp [MlsUntaggedContent.mf, MlsUntaggedContent]
+
 structure MlsTaggedContent (Bytes: Type) [BytesLike Bytes] where
   contentType: ContentType
   content: MlsUntaggedContent Bytes contentType
@@ -559,6 +684,12 @@ instance: RightInverse (MlsTaggedContent.g (Bytes := Bytes)) MlsTaggedContent.f 
 def MlsTaggedContent.mf: NonExtensibleMessageFormat Bytes (MlsTaggedContent Bytes) :=
   .isomorphic (.sigma ContentType.mf MlsUntaggedContent.mf) MlsTaggedContent.f MlsTaggedContent.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem MlsTaggedContent.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsTaggedContent Bytes):
+  (MlsTaggedContent.mf (Bytes := Bytes)).wf pred x = (MlsUntaggedContent.mf x.contentType).wf pred x.content
+:= by
+  simp [MlsTaggedContent.mf, MlsTaggedContent.g]
 
 structure FramedContent (Bytes: Type) [BytesLike Bytes] where
   groupId: MlsBytes Bytes
@@ -588,6 +719,14 @@ def FramedContent.mf: NonExtensibleMessageFormat Bytes (FramedContent Bytes) :=
     (.prod MlsBytes.mf (.prod .uint64BE (.prod Sender.mf (.prod MlsBytes.mf MlsTaggedContent.mf))))
     FramedContent.f FramedContent.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem FramedContent.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: FramedContent Bytes):
+  (FramedContent.mf (Bytes := Bytes)).wf pred x = (
+    pred x.groupId.val ∧ pred x.authenticatedData.val ∧ MlsTaggedContent.mf.wf pred x.content
+  )
+:= by
+  simp [FramedContent.mf, FramedContent.g]
 
 /-! ## FramedContentTBS -/
 
@@ -644,6 +783,14 @@ def FramedContentTBS.mf: NonExtensibleMessageFormat Bytes (FramedContentTBS Byte
     FramedContentTBS.f FramedContentTBS.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem FramedContentTBS.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: FramedContentTBS Bytes):
+  (FramedContentTBS.mf (Bytes := Bytes)).wf pred x = (
+    FramedContent.mf.wf pred x.content ∧ ∀ h, GroupContext.mf.wf pred (x.groupContext.get h)
+  )
+:= by
+  simp [FramedContentTBS.mf, FramedContentTBS.g]
+
 /-! ## FramedContentAuthData -/
 
 /--
@@ -686,6 +833,14 @@ def FramedContentAuthData.mf (contentType: ContentType): NonExtensibleMessageFor
   .isomorphic (.prod MlsBytes.mf (StaticOption.mf (contentType == .commit) Mac.mf)) FramedContentAuthData.f FramedContentAuthData.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem FramedContentAuthData.mf.wf_eq (contentType: ContentType) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: FramedContentAuthData Bytes contentType):
+  (FramedContentAuthData.mf contentType).wf pred x = (
+    pred x.signature.val ∧ ∀ h, pred (x.confirmationTag.get h).val
+  )
+:= by
+  simp [FramedContentAuthData.mf, FramedContentAuthData.g]
+
 /-! ## AuthenticatedContent -/
 
 /--
@@ -722,6 +877,14 @@ def AuthenticatedContent.mf: NonExtensibleMessageFormat Bytes (AuthenticatedCont
     AuthenticatedContent.f AuthenticatedContent.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem AuthenticatedContent.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: AuthenticatedContent Bytes):
+  (AuthenticatedContent.mf (Bytes := Bytes)).wf pred x = (
+    FramedContent.mf.wf pred x.content ∧ (FramedContentAuthData.mf x.content.content.contentType).wf pred x.auth
+  )
+:= by
+  simp [AuthenticatedContent.mf, AuthenticatedContent.g]
+
 /--
 struct {
   FramedContentTBS content_tbs;
@@ -753,6 +916,15 @@ def AuthenticatedContentTBM.mf: NonExtensibleMessageFormat Bytes (AuthenticatedC
     (.sigma FramedContentTBS.mf (fun contentTbs => FramedContentAuthData.mf contentTbs.content.content.contentType))
     AuthenticatedContentTBM.f AuthenticatedContentTBM.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem AuthenticatedContentTBM.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: AuthenticatedContentTBM Bytes):
+  (AuthenticatedContentTBM.mf (Bytes := Bytes)).wf pred x = (
+    FramedContentTBS.mf.wf pred x.contentTbs ∧
+    (FramedContentAuthData.mf x.contentTbs.content.content.contentType).wf pred x.auth
+  )
+:= by
+  simp [AuthenticatedContentTBM.mf, AuthenticatedContentTBM.g]
 
 /-! ## PublicMessage -/
 
@@ -804,6 +976,15 @@ def PublicMessage.mf: NonExtensibleMessageFormat Bytes (PublicMessage Bytes) :=
     PublicMessage.f PublicMessage.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem PublicMessage.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: PublicMessage Bytes):
+  (PublicMessage.mf (Bytes := Bytes)).wf pred x = (
+    FramedContent.mf.wf pred x.content ∧ (FramedContentAuthData.mf x.content.content.contentType).wf pred x.auth ∧
+    ∀ h, pred (x.membershipTag.get h).val
+  )
+:= by
+  simp [PublicMessage.mf, PublicMessage.g]
+
 /-! ## PrivateMessage -/
 
 /--
@@ -848,6 +1029,14 @@ def PrivateMessage.mf: NonExtensibleMessageFormat Bytes (PrivateMessage Bytes) :
     PrivateMessage.f PrivateMessage.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem PrivateMessage.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: PrivateMessage Bytes):
+  (PrivateMessage.mf (Bytes := Bytes)).wf pred x = (
+    pred x.groupId.val ∧ pred x.authenticatedData.val ∧ pred x.encryptedSenderData.val ∧ pred x.ciphertext.val
+  )
+:= by
+  simp [PrivateMessage.mf, PrivateMessage.g]
+
 /-! ## PrivateMessageContent -/
 
 /--
@@ -891,11 +1080,25 @@ def PrivateMessageContentData.mf (contentType: ContentType): NonExtensibleMessag
     PrivateMessageContentData.f PrivateMessageContentData.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem PrivateMessageContentData.mf.wf_eq (contentType: ContentType) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: PrivateMessageContentData Bytes contentType):
+  (PrivateMessageContentData.mf contentType).wf pred x = (
+    (MlsUntaggedContent.mf contentType).wf pred x.content ∧ (FramedContentAuthData.mf contentType).wf pred x.auth
+  )
+:= by
+  simp [PrivateMessageContentData.mf, PrivateMessageContentData.g]
+
 abbrev ZeroByte := {x: UInt8 // x = 0}
 
 def ZeroByte.mf: NonExtensibleMessageFormat Bytes ZeroByte :=
   .subtype .uint8 (fun x => x = 0)
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem ZeroByte.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ZeroByte):
+  (ZeroByte.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [ZeroByte.mf]
 
 structure PrivateMessageContent (Bytes: Type) [BytesLike Bytes] (contentType: ContentType) where
   data: PrivateMessageContentData Bytes contentType
@@ -921,6 +1124,12 @@ def PrivateMessageContent.mf (contentType: ContentType): ExtensibleMessageFormat
   .isomorphic (.prod (PrivateMessageContentData.mf contentType) (.list ZeroByte.mf))
     PrivateMessageContent.f PrivateMessageContent.g
 deriving ExtensibleMessageFormat.IsNonAmbiguous, ExtensibleMessageFormat.HasUniqueRepresentation
+
+@[simp]
+theorem PrivateMessageContent.mf.wf_eq (contentType: ContentType) (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: PrivateMessageContent Bytes contentType):
+  (PrivateMessageContent.mf contentType).wf pred x = (PrivateMessageContentData.mf contentType).wf pred x.data
+:= by
+  simp [PrivateMessageContent.mf, PrivateMessageContent.g]
 
 /--
 struct {
@@ -957,6 +1166,14 @@ def PrivateContentAAD.mf: NonExtensibleMessageFormat Bytes (PrivateContentAAD By
     PrivateContentAAD.f PrivateContentAAD.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem PrivateContentAAD.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: PrivateContentAAD Bytes):
+  (PrivateContentAAD.mf (Bytes := Bytes)).wf pred x = (
+    pred x.groupId.val ∧ pred x.authenticatedData.val
+  )
+:= by
+  simp [PrivateContentAAD.mf, PrivateContentAAD.g]
+
 /--
 struct {
     uint32 leaf_index;
@@ -989,6 +1206,12 @@ def SenderData.mf: NonExtensibleMessageFormat Bytes (SenderData Bytes) :=
   .isomorphic (.prod .uint32BE (.prod .uint32BE (.fixedLengthBytes 4))) SenderData.f SenderData.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem SenderData.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: SenderData Bytes):
+  (SenderData.mf (Bytes := Bytes)).wf pred x = pred x.reuseGuard.val
+:= by
+  simp [SenderData.mf, SenderData.g]
+
 /--
 struct {
     opaque group_id<V>;
@@ -1020,6 +1243,12 @@ end SenderDataAAD
 def SenderDataAAD.mf: NonExtensibleMessageFormat Bytes (SenderDataAAD Bytes) :=
   .isomorphic (.prod MlsBytes.mf (.prod .uint64BE ContentType.mf)) SenderDataAAD.f SenderDataAAD.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem SenderDataAAD.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: SenderDataAAD Bytes):
+  (SenderDataAAD.mf (Bytes := Bytes)).wf pred x = pred x.groupId.val
+:= by
+  simp [SenderDataAAD.mf, SenderDataAAD.g]
 
 /-! ## Transcript hashes -/
 
@@ -1056,6 +1285,14 @@ def ConfirmedTranscriptHashInput.mf: NonExtensibleMessageFormat Bytes (Confirmed
     ConfirmedTranscriptHashInput.f ConfirmedTranscriptHashInput.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem ConfirmedTranscriptHashInput.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ConfirmedTranscriptHashInput Bytes):
+  (ConfirmedTranscriptHashInput.mf (Bytes := Bytes)).wf pred x = (
+    FramedContent.mf.wf pred x.content ∧ pred x.signature.val
+  )
+:= by
+  simp [ConfirmedTranscriptHashInput.mf, ConfirmedTranscriptHashInput.g]
+
 /--
 struct {
     MAC confirmation_tag;
@@ -1070,6 +1307,12 @@ instance: RightInverse (InterimTranscriptHashInput.confirmationTag (Bytes := Byt
 def InterimTranscriptHashInput.mf: NonExtensibleMessageFormat Bytes (InterimTranscriptHashInput Bytes) :=
   .isomorphic Mac.mf InterimTranscriptHashInput.mk InterimTranscriptHashInput.confirmationTag
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem InterimTranscriptHashInput.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: InterimTranscriptHashInput Bytes):
+  (InterimTranscriptHashInput.mf (Bytes := Bytes)).wf pred x = pred x.confirmationTag.val
+:= by
+  simp [InterimTranscriptHashInput.mf]
 
 /-! ## MLSMessage -/
 
@@ -1153,6 +1396,19 @@ def Mls10Message.mf: NonExtensibleMessageFormat Bytes (Mls10Message Bytes) :=
   .isomorphic (.sigma WireFormat.mf Mls10Message.internalType.mf) Mls10Message.f Mls10Message.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem Mls10Message.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Mls10Message Bytes):
+  (Mls10Message.mf (Bytes := Bytes)).wf pred x = (
+    match x with
+    | .publicMessage m => PublicMessage.mf.wf pred m
+    | .privateMessage m => PrivateMessage.mf.wf pred m
+    | .welcome m => Welcome.mf.wf pred m
+    | .groupInfo m => GroupInfo.mf.wf pred m
+    | .keyPackage m => (KeyPackage.mf tkt).wf pred m
+  )
+:= by
+  cases x <;> simp [Mls10Message.mf, Mls10Message.g] <;> simp [Mls10Message.internalType.mf, Mls10Message.internalType]
+
 inductive MlsMessage (Bytes: Type) [BytesLike Bytes] where
   | mls10: Mls10Message Bytes → MlsMessage Bytes
 
@@ -1192,5 +1448,14 @@ end MlsMessage
 def MlsMessage.mf: NonExtensibleMessageFormat Bytes (MlsMessage Bytes) :=
   .isomorphic (.sigma ProtocolVersion.mf MlsMessage.internalType.mf) MlsMessage.f MlsMessage.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem MlsMessage.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsMessage Bytes):
+  (MlsMessage.mf (Bytes := Bytes)).wf pred x = (
+    match x with
+    | .mls10 m => Mls10Message.mf.wf pred m
+  )
+:= by
+  cases x <;> simp [MlsMessage.mf, MlsMessage.g] <;> simp [MlsMessage.internalType.mf, MlsMessage.internalType]
 
 end MLS.TreeDEM

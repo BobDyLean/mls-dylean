@@ -314,6 +314,12 @@ def RefHashInput.mf {Bytes: Type} [BytesLike Bytes]: NonExtensibleMessageFormat 
   .isomorphic (.prod MlsAsciiString.mf MlsBytes.mf) RefHashInput.f RefHashInput.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem RefHashInput.mf.wf_eq {Bytes: Type} [BytesLike Bytes] (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: RefHashInput Bytes):
+  (RefHashInput.mf (Bytes := Bytes)).wf pred x = pred x.value.val
+:= by
+  simp [RefHashInput.mf, RefHashInput.g]
+
 /--
 Port of `ref_hash`.
 Unlike the other labelled functions, the label is used as-is (no "MLS 1.0 " prefix).
