@@ -30,6 +30,11 @@ public
 theorem pure_eq_success {α: Type} (a b: α): (pure a: Result α) = .success b ↔ a = b := by
   simp [pure]
 
+@[simp]
+public
+theorem fromOption_eq_success {α: Type} (s: String) (x: Option α) (y: α): fromOption s x = .success y ↔ x = some y := by
+  cases x <;> simp [fromOption, error, pure]
+
 end Result
 
 end MLS

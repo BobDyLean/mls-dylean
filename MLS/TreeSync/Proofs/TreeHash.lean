@@ -19,7 +19,6 @@ Port-specific differences:
   it compares the serialized hash inputs (equivalent, since serialization is injective),
   and recurses on the right children when the recursion on the left children does not find a hash collision
   (instead of when the left children are equal).
-- `tree_has_hash` is not ported yet.
 -/
 
 namespace MLS.TreeSync
@@ -143,5 +142,11 @@ theorem treeHashInj_spec {l1 l2: Nat} (t1: TreeSync Bytes tkt l1) (t2: TreeSync 
     grind [isHashCollision_treeHashInj_or_eq, getTreeHashInput_zero, getTreeHashInput_succ]
   | nodeNode t1 t2 ihl ihr =>
     grind [isHashCollision_treeHashInj_or_eq, treeHashInj_succ_of_eq, Tree.sigma_eq_succ, getTreeHashInput_succ]
+
+/-- Port of `tree_has_hash`. -/
+@[expose]
+public
+def TreeHasHash {l: Nat} (t: TreeSync Bytes tkt l) (h: Bytes): Prop :=
+  treeHash t = .success h
 
 end MLS.TreeSync

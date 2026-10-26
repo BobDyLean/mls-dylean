@@ -17,6 +17,7 @@ public import MLS.Symbolic.Code.Symbolic
 public import MLS.Symbolic.Code.Parsers
 public import MLS.Symbolic.SymbolicSpec.Randomness
 public import MLS.Symbolic.SymbolicProofs.Randomness
+public import MLS.Symbolic.SymbolicProofs.MiscLemmas
 public import MLS.Common.SymbolicProofs.Crypto.Derived.MlsLabel
 public import MLS.Common.SymbolicProofs.Crypto.Derived.SignWithLabel
 public import MLS.Common.SymbolicProofs.Crypto.Derived.ExpandWithLabel
@@ -104,6 +105,11 @@ public import MLS.TreeKEM.SymbolicSpec.State.NodeKey
 public import MLS.TreeKEM.SymbolicProofs.State.NodeKey
 public import MLS.TreeKEM.SymbolicProofs.Tree.Labels
 public import MLS.TreeKEM.SymbolicProofs.Tree.Operations
+public import MLS.TreeKEM.SymbolicProofs.State.EpochSecrets
+public import MLS.TreeKEM.SymbolicProofs.State.OnePSKStore
+public import MLS.TreeKEM.SymbolicProofs.PSK
+public import MLS.TreeKEM.SymbolicProofs.KeySchedule
+public import MLS.TreeKEM.SymbolicProofs.ConfirmationTag
 public import MLS.TreeKEM.SymbolicSpec.State.EpochSecrets
 public import MLS.TreeKEM.SymbolicSpec.State.OnePSKStore
 public import MLS.TreeKEM.SymbolicSpec.State.PSKStore

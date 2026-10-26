@@ -13,8 +13,8 @@ Port-specific differences:
   (`PersistentLocalState.CompromisableState.ExecEntryT TreeKEMEpochSecret`): it has no tag.
 - States are identified by handles instead of session identifiers.
 - Group contexts have no decidable equality: `getEpochSecret` compares their serializations.
-- Only the specification is ported for now: the usages, labels (`mk_epoch_secret_usage`, `mk_group_secret_label`, …),
-  invariants and proofs are not ported yet.
+- The usages and labels (`mk_epoch_secret_usage`, `mk_group_secret_label`, …) are in
+  `MLS.TreeKEM.SymbolicProofs.State.EpochSecrets`; the invariants and proofs are not ported yet.
 -/
 
 namespace MLS.TreeKEM

@@ -2,6 +2,7 @@ module
 
 public import MLS.Common.Code.Crypto.Derived
 public import MLS.Common.Proofs.Result
+public import MLS.Common.Proofs.Crypto.HashCollision
 
 /-!
 Lemmas about the functions of `MLS.Crypto.Derived`.
@@ -102,5 +103,58 @@ theorem wf_of_parse {Bytes: Type} [BytesLike Bytes] {α: Type} (mf: NonExtensibl
   rw [h_parse] at this
   subst this
   exact (pred_serializeNE_iff mf pred x).1 h_buf
+
+/-! ## Ref hash injectivity -/
+
+section RefHash
+
+variable {Bytes: Type} [CryptoBytes Bytes]
+
+theorem refHash_eq_success (label: String) (value: Bytes) (res: Bytes):
+  refHash label value = .success res ↔
+    ∃ label' value', mkMlsAsciiString label "ref_hash" "label" = .success label' ∧
+      mkMlsBytes value "ref_hash" "value" = .success value' ∧
+      CryptoBytes.hashHash (serializeNE RefHashInput.mf { label := label', value := value' }) = .success res
+:= by
+  simp [refHash]
+
+/--
+Port of `ref_hash_inj`.
+It returns the serialized hash inputs: they are equal when the inputs are equal (MLS* returns `(empty, empty)` in this case).
+-/
+@[expose]
+public
+def refHashInj (label1: String) (value1: Bytes) (label2: String) (value2: Bytes): Bytes × Bytes :=
+  match mkMlsAsciiString label1 "ref_hash" "label", mkMlsBytes value1 "ref_hash" "value",
+    mkMlsAsciiString label2 "ref_hash" "label", mkMlsBytes value2 "ref_hash" "value" with
+  | .success label1, .success value1, .success label2, .success value2 =>
+    (serializeNE RefHashInput.mf { label := label1, value := value1 },
+      serializeNE RefHashInput.mf { label := label2, value := value2 })
+  | _, _, _, _ => (BytesLike.empty, BytesLike.empty)
+
+/-- Specification of `refHashInj` (MLS*'s postcondition of `ref_hash_inj`). -/
+public
+theorem refHashInj_spec (label1: String) (value1: Bytes) (label2: String) (value2: Bytes) (res: Bytes)
+  (h1: refHash label1 value1 = .success res) (h2: refHash label2 value2 = .success res):
+  (label1 = label2 ∧ value1 = value2) ∨ isHashCollision (refHashInj label1 value1 label2 value2)
+:= by
+  grind [refHash_eq_success, refHashInj, isHashCollision, mkMlsAsciiString_eq_success, mkMlsBytes_eq_success]
+
+/-- Port of `make_proposal_ref_inj`. -/
+@[expose]
+public
+def makeProposalRefInj (proposal1 proposal2: Bytes): Bytes × Bytes :=
+  refHashInj "MLS 1.0 Proposal Reference" proposal1 "MLS 1.0 Proposal Reference" proposal2
+
+/-- Specification of `makeProposalRefInj` (MLS*'s postcondition of `make_proposal_ref_inj`). -/
+public
+theorem makeProposalRefInj_spec (proposal1 proposal2: Bytes) (res: Bytes)
+  (h1: makeProposalRef proposal1 = .success res) (h2: makeProposalRef proposal2 = .success res):
+  proposal1 = proposal2 ∨ isHashCollision (makeProposalRefInj proposal1 proposal2)
+:= by
+  have := refHashInj_spec _ proposal1 _ proposal2 res h1 h2
+  grind [makeProposalRefInj]
+
+end RefHash
 
 end MLS

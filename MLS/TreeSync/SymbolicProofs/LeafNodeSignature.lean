@@ -174,11 +174,13 @@ section SymbolicBytes
 variable [HasSymbolicBytes]
 
 /-- There is no hash collision on symbolic bytes. -/
+public
 theorem not_isHashCollision (x: Bytes × Bytes): ¬ isHashCollision x := by
   obtain ⟨b1, b2⟩ := x
   simp only [isHashCollision, CryptoBytes.hashHash, Bool.and_eq_true, bne_iff_ne, ne_eq]
   grind [DY.Hash.hash_inj, Result.pure_eq_success]
 
+public
 theorem mkMlsSigkeyUsage_injective: Function.Injective mkMlsSigkeyUsage := by
   intro p1 p2 h
   simp only [mkMlsSigkeyUsage, Usage.sigKey, Usage.mk.injEq, Option.some.injEq, true_and] at h

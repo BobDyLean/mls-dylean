@@ -83,6 +83,7 @@ class HasSymbolicInvariants extends HasSymbolicBytes where
   [kdfExpandUsage: DySlop.KdfExpand.KdfExpandUsage]
   [hpkePred: DySlop.HPKE.HpkePred]
   [aeadPred: DySlop.Aead.AeadPred]
+  [macPred: DySlop.Mac.MacPred]
   [bytesInv: BytesInvariants]
   [bytesInvProofs: BytesInvariantsProofs]
   [bytesInv0: BytesInvariants.Has DY.Literal.invariants]
@@ -92,6 +93,8 @@ class HasSymbolicInvariants extends HasSymbolicBytes where
   [bytesInv4: BytesInvariants.Has DySlop.Signature.invariants]
   [bytesInv5: BytesInvariants.Has DySlop.Aead.invariants]
   [bytesInv6: BytesInvariants.Has DY.Hash.invariants]
+  [bytesInv7: BytesInvariants.Has DySlop.KdfExtract.invariants]
+  [bytesInv8: BytesInvariants.Has DySlop.Mac.invariants]
 
 attribute [reducible, scoped instance] HasSymbolicInvariants.execTraceTypes
 attribute [reducible, scoped instance] HasSymbolicInvariants.proofTraceTypes
@@ -99,6 +102,7 @@ attribute [reducible, scoped instance] HasSymbolicInvariants.signPred
 attribute [reducible, scoped instance] HasSymbolicInvariants.kdfExpandUsage
 attribute [reducible, scoped instance] HasSymbolicInvariants.hpkePred
 attribute [reducible, scoped instance] HasSymbolicInvariants.aeadPred
+attribute [reducible, scoped instance] HasSymbolicInvariants.macPred
 attribute [reducible, scoped instance] HasSymbolicInvariants.bytesInv
 attribute [           scoped instance] HasSymbolicInvariants.bytesInvProofs
 attribute [           scoped instance] HasSymbolicInvariants.bytesInv0
@@ -108,6 +112,8 @@ attribute [           scoped instance] HasSymbolicInvariants.bytesInv3
 attribute [           scoped instance] HasSymbolicInvariants.bytesInv4
 attribute [           scoped instance] HasSymbolicInvariants.bytesInv5
 attribute [           scoped instance] HasSymbolicInvariants.bytesInv6
+attribute [           scoped instance] HasSymbolicInvariants.bytesInv7
+attribute [           scoped instance] HasSymbolicInvariants.bytesInv8
 
 /-- The bundle of HPKE, to use its theorems. -/
 public scoped instance [HasSymbolicInvariants]: DySlop.HPKE.HasHpkeInvariants where
@@ -175,6 +181,18 @@ instance cryptoBytesBytes: CryptoBytes Bytes where
 public
 theorem cryptoBytesBytes_signSign (signatureKey buf entropy: Bytes):
   CryptoBytes.signSign signatureKey buf entropy = .success (DySlop.Signature.sign signatureKey entropy buf)
+:= rfl
+
+@[simp]
+public
+theorem cryptoBytesBytes_kdfExtract (salt ikm: Bytes):
+  CryptoBytes.kdfExtract salt ikm = .success (DySlop.KdfExtract.kdfExtract salt ikm)
+:= rfl
+
+@[simp]
+public
+theorem cryptoBytesBytes_hmacHmac (key data: Bytes):
+  CryptoBytes.hmacHmac key data = .success (DySlop.Mac.macCompute key data)
 := rfl
 
 @[simp]

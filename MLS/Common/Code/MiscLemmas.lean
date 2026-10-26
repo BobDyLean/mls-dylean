@@ -14,6 +14,16 @@ open Comparse
 
 variable {Bytes: Type} [BytesLike Bytes]
 
+/-- `concat` is injective on bytes whose first parts have the same length. -/
+public
+theorem concat_inj (a1 b1 a2 b2: Bytes) (h: BytesLike.concat a1 b1 = BytesLike.concat a2 b2)
+  (hlen: BytesLike.length a1 = BytesLike.length a2):
+  a1 = a2 ∧ b1 = b2
+:= by
+  have s1 := BytesLike.split_concat a1 b1
+  rw [h, hlen, BytesLike.split_concat] at s1
+  grind
+
 theorem length_concatPrefixes (prefixes: List Bytes) (suffix: Bytes):
   BytesLike.length (concatPrefixes prefixes suffix) = (prefixes.map BytesLike.length).sum + BytesLike.length suffix
 := by

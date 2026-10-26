@@ -10,7 +10,8 @@ Port-specific differences:
 - The state is a DyLean local state, with its own trace entry type
   (`PersistentLocalState.CompromisableState.ExecEntryT OnePskState`): it has no tag.
 - States are identified by handles instead of session identifiers.
-- The labels (`psk_label`), invariants and proofs are not ported yet.
+- The label (`psk_label`) is in `MLS.TreeKEM.SymbolicProofs.State.OnePSKStore`;
+  the invariants and proofs are not ported yet.
 -/
 
 namespace MLS.TreeKEM

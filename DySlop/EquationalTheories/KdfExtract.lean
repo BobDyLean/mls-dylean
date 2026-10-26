@@ -185,6 +185,15 @@ theorem kdfExtract.label
 := by
   simp [kdfExtract, Bytes.label.eq, KdfExtract.invariants]
 
+/-- The usage of the result of `kdfExtract`. -/
+@[simp]
+public
+theorem kdfExtract.usage
+  (salt ikm: Bytes) (tr: ProofTrace)
+  : (kdfExtract salt ikm).usage tr = extractedKeyUsage
+:= by
+  simp [kdfExtract, Bytes.usage.eq, KdfExtract.invariants]
+
 /-- Port of `has_usage_kdf_extract`. -/
 public
 theorem kdfExtract.HasUsage

@@ -49,6 +49,22 @@ theorem join_secret_left (l: Label): Label.secret.join l = l := by
   ext
   simp
 
+/-- Port of `meet_associative`. -/
+public
+theorem meet_assoc (l1 l2 l3: Label): (l1.meet l2).meet l3 = l1.meet (l2.meet l3) := by
+  ext
+  grind
+
+public
+theorem meet_pub_left (l: Label): Label.pub.meet l = l := by
+  ext
+  simp
+
+public
+theorem meet_pub_right (l: Label): l.meet Label.pub = l := by
+  ext
+  simp
+
 /-! ## Equivalence of labels -/
 
 public
@@ -71,6 +87,14 @@ public
 theorem equivalent_join (l1 l1' l2 l2': Label) (tr: ExecTrace)
   (h1: l1.equivalent l1' tr) (h2: l2.equivalent l2' tr):
   (l1.join l2).equivalent (l1'.join l2') tr
+:= by
+  grind [canFlow]
+
+/-- Meets of equivalent labels are equivalent. -/
+public
+theorem equivalent_meet (l1 l1' l2 l2': Label) (tr: ExecTrace)
+  (h1: l1.equivalent l1' tr) (h2: l2.equivalent l2' tr):
+  (l1.meet l2).equivalent (l1'.meet l2') tr
 := by
   grind [canFlow]
 
