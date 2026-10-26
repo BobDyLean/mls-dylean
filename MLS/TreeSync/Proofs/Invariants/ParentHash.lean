@@ -109,6 +109,7 @@ theorem of_sibling {ld lp: Nat} {d: Tree Leaf Node ld} {p: Tree Leaf Node (lp+1)
 
 grind_pattern Tree.IsSubtreeOf.of_sibling => d.IsSubtreeOf (p.sibling li)
 
+public
 theorem trans {le ld lp: Nat} {e: Tree Leaf Node le} {d: Tree Leaf Node ld} {p: Tree Leaf Node lp}
   (h1: e.IsSubtreeOf d) (h2: d.IsSubtreeOf p):
   e.IsSubtreeOf p
@@ -800,6 +801,7 @@ theorem parentHashCorrect_iff {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSy
 := by
   grind [parentHashCorrect]
 
+public
 theorem nodeHasParentHash_of_parentHashCorrect {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt (lp+1))
   (h: parentHashCorrect d p):
   nodeHasParentHash d

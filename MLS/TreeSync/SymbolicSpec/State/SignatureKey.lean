@@ -12,8 +12,9 @@ Port-specific differences:
 - States are identified by handles instead of session identifiers: `mkSignatureKey` returns the handle of the new state.
 - The usage and label of the signature key (the arguments of MLS*'s `my_mk_rand`)
   are ghost arguments of the proofs in DyLean (`Random.genRand`).
-- The labels (`signature_key_label`, …), the invariants (`is_signature_key_sk`, `is_signature_key_vk`,
-  `treesync_signature_key_state_pred`) and the proofs are not ported yet.
+- The labels (`signature_key_label`, …) and the predicates (`is_signature_key_sk`, `is_signature_key_vk`)
+  are in `MLS.TreeSync.SymbolicProofs.State.SignatureKey`;
+  the state invariant (`treesync_signature_key_state_pred`) and the proofs are not ported yet.
 -/
 
 namespace MLS.TreeSync

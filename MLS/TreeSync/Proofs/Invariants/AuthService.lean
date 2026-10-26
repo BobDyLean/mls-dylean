@@ -46,6 +46,7 @@ theorem allCredentialsOk_left_right {l: Nat} (ts: TreeSync Bytes tkt (l+1)) (ast
   rw [allCredentialsOk.eq_def]
   simp
 
+public
 theorem allCredentialsOk_succ {l: Nat} (ts: TreeSync Bytes tkt (l+1)) (ast: ASTokens TokenT (l+1)) (li: Nat)
   (hpos: ts.position = ast.position):
   allCredentialsOk asp ts ast ↔ allCredentialsOk asp (ts.child li) (ast.child li) ∧ allCredentialsOk asp (ts.sibling li) (ast.sibling li)
@@ -68,6 +69,7 @@ theorem allCredentialsOk_intro {l: Nat} (ts: TreeSync Bytes tkt l) (ast: ASToken
       grind [oneCredentialOk_succ, Tree.containsLeafIndex]
 
 /-- Port of `elim_all_credentials_ok`. -/
+public
 theorem allCredentialsOk_elim {l: Nat} (ts: TreeSync Bytes tkt l) (ast: ASTokens TokenT l) (li: Nat)
   (hpos: ts.position = ast.position) (h: allCredentialsOk asp ts ast):
   oneCredentialOk asp ts ast li

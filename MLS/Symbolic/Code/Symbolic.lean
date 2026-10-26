@@ -32,7 +32,7 @@ As in DyLean's examples, the instances that symbolic MLS depends on are bundled 
 whose fields are scoped instances in the namespace `MLS`:
 - `HasSymbolicBytes`: the equational theories used by the symbolic `CryptoBytes` instance,
   and randomness (DyLean's `DY.Random`, for the traceful functions of the symbolic specifications),
-- `HasSymbolicInvariants`: the trace types, the cryptographic predicates and the bytes invariants
+- `HasSymbolicInvariants`: the trace types, the cryptographic predicates and the bytes invariants (with their proofs)
   used by the symbolic proofs.
 The top-level protocol provides them after combining the corresponding instances
 (`instance: HasSymbolicBytes where`, `instance: HasSymbolicInvariants where`).
@@ -84,12 +84,14 @@ class HasSymbolicInvariants extends HasSymbolicBytes where
   [hpkePred: DySlop.HPKE.HpkePred]
   [aeadPred: DySlop.Aead.AeadPred]
   [bytesInv: BytesInvariants]
+  [bytesInvProofs: BytesInvariantsProofs]
   [bytesInv0: BytesInvariants.Has DY.Literal.invariants]
   [bytesInv1: BytesInvariants.Has DY.Concat.invariants]
   [bytesInv2: BytesInvariants.Has DySlop.KdfExpand.invariants]
   [bytesInv3: BytesInvariants.Has DySlop.Kem.invariants]
   [bytesInv4: BytesInvariants.Has DySlop.Signature.invariants]
   [bytesInv5: BytesInvariants.Has DySlop.Aead.invariants]
+  [bytesInv6: BytesInvariants.Has DY.Hash.invariants]
 
 attribute [reducible, scoped instance] HasSymbolicInvariants.execTraceTypes
 attribute [reducible, scoped instance] HasSymbolicInvariants.proofTraceTypes
@@ -98,12 +100,14 @@ attribute [reducible, scoped instance] HasSymbolicInvariants.kdfExpandUsage
 attribute [reducible, scoped instance] HasSymbolicInvariants.hpkePred
 attribute [reducible, scoped instance] HasSymbolicInvariants.aeadPred
 attribute [reducible, scoped instance] HasSymbolicInvariants.bytesInv
+attribute [           scoped instance] HasSymbolicInvariants.bytesInvProofs
 attribute [           scoped instance] HasSymbolicInvariants.bytesInv0
 attribute [           scoped instance] HasSymbolicInvariants.bytesInv1
 attribute [           scoped instance] HasSymbolicInvariants.bytesInv2
 attribute [           scoped instance] HasSymbolicInvariants.bytesInv3
 attribute [           scoped instance] HasSymbolicInvariants.bytesInv4
 attribute [           scoped instance] HasSymbolicInvariants.bytesInv5
+attribute [           scoped instance] HasSymbolicInvariants.bytesInv6
 
 /-- The bundle of HPKE, to use its theorems. -/
 public scoped instance [HasSymbolicInvariants]: DySlop.HPKE.HasHpkeInvariants where

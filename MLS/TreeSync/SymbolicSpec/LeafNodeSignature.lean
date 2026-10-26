@@ -13,9 +13,8 @@ Port-specific differences:
   the principal is the field `prin` of the events.
 - Events have no tag nor format (MLS*'s `event` instances): DyLean has one trace entry type per event type
   (`ProtocolEvent.ExecEntryT (LeafNodeSignedEvent tkt)`, `ProtocolEvent.ExecEntryT (GroupHasTreeEvent tkt)`).
-- Only the specification is ported for now: the signature predicate (`leaf_node_sign_pred`, …)
-  and the proofs (`parent_hash_implies_event`, `state_implies_event`, `is_msg_external_path_to_path`, …)
-  are not ported yet (they will be in `MLS.TreeSync.SymbolicProofs.LeafNodeSignature`).
+- The signature predicate (`leaf_node_sign_pred`, …) and the proofs (`parent_hash_implies_event`,
+  `state_implies_event`, `is_msg_external_path_to_path`, …) are in `MLS.TreeSync.SymbolicProofs.LeafNodeSignature`.
 -/
 
 namespace MLS.TreeSync

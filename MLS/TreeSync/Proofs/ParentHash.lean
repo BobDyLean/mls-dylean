@@ -36,6 +36,7 @@ def getParentHashInput {l: Nat}
   let originalSiblingTreeHash ← mkMlsBytes originalSiblingTreeHash "compute_parent_hash" "original_sibling_tree_hash"
   pure { content, parentHash, originalSiblingTreeHash }
 
+public
 theorem getParentHashInput_eq_success {l: Nat}
   (content: tkt.NodeContent) (parentHash: Bytes) (originalSibling: TreeSync Bytes tkt l)
   (hashInput: ParentHashInput Bytes tkt):

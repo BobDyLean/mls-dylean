@@ -7,8 +7,7 @@ Port of `MLS.TreeSync.Symbolic.AuthService`.
 
 Port-specific differences:
 - `dy_asp` (the instantiation of the Authentication Service for DY*) and its lemmas
-  are not ported yet, as the other invariants of the symbolic specification
-  (they will be in `MLS.TreeSync.SymbolicProofs.AuthService`).
+  are in `MLS.TreeSync.SymbolicProofs.AuthService`.
 -/
 
 namespace MLS.TreeSync

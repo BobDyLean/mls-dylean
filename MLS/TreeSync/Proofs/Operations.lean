@@ -148,6 +148,37 @@ theorem computeLeafParentHashFromPath_node {PathLeaf: Type} {l: Nat}
   simp [h, Bind.bind, Result.bind]
 
 public
+theorem computeLeafParentHashFromPath_zero {PathLeaf: Type}
+  (t: TreeSync Bytes tkt 0) (li: Nat) (lp: PathLeaf) (parentParentHash: Bytes):
+  computeLeafParentHashFromPath t li (.leaf lp) parentParentHash = .success parentParentHash
+:= by
+  obtain ⟨_, ⟨_⟩⟩ := t
+  rfl
+
+public
+theorem computeLeafParentHashFromPath_node_eq {PathLeaf: Type} {l: Nat}
+  (t: TreeSync Bytes tkt (l+1)) (li: Nat) (optExtContent: Option tkt.NodeContent)
+  (pNext: Path PathLeaf (Option tkt.NodeContent) l) (parentParentHash: Bytes):
+  computeLeafParentHashFromPath t li (.node optExtContent pNext) parentParentHash = (do
+    let (_, newParentParentHash) ← computeNewNpAndPh optExtContent (t.sibling li) parentParentHash
+    computeLeafParentHashFromPath (t.child li) li pNext newParentParentHash)
+:= by
+  conv => lhs; unfold computeLeafParentHashFromPath
+  simp [Tree.intoChildSiblingView_eq]
+
+public
+theorem applyPathAux_node_eq {l: Nat}
+  (t: TreeSync Bytes tkt (l+1)) (li: Nat) (optExtContent: Option tkt.NodeContent) (pNext: PathSync Bytes tkt l)
+  (parentParentHash: Bytes):
+  applyPathAux t li (.node optExtContent pNext) parentParentHash = (do
+    let (newOptContent, newParentParentHash) ← computeNewNpAndPh optExtContent (t.sibling li) parentParentHash
+    let newChild ← applyPathAux (t.child li) li pNext newParentParentHash
+    pure (ChildSiblingView.node newOptContent newChild (t.sibling li)).pack)
+:= by
+  conv => lhs; unfold applyPathAux
+  simp [Tree.intoChildSiblingView_eq]
+
+public
 theorem pathIsFilterValid_node {PathLeaf: Type} {l: Nat}
   (t: TreeSync Bytes tkt (l+1)) (li: Nat) (optExtContent: Option tkt.NodeContent)
   (pNext: Path PathLeaf (Option tkt.NodeContent) l):

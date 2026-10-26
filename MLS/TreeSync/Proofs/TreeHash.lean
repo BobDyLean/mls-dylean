@@ -44,6 +44,7 @@ def getTreeHashInput {l: Nat} (t: TreeSync Bytes tkt l): Result (TreeHashInput B
     let rightHash ← mkMlsBytes rightHash "tree_hash" "right_bytes"
     pure (.parent { parentNode := onp, leftHash, rightHash })
 
+public
 theorem getTreeHashInput_zero (t: TreeSync Bytes tkt 0) (hashInput: TreeHashInput Bytes tkt):
   getTreeHashInput t = .success hashInput ↔
     t.position < 2^32 ∧ hashInput = .leaf { leafIndex := t.position.toUInt32, leafNode := t.leafContent }
@@ -52,6 +53,7 @@ theorem getTreeHashInput_zero (t: TreeSync Bytes tkt 0) (hashInput: TreeHashInpu
   simp [getTreeHashInput, Tree.intoLeftRightView, Tree.leafContent]
   grind
 
+public
 theorem getTreeHashInput_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (hashInput: TreeHashInput Bytes tkt):
   getTreeHashInput t = .success hashInput ↔
     ∃ leftHash rightHash,
@@ -61,6 +63,7 @@ theorem getTreeHashInput_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (hashInput:
   simp [getTreeHashInput]
   grind
 
+public
 theorem treeHash_eq_success {l: Nat} (t: TreeSync Bytes tkt l) (th: Bytes):
   treeHash t = .success th ↔
     ∃ hashInput, getTreeHashInput t = .success hashInput ∧

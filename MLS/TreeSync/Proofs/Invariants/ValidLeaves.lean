@@ -21,6 +21,7 @@ open MLS
 
 variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes}
 
+public
 theorem validLeavesInvariant_zero (groupId: MlsBytes Bytes) (t: TreeSync Bytes tkt 0):
   validLeavesInvariant groupId t = (
     match t.leafContent with
@@ -29,6 +30,7 @@ theorem validLeavesInvariant_zero (groupId: MlsBytes Bytes) (t: TreeSync Bytes t
 := by
   grind [validLeavesInvariant.eq_def]
 
+public
 theorem validLeavesInvariant_succ (groupId: MlsBytes Bytes) {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat):
   validLeavesInvariant groupId t =
     (validLeavesInvariant groupId (t.child li) && validLeavesInvariant groupId (t.sibling li))

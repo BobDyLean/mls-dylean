@@ -59,6 +59,10 @@ public import MLS.TreeSync.Proofs.API.LeafAt
 public import MLS.TreeSync.Proofs.TreeHash
 public import MLS.TreeSync.Proofs.ParentHash
 public import MLS.TreeSync.Proofs.ParentHashGuarantees
+public import MLS.TreeSync.SymbolicProofs.State.SignatureKey
+public import MLS.TreeSync.SymbolicProofs.AuthService
+public import MLS.TreeSync.SymbolicProofs.IsWellFormed
+public import MLS.TreeSync.SymbolicProofs.LeafNodeSignature
 public import MLS.TreeKEM.Code.NetworkTypes
 public import MLS.TreeKEM.Code.Types
 public import MLS.TreeKEM.Code.Parsers

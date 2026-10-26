@@ -256,10 +256,12 @@ theorem canonicalize_eq_self {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (h: is
 
 /-! ## Induction step -/
 
+public
 theorem nodeNotBlank_zero (t: TreeSync Bytes tkt 0): nodeNotBlank t = t.leafContent.isSome := by
   obtain ⟨_, ⟨_⟩⟩ := t
   rfl
 
+public
 theorem nodeNotBlank_of_nodeHasParentHash {l: Nat} (t: TreeSync Bytes tkt l) (h: nodeHasParentHash t):
   nodeNotBlank t
 := by
@@ -318,6 +320,7 @@ theorem unAddP_congr {l: Nat} (t: TreeSync Bytes tkt l) (p1 p2: Nat → Bool)
     | some c => grind [List.filter_congr, unmergedLeavesOk_content]
 
 /-- Port of `unmerged_leaves_ok_subtree`. -/
+public
 theorem unmergedLeavesOk_of_isSubtreeOf {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt lp)
   (hok: unmergedLeavesOk p) (hsub: d.IsSubtreeOf p):
   unmergedLeavesOk d
@@ -325,6 +328,7 @@ theorem unmergedLeavesOk_of_isSubtreeOf {ld lp: Nat} (d: TreeSync Bytes tkt ld) 
   induction hsub <;> grind [unmergedLeavesOk_child_sibling]
 
 /-- Port of `leaf_at_subtree_leaf`. -/
+public
 theorem leafAt_of_isSubtreeOf_zero {lc: Nat} (d: TreeSync Bytes tkt 0) (c: TreeSync Bytes tkt lc)
   (hsub: d.IsSubtreeOf c):
   leafAt c d.position = d.leafContent
@@ -526,6 +530,7 @@ theorem isSubtreeWithBlanksBetween_of_lastUpdateCorrect {ld lp: Nat}
   · exact hli
 
 @[simp]
+public
 theorem canonicalize_position {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat):
   (canonicalize t li).position = t.position
 := by
@@ -669,6 +674,7 @@ def getLeafTreeTbs (t: TreeSync Bytes tkt 0) (groupId: MlsBytes Bytes): Option B
   | some ln => if t.position < 2^32 then some (getLeafTbs ln groupId t.position.toUInt32) else none
   | none => none
 
+public
 theorem leafContent_canonicalize (t: TreeSync Bytes tkt 0) (li: Nat):
   (canonicalize t li).leafContent = t.leafContent.map fun ln => { ln with signature := MlsBytes.empty }
 := by
@@ -887,6 +893,7 @@ theorem parentHashGuaranteeTheorem_spec (tl1 tl2: TreeSyncList Bytes tkt) (tbs: 
 /-! ## Tree list from the parent hash invariant -/
 
 /-- Port of `parent_hash_invariant_subtree`. -/
+public
 theorem parentHashInvariant_of_isSubtreeOf {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt lp)
   (hinv: parentHashInvariant p) (hsub: d.IsSubtreeOf p):
   parentHashInvariant d
