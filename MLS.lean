@@ -67,6 +67,7 @@ public import MLS.TreeSync.SymbolicProofs.AuthService
 public import MLS.TreeSync.SymbolicProofs.IsWellFormed
 public import MLS.TreeSync.SymbolicProofs.LeafNodeSignature
 public import MLS.TreeSync.SymbolicProofs.Event.LeafNodeHasBeenVerified
+public import MLS.TreeSync.SymbolicProofs.API
 public import MLS.TreeKEM.Code.NetworkTypes
 public import MLS.TreeKEM.Code.Types
 public import MLS.TreeKEM.Code.Parsers
@@ -114,6 +115,8 @@ public import MLS.TreeKEM.SymbolicProofs.State.OnePSKStore
 public import MLS.TreeKEM.SymbolicProofs.PSK
 public import MLS.TreeKEM.SymbolicProofs.KeySchedule
 public import MLS.TreeKEM.SymbolicProofs.ConfirmationTag
+public import MLS.TreeKEM.SymbolicProofs.API.KeySchedule
+public import MLS.TreeKEM.SymbolicProofs.API.Tree
 public import MLS.TreeKEM.SymbolicSpec.State.EpochSecrets
 public import MLS.TreeKEM.SymbolicSpec.State.OnePSKStore
 public import MLS.TreeKEM.SymbolicSpec.State.PSKStore

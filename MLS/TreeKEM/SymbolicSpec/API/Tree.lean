@@ -7,7 +7,9 @@ public import MLS.Symbolic.Code.Symbolic
 Port of `MLS.TreeKEM.Symbolic.API.Tree` (its traceful function).
 
 Port-specific differences:
-- Only the specification is ported for now: the invariants (`treekem_tree_state_invariant`, …) and the proofs are not ported yet.
+- The invariants (`treekem_tree_state_invariant`, …) and the proofs of the non-traceful functions are in
+  `MLS.TreeKEM.SymbolicProofs.API.Tree`; the proof of the traceful function (`generate_prepare_create_commit_rand_good`)
+  is not ported yet.
 -/
 
 namespace MLS.TreeKEM

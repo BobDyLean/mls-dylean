@@ -990,6 +990,7 @@ Induction following successful computations of `pathToTreeListAux` and `applyPat
 with one case per kind of node of the path.
 -/
 @[elab_as_elim]
+public
 theorem pathToTreeListAux_induction (li: Nat)
   {motive: (l: Nat) → (t: TreeSync Bytes tkt l) → (p: PathSync Bytes tkt l) → (parentParentHash: Bytes) →
     (tl: TreeSyncList Bytes tkt) → (t': TreeSync Bytes tkt l) →

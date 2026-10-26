@@ -553,6 +553,7 @@ theorem getPathLeaf_setPathLeaf' {Leaf Leaf' Node: Type} {l: Nat} (p: Path Leaf 
   induction p <;> simp_all [Path.setPathLeaf, Path.getPathLeaf]
 
 /-- Port of `compute_leaf_parent_hash_from_path_set_path_leaf`. -/
+public
 theorem computeLeafParentHashFromPath_setPathLeaf {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: ExternalPathSync Bytes tkt l) (ln: LeafNode Bytes tkt) (parentParentHash: Bytes):
   computeLeafParentHashFromPath t li (p.setPathLeaf ln) parentParentHash = computeLeafParentHashFromPath t li p parentParentHash
@@ -566,9 +567,11 @@ theorem computeLeafParentHashFromPath_setPathLeaf {l: Nat}
     simp only [Path.setPathLeaf, computeLeafParentHashFromPath_node_eq, ih]
 
 /-- The data of the leaf node computed by `externalPathToPathAux` and `externalPathToPathAuxNosig`. -/
+public
 abbrev commitLeafNodeData (lp: LeafNodeData Bytes tkt) (parentHash: MlsBytes Bytes): LeafNodeData Bytes tkt :=
   { lp with source := .commit, lifetime := (), parentHash := parentHash }
 
+public
 theorem externalPathToPathNosig_eq_success {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: ExternalPathSync Bytes tkt l) (authP: PathSync Bytes tkt l)
   (h: externalPathToPathNosig t li p = .success authP):
@@ -580,6 +583,7 @@ theorem externalPathToPathNosig_eq_success {l: Nat}
     Result.pure_eq_success] at h
   grind
 
+public
 theorem externalPathToPath_eq_success {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: ExternalPathSync Bytes tkt l)
   (groupId: MlsBytes Bytes) (signKey nonce: Bytes) (authP: PathSync Bytes tkt l)
@@ -637,6 +641,7 @@ theorem pathIsFilterValid_externalPathToPathNosig {l: Nat}
   grind [pathIsFilterValid_setPathLeaf]
 
 /-- Port of `apply_path_aux_compute_leaf_parent_hash_from_path_both_succeed`. -/
+public
 theorem exists_applyPathAux_iff {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l) (parentParentHash: Bytes):
   (∃ t', applyPathAux t li p parentParentHash = .success t') ↔

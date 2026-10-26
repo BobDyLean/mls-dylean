@@ -617,6 +617,7 @@ theorem canonicalizeUnmergedLeaves_position {l: Nat} (t: TreeSync Bytes tkt l):
 grind_pattern canonicalizeUnmergedLeaves_position => (canonicalizeUnmergedLeaves t).position
 
 /-- The leaves of `canonicalizeUnmergedLeaves` of a leaf. -/
+public
 theorem canonicalizeUnmergedLeaves_zero (t: TreeSync Bytes tkt 0): canonicalizeUnmergedLeaves t = t := by
   rw [canonicalizeUnmergedLeaves, unmergedLeavesOf_zero, unAdd_nil]
 

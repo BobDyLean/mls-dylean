@@ -1613,6 +1613,20 @@ theorem findLca_le {Leaf Node: Type} {l: Nat} (t: Tree Leaf Node l) (li1 li2: Na
   | leaf t => rw [findLca.eq_def]; simp
   | node t ih => rw [findLca_succ]; split <;> omega
 
+/-- `findLca` only depends on the position of the tree. -/
+public
+theorem findLca_eq_of_position_eq {Leaf Node Leaf' Node': Type} {l: Nat} (t: Tree Leaf Node l) (t': Tree Leaf' Node' l)
+  (li1 li2: Nat) (hpos: t.position = t'.position):
+  findLca t li1 li2 = findLca t' li1 li2
+:= by
+  induction t using Tree.childInduction li1 with
+  | leaf t => rw [findLca.eq_def, findLca.eq_def]; simp
+  | node t ih =>
+    have hc: (t.child li1).position = (t'.child li1).position := by
+      grind [Tree.left_position, Tree.right_position]
+    rw [findLca_succ, findLca_succ, ih _ hc]
+    simp [Tree.containsLeafIndex, hc]
+
 /-- When the sibling is empty, the non-blank leaves are in the child. -/
 theorem containsLeafIndex_child_of_isTreeEmpty_sibling {Leaf Node: Type} {l: Nat} (t: Tree (Option Leaf) (Option Node) (l+1))
   (li li': Nat) (hsib: isTreeEmpty (t.sibling li)) (hli: t.containsLeafIndex li) (hli': t.containsLeafIndex li')

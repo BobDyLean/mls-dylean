@@ -55,6 +55,7 @@ theorem Rel.getPathLeaf {RLeaf: Leaf1 → Leaf2 → Prop} {RNode: Node1 → Node
 
 /-- Port of `get_path_leaf_set_path_leaf`. -/
 @[simp]
+public
 theorem getPathLeaf_setPathLeaf {Leaf': Type} {l: Nat} (p: Path Leaf1 Node1 l) (x: Leaf'):
   (p.setPathLeaf x).getPathLeaf = x
 := by
@@ -273,6 +274,7 @@ theorem pathFilteringOk_treesyncToTreekem {l: Nat} {PathLeaf PathNode: Type}
   | node t ih => cases p; simp [ih, isTreeEmpty_treesyncToTreekem]
 
 /-- Port of `get_path_leaf_external_pathsync_pre_pathkem_rel`. -/
+public
 theorem getPathLeaf_externalPathsyncPrePathkemRel {l: Nat} (ps: ExternalPathSync Bytes tkt l) (pk: PrePathKEM Bytes l)
   (h: externalPathsyncPrePathkemRel ps pk):
   ps.getPathLeaf.content.val = pk.getPathLeaf.publicKey
@@ -280,6 +282,7 @@ theorem getPathLeaf_externalPathsyncPrePathkemRel {l: Nat} (ps: ExternalPathSync
   Path.Rel.getPathLeaf h
 
 /-- Port of `get_path_leaf_pathsync_pre_pathkem_rel`. -/
+public
 theorem getPathLeaf_pathsyncPrePathkemRel {l: Nat} (ps: PathSync Bytes tkt l) (pk: PrePathKEM Bytes l)
   (h: pathsyncPrePathkemRel ps pk):
   ps.getPathLeaf.data.content.val = pk.getPathLeaf.publicKey
@@ -406,6 +409,7 @@ theorem applyPathAux_treesyncTreekemRel {l: Nat} (ts: TreeSync Bytes tkt l) (tk:
     · apply Tree.ext_succ li <;> simp_all [treesyncToTreekemNode] <;> grind
 
 /-- Port of `apply_path_treesync_treekem_rel`. -/
+public
 theorem applyPath_treesyncTreekemRel {l: Nat} (ts: TreeSync Bytes tkt l) (tk: TreeKEM Bytes l) (li: Nat)
   (ps: PathSync Bytes tkt l) (pk: PathKEM Bytes l)
   (resS: TreeSync Bytes tkt l) (h: applyPath ts li ps = .success resS)
@@ -442,6 +446,7 @@ theorem externalPathToPathAux_data {tkt: TreeKEMTypes Bytes} {l: Nat} (t: TreeSy
   grind
 
 /-- Port of `pathsync_pre_pathkem_rel_external_path_to_path_aux`. -/
+public
 theorem pathsyncPrePathkemRel_externalPathToPathAux {l: Nat} (ln: LeafNode Bytes tkt) (ps: ExternalPathSync Bytes tkt l)
   (pk: PrePathKEM Bytes l)
   (_hsource: ps.getPathLeaf.source = .update) (hln: ln.data.content.val = pk.getPathLeaf.publicKey)
@@ -493,6 +498,7 @@ section State
 variable {TokenT: Type} {groupId: MlsBytes Bytes} {leafInd: Nat}
 
 /-- States with the same height and related trees are related. -/
+public
 theorem treesyncTreekemStateRel_mk {l: Nat} (tsTree: TreeSync Bytes tkt l) (tokens: ASTokens TokenT l)
   (tkTree: TreeKEM Bytes l) (priv: TreeKEMPriv Bytes l) (h: treesyncTreekemRel tsTree tkTree):
   treesyncTreekemStateRel
@@ -504,6 +510,7 @@ theorem treesyncTreekemStateRel_mk {l: Nat} (tsTree: TreeSync Bytes tkt l) (toke
 
 /-- Induction on related states: they have the same height, and their trees are related. -/
 @[elab_as_elim]
+public
 theorem treesyncTreekemStateRel_induction
   {motive: (stTs: TreeSyncState Bytes tkt TokenT groupId) → (stTk: TreeKEMTreeState Bytes leafInd) →
     treesyncTreekemStateRel stTs stTk → Prop}
