@@ -33,6 +33,10 @@ Port-specific differences:
 - MLS*'s functions with a leading underscore (`_process_welcome`, …) end with a prime.
 - `my_leaf_index_t` (a leaf index whose leaf is a given leaf node) is not ported: `findMyIndex'` returns a `Nat`.
 - Leaf nodes have no decidable equality: `findMyIndex'` compares their serializations.
+- Unlike MLS*, `processWelcome'` stores the resumption PSK of the epoch the participant joins
+  (as `processCommit'` does for the epoch it enters), so that members who joined by a Welcome
+  can use it in a later PSK proposal. DyLean's states are immutable: `processWelcome'` and `processWelcome`
+  also return the new handle of the PSK store.
 -/
 
 namespace MLS.TreeKEM
@@ -110,10 +114,14 @@ def processWelcomeTreekem' {groupId: MlsBytes Bytes} (me: Participant)
   guard ((API.getEpochKeys treekemSt).confirmationTag = groupInfo.tbs.confirmationTag.val)
   pure ⟨myLeafIndex, treekemSt⟩
 
-/-- Port of `_process_welcome`. Returns the handle of the group state. -/
+/--
+Port of `_process_welcome`.
+Returns the handle of the group state, and the new handle of the PSK store.
+Unlike MLS*, it stores the resumption PSK of the epoch (see the module docstring).
+-/
 public
 def processWelcome' (me: Participant) (keyPackageStoreSid authServiceSid pskStoreSid: Nat)
-  (welcome: Welcome Bytes) (ratchetTree: RatchetTree Bytes tkt): Traceful Nat
+  (welcome: Welcome Bytes) (ratchetTree: RatchetTree Bytes tkt): Traceful (Nat × Nat)
 := do
   let keyPackageRefToKpSecrets ← getStoreLookupFunction me keyPackageStoreSid
   let (groupSecrets, (_keyPackageRef, keyPackageStoreValue)) ← extractResult
@@ -136,18 +144,26 @@ def processWelcome' (me: Participant) (keyPackageStoreSid authServiceSid pskStor
     epochKeys := treekemSt.keyscheduleState
   }: IAmInGroup)
 
-  storeTreesyncTreekemState me {
+  let pskStoreSid ← rememberPsk me pskStoreSid
+    (.resumptionPsk groupInfo.tbs.groupContext.groupId groupInfo.tbs.groupContext.epoch)
+    (API.getEpochKeys treekemSt).resumptionPsk
+
+  let groupStateSid ← storeTreesyncTreekemState me {
     leafIndex := myLeafIndex
     groupContext := groupInfo.tbs.groupContext
     mySignatureKeySid := keyPackageStoreValue.signatureKeySid
     treesync := treesyncSt
     treekem := treekemSt
   }
+  pure (groupStateSid, pskStoreSid)
 
-/-- Port of `process_welcome`. Returns the handle of the group state. -/
+/--
+Port of `process_welcome`.
+Returns the handle of the group state, and the new handle of the PSK store.
+-/
 public
 def processWelcome (me: Participant) (keyPackageStoreSid authServiceSid pskStoreSid: Nat)
-  (welcomeTs ratchetTreeTs: Nat): Traceful Nat
+  (welcomeTs ratchetTreeTs: Nat): Traceful (Nat × Nat)
 := do
   let welcomeBytes ← Network.receiveMessage welcomeTs
   let ratchetTreeBytes ← Network.receiveMessage ratchetTreeTs

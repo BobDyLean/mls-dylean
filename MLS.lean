@@ -109,3 +109,4 @@ public import MLS.TreeKEM.Symbolic.Traceful.ProcessProposal
 public import MLS.TreeKEM.Symbolic.Traceful.ProcessCommit
 public import MLS.TreeKEM.Symbolic.Traceful.GenerateCommitWelcome
 public import MLS.TreeKEM.Symbolic.Traceful.ProcessWelcome
+public import MLS.TreeKEM.Symbolic.SanityChecks
