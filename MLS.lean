@@ -14,6 +14,7 @@ public import MLS.Common.Code.Crypto.Derived
 public import MLS.Common.Proofs.Crypto.Derived
 public import MLS.Common.Proofs.Crypto.HashCollision
 public import MLS.Symbolic.Code.Symbolic
+public import MLS.Symbolic.Code.Parsers
 public import MLS.Common.Symbolic.Crypto.Derived.MlsLabel
 public import MLS.Common.Symbolic.Crypto.Derived.SignWithLabel
 public import MLS.Common.Symbolic.Crypto.Derived.ExpandWithLabel
@@ -36,6 +37,7 @@ public import MLS.TreeSync.Code.Invariants.ParentHash
 public import MLS.TreeSync.Code.Invariants.AuthService
 public import MLS.TreeSync.Code.API.Types
 public import MLS.TreeSync.Code.API
+public import MLS.TreeSync.Symbolic.Parsers
 public import MLS.TreeSync.Proofs.Operations
 public import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves
 public import MLS.TreeSync.Proofs.Invariants.ParentHash
@@ -48,6 +50,7 @@ public import MLS.TreeSync.Proofs.ParentHash
 public import MLS.TreeSync.Proofs.ParentHashGuarantees
 public import MLS.TreeKEM.Code.NetworkTypes
 public import MLS.TreeKEM.Code.Types
+public import MLS.TreeKEM.Code.Parsers
 public import MLS.TreeKEM.Code.Operations
 public import MLS.TreeKEM.Code.API.Tree.Types
 public import MLS.TreeKEM.Code.API.Tree
