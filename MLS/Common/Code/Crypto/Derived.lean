@@ -131,6 +131,12 @@ def SignContent.mf {Bytes: Type} [BytesLike Bytes]: NonExtensibleMessageFormat B
   .isomorphic (.prod MlsAsciiString.mf MlsBytes.mf) SignContent.f SignContent.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem SignContent.mf.wf_eq {Bytes: Type} [BytesLike Bytes] (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: SignContent Bytes):
+  (SignContent.mf (Bytes := Bytes)).wf pred x = pred x.content.val
+:= by
+  simp [SignContent.mf, SignContent.g]
+
 /-- Port of `get_mls_label`. -/
 def getMlsLabel {Bytes: Type} [BytesLike Bytes] (label: String): Result (MlsAsciiString (Bytes := Bytes)) :=
   mkMlsAsciiString ("MLS 1.0 " ++ label) "get_mls_label" "label"
@@ -186,6 +192,12 @@ def KdfLabel.mf {Bytes: Type} [BytesLike Bytes]: NonExtensibleMessageFormat Byte
   .isomorphic (.prod .uint16BE (.prod MlsAsciiString.mf MlsBytes.mf)) KdfLabel.f KdfLabel.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
+@[simp]
+theorem KdfLabel.mf.wf_eq {Bytes: Type} [BytesLike Bytes] (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: KdfLabel Bytes):
+  (KdfLabel.mf (Bytes := Bytes)).wf pred x = pred x.context.val
+:= by
+  simp [KdfLabel.mf, KdfLabel.g]
+
 /-- Port of `expand_with_label`. -/
 def expandWithLabel (secret: Bytes) (label: String) (context: Bytes) (len: Nat): Result Bytes := do
   let length ← mkUInt16 len "expand_with_label" "len"
@@ -226,6 +238,12 @@ end EncryptContext
 def EncryptContext.mf {Bytes: Type} [BytesLike Bytes]: NonExtensibleMessageFormat Bytes (EncryptContext Bytes) :=
   .isomorphic (.prod MlsAsciiString.mf MlsBytes.mf) EncryptContext.f EncryptContext.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+theorem EncryptContext.mf.wf_eq {Bytes: Type} [BytesLike Bytes] (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: EncryptContext Bytes):
+  (EncryptContext.mf (Bytes := Bytes)).wf pred x = pred x.context.val
+:= by
+  simp [EncryptContext.mf, EncryptContext.g]
 
 /-- Port of `compute_encryption_context`. -/
 def computeEncryptionContext (label: String) (context: Bytes): Result Bytes := do

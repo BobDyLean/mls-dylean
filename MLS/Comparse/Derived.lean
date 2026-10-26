@@ -77,6 +77,13 @@ instance instHasUniqueRepresentation: ∀ w, (bitVecBE w: NonExtensibleMessageFo
 instance (w: Nat): (bitVecBE (w+1): NonExtensibleMessageFormat Bytes _).ParseConsumes := by
   dsimp only [bitVecBE]; infer_instance
 
+/-- Big-endian integers contain no bytes (their well-formedness is trivial). -/
+@[simp]
+theorem wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred]: ∀ (w: Nat) (x: BitVec (8*w)),
+    (bitVecBE w: NonExtensibleMessageFormat Bytes _).wf pred x = True
+  | 0, x => by simp [bitVecBE]
+  | w+1, x => by simp [bitVecBE, wf_eq pred w]
+
 end NonExtensibleMessageFormat.bitVecBE
 
 local instance: @LeftInverse UInt16 (BitVec (8*2)) UInt16.toBitVec UInt16.ofBitVec where
@@ -89,6 +96,12 @@ local instance: @RightInverse UInt16 (BitVec (8*2)) UInt16.toBitVec UInt16.ofBit
 def NonExtensibleMessageFormat.uint16BE: NonExtensibleMessageFormat Bytes UInt16 :=
   isomorphic (bitVecBE 2) UInt16.ofBitVec UInt16.toBitVec
 deriving IsNonAmbiguous, HasUniqueRepresentation, ParseConsumes
+
+@[simp]
+theorem NonExtensibleMessageFormat.uint16BE.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: UInt16):
+  (uint16BE: NonExtensibleMessageFormat Bytes UInt16).wf pred x = True
+:= by
+  simp [uint16BE, bitVecBE]
 
 local instance: @LeftInverse UInt32 (BitVec (8*4)) UInt32.toBitVec UInt32.ofBitVec where
   left_inv := by simp [Function.LeftInverse]
@@ -186,6 +199,14 @@ def NonExtensibleMessageFormat.lengthPrefix
     lengthPrefix.f lengthPrefix.g
 
 namespace NonExtensibleMessageFormat.lengthPrefix
+
+@[simp]
+theorem wf_eq
+  {a: Type} (pre: Nat → Prop) (mfLen: NonExtensibleMessageFormat Bytes {n: Nat // pre n}) (mf: ExtensibleMessageFormat Bytes a)
+  (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: {x: a // pre (BytesLike.length (mf.serialize x))})
+  : (lengthPrefix pre mfLen mf).wf pred x = (mfLen.wf pred ⟨_, x.property⟩ ∧ mf.wf pred x.val)
+:= by
+  simp [lengthPrefix, g]
 
 instance
   {a: Type}
@@ -331,5 +352,12 @@ end NonExtensibleMessageFormat.quicNat
 def NonExtensibleMessageFormat.quicNat: NonExtensibleMessageFormat Bytes QuicNat :=
   subsetIsomorphic (sigma quicNat.firstByte (fun fb => bitVecBE (quicNat.remLen fb.1))) quicNat.f quicNat.g
 deriving IsNonAmbiguous, HasUniqueRepresentation, ParseConsumes
+
+/-- QUIC integers contain no bytes (their well-formedness is trivial). -/
+@[simp]
+theorem NonExtensibleMessageFormat.quicNat.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: QuicNat):
+  (quicNat: NonExtensibleMessageFormat Bytes QuicNat).wf pred x = True
+:= by
+  simp [quicNat, quicNat.firstByte]
 
 end Comparse

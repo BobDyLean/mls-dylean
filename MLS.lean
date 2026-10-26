@@ -11,6 +11,11 @@ import MLS.Common.Code.Crypto.Builtins
 import MLS.Common.Code.Crypto.Derived
 import MLS.Common.Proofs.Crypto.Derived
 import MLS.Common.Proofs.Crypto.HashCollision
+import MLS.Symbolic.Code.Symbolic
+import MLS.Common.Symbolic.Crypto.Derived.MlsLabel
+import MLS.Common.Symbolic.Crypto.Derived.SignWithLabel
+import MLS.Common.Symbolic.Crypto.Derived.ExpandWithLabel
+import MLS.Common.Symbolic.Crypto.Derived.EncryptWithLabel
 import MLS.Common.Code.NetworkTypes
 import MLS.Common.Code.Extensions
 import MLS.Common.Code.Tree

@@ -65,6 +65,12 @@ instance: (MlsBytes.mf (Bytes := Bytes)).ParseConsumes := by
   dsimp only [MlsBytes.mf]
   exact inferInstanceAs (NonExtensibleMessageFormat.lengthPrefix mlsNatPred MlsNat.mf .bytes).ParseConsumes
 
+@[simp]
+theorem wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsBytes Bytes):
+  (MlsBytes.mf (Bytes := Bytes)).wf pred x = pred x.val
+:=
+  (NonExtensibleMessageFormat.lengthPrefix.wf_eq mlsNatPred MlsNat.mf .bytes pred x).trans (by simp [MlsNat.mf])
+
 end MlsBytes.mf
 
 abbrev MlsList
@@ -133,6 +139,13 @@ instance: (MlsAsciiString.mf (Bytes := Bytes)).HasUniqueRepresentation := by
 instance: (MlsAsciiString.mf (Bytes := Bytes)).ParseConsumes := by
   dsimp only [MlsAsciiString.mf]
   infer_instance
+
+/-- ASCII strings contain no bytes (their well-formedness is trivial). -/
+@[simp]
+theorem wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsAsciiString (Bytes := Bytes)):
+  (MlsAsciiString.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [MlsAsciiString.mf, MlsNat.mf]
 
 end MlsAsciiString.mf
 
