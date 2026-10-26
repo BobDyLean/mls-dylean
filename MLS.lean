@@ -38,6 +38,16 @@ public import MLS.TreeSync.Code.Invariants.AuthService
 public import MLS.TreeSync.Code.API.Types
 public import MLS.TreeSync.Code.API
 public import MLS.TreeSync.Symbolic.Parsers
+public import MLS.TreeSync.Symbolic.AuthService
+public import MLS.TreeSync.Symbolic.AuthService.CredentialInterpretation
+public import MLS.TreeSync.Symbolic.State.SignatureKey
+public import MLS.TreeSync.Symbolic.State.Tree
+public import MLS.TreeSync.Symbolic.State.AuthServiceCache
+public import MLS.TreeSync.Symbolic.State.GroupManager
+public import MLS.TreeSync.Symbolic.State.KeyPackageManager
+public import MLS.TreeSync.Symbolic.LeafNodeSignature
+public import MLS.TreeSync.Symbolic.Event.LeafNodeHasBeenVerified
+public import MLS.TreeSync.Symbolic.API
 public import MLS.TreeSync.Proofs.Operations
 public import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves
 public import MLS.TreeSync.Proofs.Invariants.ParentHash

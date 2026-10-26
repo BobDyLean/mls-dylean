@@ -6,6 +6,7 @@ public import DY.EquationalTheory.Hash
 public import DySlop.EquationalTheories
 public import DySlop.Lib.HPKE
 public import DY.Actions.PersistentLocalState
+public import DY.Actions.Random
 
 /-!
 Port of `MLS.Symbolic`: the `CryptoBytes` instance on symbolic bytes.
@@ -30,6 +31,7 @@ open Comparse
 As in DyLean's examples, the instances that symbolic MLS depends on are bundled in typeclasses,
 whose fields are scoped instances in the namespace `MLS`:
 - `HasSymbolicBytes`: the equational theories used by the symbolic `CryptoBytes` instance,
+  and randomness (DyLean's `DY.Random`, for the traceful functions of the symbolic specifications),
 - `HasSymbolicInvariants`: the trace types, the cryptographic predicates and the bytes invariants
   used by the symbolic proofs.
 The top-level protocol provides them after combining the corresponding instances
@@ -48,6 +50,7 @@ class HasSymbolicBytes where
   [bytesFunc6: BytesFunctor.Has DySlop.Signature.SubF]
   [bytesFunc7: BytesFunctor.Has DySlop.Aead.SubF]
   [bytesFunc8: BytesFunctor.Has DySlop.Mac.SubF]
+  [bytesFunc9: BytesFunctor.Has DY.Random.SubF]
   [bytesLen: BytesLength]
   [bytesLen0: BytesLength.Has DY.Literal.SubF.length]
   [bytesLen1: BytesLength.Has DY.Concat.SubF.length]
@@ -63,6 +66,7 @@ attribute [reducible, scoped instance] HasSymbolicBytes.bytesFunc5
 attribute [reducible, scoped instance] HasSymbolicBytes.bytesFunc6
 attribute [reducible, scoped instance] HasSymbolicBytes.bytesFunc7
 attribute [reducible, scoped instance] HasSymbolicBytes.bytesFunc8
+attribute [reducible, scoped instance] HasSymbolicBytes.bytesFunc9
 attribute [reducible, scoped instance] HasSymbolicBytes.bytesLen
 attribute [           scoped instance] HasSymbolicBytes.bytesLen0
 attribute [           scoped instance] HasSymbolicBytes.bytesLen1
@@ -205,5 +209,12 @@ theorem cryptoBytesBytes_signVerify (verificationKey buf signature: Bytes):
 public
 def mkMlsSigkeyUsage (who: Participant): Usage :=
   Usage.sigKey "MLS.LeafSignKey" (DY.Literal.literalToBytes who.toUTF8)
+
+/-- Port of `extract_result`. -/
+public
+def extractResult [ExecTraceTypes] {α: Type} (x: Result α): Traceful α :=
+  match x with
+  | .success y => pure y
+  | _ => failure
 
 end MLS
