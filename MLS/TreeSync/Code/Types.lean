@@ -36,4 +36,12 @@ public
 abbrev ExternalPathSync (Bytes: Type) [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) :=
   Path (LeafNodeData Bytes tkt) (Option tkt.NodeContent)
 
+/-- Port of `one_tree`. -/
+public
+abbrev OneTreeSync (Bytes: Type) [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) := (l: Nat) × TreeSync Bytes tkt l
+
+/-- Port of `tree_list`. -/
+public
+abbrev TreeSyncList (Bytes: Type) [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) := List (OneTreeSync Bytes tkt)
+
 end MLS.TreeSync

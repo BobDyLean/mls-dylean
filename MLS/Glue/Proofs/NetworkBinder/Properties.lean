@@ -4,7 +4,7 @@ public import MLS.Common.Proofs.Result
 public import MLS.Common.Proofs.TreeCommon
 public import MLS.Glue.Code.NetworkBinder
 public import MLS.Common.Proofs.Crypto.Derived
-public import MLS.TreeSync.Symbolic.Parsers
+public import MLS.TreeSync.Code.Parsers
 public import MLS.TreeKEM.Code.Parsers
 
 /-!

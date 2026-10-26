@@ -1,7 +1,7 @@
 module
 
 public import MLS.Common.Code.TreeCommon
-public import MLS.Common.Proofs.MiscLemmas
+public import MLS.Common.Code.MiscLemmas
 public import MLS.TreeSync.Code.ParentHash
 
 /-!
@@ -13,6 +13,8 @@ Port-specific differences:
 - Leaf indices are plain `Nat`s (see `MLS.Tree`).
 - Paths are not indexed by the leaf index (see `MLS.Path`): functions recursing on a tree and a path
   take the leaf index as an explicit argument.
+- `path_to_tree_list_aux` and `path_to_tree_list` come from `MLS.TreeSync.Proofs.ParentHashGuarantees`,
+  as the symbolic specification uses them.
 - Preconditions of MLS* (e.g. `(get_path_leaf p).source = LNS_update`) are not ported:
   functions fail or have a default behavior when they are not met (see the docstrings).
 -/
@@ -326,6 +328,53 @@ def signLeafNodeDataUpdate (lnData: LeafNodeData Bytes tkt)
   let signature ← signWithLabel signKey "LeafNodeTBS" lnTbs nonce
   let signature ← mkMlsBytes signature "sign_leaf_node_data_update" "signature"
   pure { data := lnData, signature }
+
+/-! ## Path to tree list -/
+
+/--
+Port of `path_to_tree_list_aux`.
+Given a tree and a path, compute the trees obtained by applying the path,
+at each non-blank node of the path and at its leaf, from the root to the leaf.
+MLS* jumps from one non-blank node of the path to the next one
+with `find_node_and_path_parent_hash_link` and `find_node_and_path_parent_hash_link_aux`,
+and starts at the first non-blank node (in `path_to_tree_list`).
+This function goes through the path one node at a time (as MLS*'s `path_to_tree_list_pre_aux`),
+and computes the same list.
+MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`) and `Success? (apply_path_aux t p parent_parent_hash)`;
+otherwise, the function follows the path to the leaf closest to `li`, or fails.
+-/
+@[expose]
+public
+def pathToTreeListAux {l: Nat}
+  (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l) (parentParentHash: Bytes)
+  : Result (TreeSyncList Bytes tkt)
+:=
+  match t.intoChildSiblingView li, p with
+  | .leaf _ position, .leaf ln => pure [⟨0, (ChildSiblingView.leaf (some ln) position).pack⟩]
+  | .node content child sibling, .node optExtContent pNext => do
+    let (_, newParentParentHash) ← computeNewNpAndPh optExtContent sibling parentParentHash
+    let tailTl ← pathToTreeListAux child li pNext newParentParentHash
+    match optExtContent with
+    | none => pure tailTl
+    | some _ =>
+      let t' ← applyPathAux (ChildSiblingView.node content child sibling).pack li (.node optExtContent pNext) parentParentHash
+      pure (⟨_, t'⟩ :: tailTl)
+termination_by l
+
+/--
+Port of `path_to_tree_list`.
+Given a tree and a path,
+compute a list of trees that are parent-hash linked,
+start at the leaf of the path,
+and end at the root.
+(Proved by `pathToTreeList_spec`.)
+MLS* requires `li: leaf_index l 0` and `Success? (apply_path t p)`;
+otherwise, the function follows the path to the leaf closest to `li`, or fails.
+-/
+@[expose]
+public
+def pathToTreeList {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l): Result (TreeSyncList Bytes tkt) :=
+  List.reverse <$> pathToTreeListAux t li p rootParentHash.val
 
 end CryptoBytes
 

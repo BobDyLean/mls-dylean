@@ -91,3 +91,14 @@ and the functions that consume randomness can fail.
 
 The reuse guard in TreeDEM used to rely on `unsafe_split` + `xor`.
 Now, there is instead a dedicated `applyReuseGuard` function.
+
+## Clear separation between specification and proofs
+
+With the goal of using Comparator,
+we use a clear separation between specifications and proofs.
+In MLS*, the `traceful` functions are often proved to preserve the trace invariants in the same file.
+Now, the invariant preservation proofs live in a different file.
+Also, in MLS*, there are a few instances where a `traceful` function uses definitions from a code proof file:
+such as instance is `path_to_tree_list`, defined in the parent-hash guarantees proof file,
+but also used in the `traceful` functions,
+to actually log these trees.
