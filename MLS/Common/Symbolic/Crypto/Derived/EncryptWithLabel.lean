@@ -1,6 +1,8 @@
-import MLS.Common.Symbolic.Crypto.Derived.MlsLabel
-import MLS.Symbolic.Code.Symbolic
-import DySlop.Lib.HPKE
+module
+
+public import MLS.Common.Symbolic.Crypto.Derived.MlsLabel
+public import MLS.Symbolic.Code.Symbolic
+public import DySlop.Lib.HPKE
 
 /-!
 Port of `MLS.Crypto.Derived.Symbolic.EncryptWithLabel`: split HPKE predicate for EncryptWithLabel,
@@ -30,11 +32,13 @@ section Local
 variable [BytesFunctor] [ExecTraceTypes] [ProofTraceTypes]
 
 /-- Port of `encryptwithlabel_crypto_pred` (without `pred_later`, see `EncryptWithLabelPred.Later`). -/
+public
 structure EncryptWithLabelPred where
   pred: [BytesWellFormed] → [GetUsage] → [GetLabel] → (keyUsgData msg context: Bytes) → ProofTrace → Prop
 
 /-- Port of the `pred_later` field of `encryptwithlabel_crypto_pred`. -/
-@[reducible]
+@[expose, reducible]
+public
 def EncryptWithLabelPred.Later [BytesInvariants] (lpred: EncryptWithLabelPred): Prop :=
   [BytesWellFormedLater] → [GetUsageLater] → [GetLabelLater] →
   ∀ keyUsgData msg context tr1 tr2,
@@ -45,12 +49,15 @@ def EncryptWithLabelPred.Later [BytesInvariants] (lpred: EncryptWithLabelPred): 
     lpred.pred keyUsgData msg context tr2
 
 /-- Local EncryptWithLabel predicates for the labels `labels` (MLS*'s `list (valid_label & encryptwithlabel_crypto_pred)`). -/
+public
 abbrev EncryptWithLabelPred.Local (labels: List String) := Locals (fun _: String => EncryptWithLabelPred) labels
 
 /-- Local EncryptWithLabel predicates stay true when the trace grows. -/
+public
 abbrev EncryptWithLabelPred.LocalProof [BytesInvariants] {labels: List String} (l: EncryptWithLabelPred.Local labels): Prop :=
   l.All (fun _ lpred => lpred.Later)
 
+public
 theorem EncryptWithLabelPred.LocalProof.single
   [BytesInvariants] {label: String} {lpred: EncryptWithLabelPred}
   : lpred.Later →
@@ -58,6 +65,7 @@ theorem EncryptWithLabelPred.LocalProof.single
 :=
   Locals.All.single (prop := fun _ lpred => EncryptWithLabelPred.Later lpred)
 
+public
 theorem EncryptWithLabelPred.LocalProof.combine
   [BytesInvariants] {n: Nat} (ls: Fin n → (labels: List String) × EncryptWithLabelPred.Local labels)
   : (∀ id, EncryptWithLabelPred.LocalProof (ls id).2) →
@@ -85,6 +93,7 @@ theorem computeEncryptionContext_eq_success
   refine ⟨{ label := mlsLabel, context := mlsContext }, ?_⟩
   grind
 
+public
 theorem encryptWithLabel_eq_success
   (pkR: Bytes) (label: String) (context plaintext entropy: Bytes) (res: Bytes × Bytes)
   : encryptWithLabel pkR label context plaintext entropy = .success res →
@@ -99,6 +108,7 @@ theorem encryptWithLabel_eq_success
   refine ⟨encryptContext, ?_⟩
   grind
 
+public
 theorem decryptWithLabel_eq_success
   (skR: Bytes) (label: String) (context enc ciphertext: Bytes) (plaintext: Bytes)
   : decryptWithLabel skR label context enc ciphertext = .success plaintext →
@@ -120,7 +130,8 @@ section SplitPredicate
 variable [HasSymbolicBytes] [ExecTraceTypes] [ProofTraceTypes]
 
 /-- Port of `split_encryptwithlabel_crypto_pred_params`. -/
-@[reducible]
+@[expose, reducible]
+public
 def EncryptWithLabelPred.splitParams: SplitFunction.Params where
   Tag := String
   -- the instances, the HPKE usage, the message, the info, the associated data, the trace
@@ -137,7 +148,8 @@ def EncryptWithLabelPred.splitParams: SplitFunction.Params where
   default _ := False
 
 /-- MLS*'s `apply_global_fun` of `split_encryptwithlabel_crypto_pred_params`. -/
-@[reducible]
+@[expose, reducible]
+public
 def EncryptWithLabelPred.applyGlobal (hpred: HpkePred) (x: EncryptWithLabelPred.splitParams.Input): Prop :=
   @HpkePred.pred _ _ _ hpred x.1.wf x.1.usage x.1.label x.2.1 x.2.2.1 x.2.2.2.1 x.2.2.2.2.1 x.2.2.2.2.2
 
@@ -151,6 +163,7 @@ theorem EncryptWithLabelPred.splitParams_decode
   simp [h]
 
 /-- The local EncryptWithLabel predicate for the label `label`. -/
+public
 abbrev EncryptWithLabelPred.Local.pred {labels: List String} (l: EncryptWithLabelPred.Local labels)
   [BytesWellFormed] [GetUsage] [GetLabel]
   (label: String) (keyUsgData msg context: Bytes) (tr: ProofTrace)
@@ -158,6 +171,7 @@ abbrev EncryptWithLabelPred.Local.pred {labels: List String} (l: EncryptWithLabe
 :=
   Params.Locals.apply EncryptWithLabelPred.splitParams l label (⟨⟩, keyUsgData, msg, context, tr) False
 
+public
 theorem EncryptWithLabelPred.Local.pred_single
   {label: String} (lpred: EncryptWithLabelPred)
   [BytesWellFormed] [GetUsage] [GetLabel]
@@ -168,7 +182,8 @@ theorem EncryptWithLabelPred.Local.pred_single
   Params.Locals.apply_single EncryptWithLabelPred.splitParams lpred _ _
 
 /-- Port of `mk_hpke_mls_pred` (and of `mk_global_hpke_mls_pred`): the HPKE predicate defined by local EncryptWithLabel predicates. -/
-@[instance_reducible]
+@[expose, instance_reducible]
+public
 def EncryptWithLabelPred.ofLocal {labels: List String} (l: EncryptWithLabelPred.Local labels): HpkePred where
   pred usage msg info ad tr := Params.Locals.toFun EncryptWithLabelPred.splitParams l (⟨⟩, usage, msg, info, ad, tr)
 
@@ -181,18 +196,21 @@ theorem EncryptWithLabelPred.ofLocal_pred
 := rfl
 
 /-- The local HPKE predicate for the usage tag `tag`, defined by local EncryptWithLabel predicates. -/
+public
 abbrev EncryptWithLabelPred.toHpkePred (tag: String) {labels: List String} (l: EncryptWithLabelPred.Local labels)
   : HpkePred.Local [tag]
 :=
   Locals.single (EncryptWithLabelPred.ofLocal l)
 
 /-- Port of `has_mls_encryptwithlabel_pred` (with `has_encryptwithlabel_pred`, i.e. `has_local_fun`). -/
+public
 class EncryptWithLabelPred.Has [hpkePred: HpkePred] (tag: String) {labels: List String} (l: EncryptWithLabelPred.Local labels): Prop where
   pf: ∃ mlsHpkePred: HpkePred,
     -- the global HPKE predicate is explicit, otherwise `mlsHpkePred` would be used as the `HpkePred` instance
     @HpkePred.Has _ _ _ hpkePred _ (Locals.single (tag := tag) mlsHpkePred) ∧
     EncryptWithLabelPred.splitParams.HasLocal (EncryptWithLabelPred.applyGlobal mlsHpkePred) l
 
+public
 instance EncryptWithLabelPred.Has.ofHasStep
   [HpkePred] (tag: String) {labels1 labels2: List String}
   (l1: EncryptWithLabelPred.Local labels1) (l2: EncryptWithLabelPred.Local labels2)
@@ -204,6 +222,7 @@ where
     exact ⟨mlsHpkePred, h_hpke, Params.HasLocal.of_hasStep EncryptWithLabelPred.splitParams _ l1 l2 h_local⟩
 
 /-- Port of `mk_hpke_mls_pred_correct`. -/
+public
 theorem EncryptWithLabelPred.Has.ofToHpkePred
   [HpkePred] (tag: String) {labels: List String} (l: EncryptWithLabelPred.Local labels)
   [h: HpkePred.Has (EncryptWithLabelPred.toHpkePred tag l)]
@@ -212,6 +231,7 @@ theorem EncryptWithLabelPred.Has.ofToHpkePred
   ⟨⟨EncryptWithLabelPred.ofLocal l, h, Params.Locals.toFun_hasLocal EncryptWithLabelPred.splitParams l⟩⟩
 
 /-- The global HPKE predicate on an encryption context, given the local EncryptWithLabel predicates. -/
+public
 theorem EncryptWithLabelPred.Has.hpkePred_eq
   [HpkePred] {labels: List String} (l: EncryptWithLabelPred.Local labels) (tag: String) [h: EncryptWithLabelPred.Has tag l]
   [BytesWellFormed] [GetUsage] [GetLabel]
@@ -235,6 +255,7 @@ section Proofs
 variable [HasSymbolicInvariants]
 
 /-- Port of `mk_global_hpke_mls_pred_later`. -/
+public
 theorem EncryptWithLabelPred.ofLocal_later
   {labels: List String} (l: EncryptWithLabelPred.Local labels)
   : EncryptWithLabelPred.LocalProof l →
@@ -256,6 +277,7 @@ theorem EncryptWithLabelPred.ofLocal_later
     · exact id
 
 /-- The local HPKE predicate for the usage tag `tag` stays true when the trace grows. -/
+public
 theorem EncryptWithLabelPred.LocalProof.toHpkePred
   (tag: String) {labels: List String} {l: EncryptWithLabelPred.Local labels}
   : EncryptWithLabelPred.LocalProof l →
@@ -264,6 +286,7 @@ theorem EncryptWithLabelPred.LocalProof.toHpkePred
   HpkePred.LocalProof.single (EncryptWithLabelPred.ofLocal_later l h)
 
 /-- Port of `bytes_invariant_encrypt_with_label`. -/
+public
 theorem encryptWithLabel.Invariant
   [BytesInvariantsProofs] [KdfExpand.KdfExpandUsage.Has HPKE.kdfExpandUsage] [Aead.AeadPred.Has HPKE.aeadPred]
   {labels: List String} (l: EncryptWithLabelPred.Local labels) (tag: String) [EncryptWithLabelPred.Has tag l]
@@ -298,6 +321,7 @@ theorem encryptWithLabel.Invariant
   grind
 
 /-- Port of `bytes_invariant_decrypt_with_label`. -/
+public
 theorem decryptWithLabel.Invariant
   [KdfExpand.KdfExpandUsage.Has HPKE.kdfExpandUsage] [Aead.AeadPred.Has HPKE.aeadPred]
   {labels: List String} (l: EncryptWithLabelPred.Local labels) (tag: String) [EncryptWithLabelPred.Has tag l]

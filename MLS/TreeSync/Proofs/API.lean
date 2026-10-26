@@ -1,9 +1,11 @@
-import MLS.Common.Proofs.TreeCommon
-import MLS.TreeSync.Code.API
-import MLS.TreeSync.Proofs.Invariants.AuthService
-import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves
-import MLS.TreeSync.Proofs.Invariants.ParentHash
-import MLS.TreeSync.Proofs.Invariants.ValidLeaves
+module
+
+public import MLS.Common.Proofs.TreeCommon
+public import MLS.TreeSync.Code.API
+public import MLS.TreeSync.Proofs.Invariants.AuthService
+public import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves
+public import MLS.TreeSync.Proofs.Invariants.ParentHash
+public import MLS.TreeSync.Proofs.Invariants.ValidLeaves
 
 /-!
 Proofs about `MLS.TreeSync.API`.
@@ -24,7 +26,8 @@ open MLS MLS.TreeSync
 
 /-! ## Tokens from a list -/
 
-@[simp] theorem tokensFromList_position {TokenT: Type} (l i: Nat) (tokens: List (Option TokenT)):
+@[simp]
+theorem tokensFromList_position {TokenT: Type} (l i: Nat) (tokens: List (Option TokenT)):
   (tokensFromList l i tokens).position = i
 := by
   induction l generalizing i tokens <;> simp_all [tokensFromList]
@@ -53,20 +56,28 @@ variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes} {TokenT: Ty
 MLS*'s refinement `treesync_valid` (from `MLS.TreeSync.Refined.Types`) on the tree of the state:
 the tree satisfies all the TreeSync invariants.
 -/
+@[expose]
+public
 def _root_.MLS.TreeSync.TreeSyncState.TreeValid (st: TreeSyncState Bytes tkt TokenT groupId): Prop :=
   unmergedLeavesOk st.tree ∧ parentHashInvariant st.tree ∧ validLeavesInvariant groupId st.tree
 
 /-- MLS*'s refinements of `pending_create`: `pending_create_proof` and `as_input: as_input_for ln`. -/
+@[expose]
+public
 def PendingCreate.Valid {ln: LeafNode Bytes tkt} (pend: PendingCreate groupId ln): Prop :=
   leafIsValid ln groupId 0 ∧
   pend.asInput = leafNodeToAsInput ln
 
 /-- MLS*'s refinements of `pending_welcome`: `pending_welcome_proof` and `as_inputs_proof`. -/
+@[expose]
+public
 def PendingWelcome.Valid {l: Nat} {t: TreeSync Bytes tkt l} (pend: PendingWelcome groupId t): Prop :=
   (unmergedLeavesOk t ∧ parentHashInvariant t ∧ validLeavesInvariant groupId t) ∧
   ∀ li, t.containsLeafIndex li → pend.asInputs[li - t.position]? = some ((leafAt t li).map leafNodeToAsInput)
 
 /-- MLS*'s refinements of `pending_add`: `pending_add_proof` and `as_input: as_input_for ln`. -/
+@[expose]
+public
 def PendingAdd.Valid {st: TreeSyncState Bytes tkt TokenT groupId} {ln: LeafNode Bytes tkt} (pend: PendingAdd st ln): Prop :=
   (ln.data.source = .keyPackage ∧
     match findEmptyLeaf st.tree with
@@ -82,6 +93,8 @@ MLS*'s refinements of `pending_update`: `pending_update_proof`
 (with `li: treesync_index st`, i.e. `st.tree.containsLeafIndex li`),
 `as_input_before: as_input_for (state_leaf_at st li)` and `as_input: as_input_for ln`.
 -/
+@[expose]
+public
 def PendingUpdate.Valid {st: TreeSyncState Bytes tkt TokenT groupId} {ln: LeafNode Bytes tkt} {li: Nat}
   (pend: PendingUpdate st ln li): Prop
 :=
@@ -93,6 +106,8 @@ def PendingUpdate.Valid {st: TreeSyncState Bytes tkt TokenT groupId} {ln: LeafNo
 MLS*'s refinement of `pending_remove`: `pending_remove_proof`
 (with `li: treesync_index st`, i.e. `st.tree.containsLeafIndex li`).
 -/
+@[expose]
+public
 def PendingRemove.Valid {st: TreeSyncState Bytes tkt TokenT groupId} {li: Nat} (_pend: PendingRemove st li): Prop :=
   st.tree.containsLeafIndex li ∧ (leafAt st.tree li).isSome
 
@@ -101,6 +116,8 @@ MLS*'s refinements of `pending_commit`: `pending_commit_proof`
 (with `li: treesync_index st`, i.e. `st.tree.containsLeafIndex li`),
 `as_input_before: as_input_for (state_leaf_at st li)` and `as_input: as_input_for (get_path_leaf p)`.
 -/
+@[expose]
+public
 def PendingCommit.Valid {st: TreeSyncState Bytes tkt TokenT groupId} {li: Nat} {p: PathSync Bytes tkt st.levels}
   (pend: PendingCommit st li p): Prop
 :=
@@ -110,6 +127,7 @@ def PendingCommit.Valid {st: TreeSyncState Bytes tkt TokenT groupId} {li: Nat} {
 
 /-! ## The `prepare_*` functions establish the refinements of the pending states -/
 
+public
 theorem prepareCreate_valid (ln: LeafNode Bytes tkt) (pend: PendingCreate groupId ln)
   (h: prepareCreate groupId ln = .success pend):
   pend.Valid
@@ -117,6 +135,7 @@ theorem prepareCreate_valid (ln: LeafNode Bytes tkt) (pend: PendingCreate groupI
   unfold prepareCreate at h
   split at h <;> simp_all [PendingCreate.Valid, Result.error] <;> grind
 
+public
 theorem prepareWelcome_valid {l: Nat} (t: TreeSync Bytes tkt l) (pend: PendingWelcome groupId t)
   (h: prepareWelcome groupId t = .success pend):
   pend.Valid
@@ -129,6 +148,7 @@ theorem prepareWelcome_valid {l: Nat} (t: TreeSync Bytes tkt l) (pend: PendingWe
   have := index_getLeafList t (li - t.position) (by grind [Tree.containsLeafIndex])
   grind [Tree.containsLeafIndex]
 
+public
 theorem prepareAdd_valid (st: TreeSyncState Bytes tkt TokenT groupId) (ln: LeafNode Bytes tkt) (pend: PendingAdd st ln)
   (h: prepareAdd st ln = .success pend):
   pend.Valid
@@ -144,6 +164,7 @@ theorem prepareAdd_valid (st: TreeSyncState Bytes tkt TokenT groupId) (ln: LeafN
       · split at h <;> simp_all [Result.error]; grind
       · simp [Result.internalFailure] at h
 
+public
 theorem prepareUpdate_valid (st: TreeSyncState Bytes tkt TokenT groupId) (ln: LeafNode Bytes tkt) (li: Nat)
   (pend: PendingUpdate st ln li) (h: prepareUpdate st ln li = .success pend):
   pend.Valid
@@ -153,6 +174,7 @@ theorem prepareUpdate_valid (st: TreeSyncState Bytes tkt TokenT groupId) (ln: Le
   cases h
   simp_all [PendingUpdate.Valid]
 
+public
 theorem prepareRemove_valid (st: TreeSyncState Bytes tkt TokenT groupId) (li: Nat)
   (pend: PendingRemove st li) (h: prepareRemove st li = .success pend):
   pend.Valid
@@ -161,6 +183,7 @@ theorem prepareRemove_valid (st: TreeSyncState Bytes tkt TokenT groupId) (li: Na
   repeat (split at h; · simp [Result.error] at h)
   simp_all [PendingRemove.Valid, Option.isSome_iff_ne_none]
 
+public
 theorem prepareCommit_valid (st: TreeSyncState Bytes tkt TokenT groupId) (li: Nat) (p: PathSync Bytes tkt st.levels)
   (pend: PendingCommit st li p) (h: prepareCommit st li p = .success pend):
   pend.Valid
@@ -173,6 +196,7 @@ theorem prepareCommit_valid (st: TreeSyncState Bytes tkt TokenT groupId) (li: Na
 /-! ## Unfolding the `finalize_*` functions -/
 
 /-- The result of a successful `finalizeAdd`: the leaf is added in the first empty leaf, possibly after extending the tree. -/
+public
 theorem finalizeAdd_success {st: TreeSyncState Bytes tkt TokenT groupId} {ln: LeafNode Bytes tkt}
   (pend: PendingAdd st ln) (token: TokenT) (res: TreeSyncState Bytes tkt TokenT groupId) (li: Nat)
   (h: finalizeAdd pend token = .success (res, li)):
@@ -192,6 +216,7 @@ theorem finalizeAdd_success {st: TreeSyncState Bytes tkt TokenT groupId} {ln: Le
     · simp [Result.internalFailure] at h
 
 /-- The result of a successful `finalizeCommit`. -/
+public
 theorem finalizeCommit_success {st: TreeSyncState Bytes tkt TokenT groupId} {li: Nat} {p: PathSync Bytes tkt st.levels}
   (pend: PendingCommit st li p) (token: TokenT) (res: TreeSyncState Bytes tkt TokenT groupId)
   (h: finalizeCommit pend token = .success res):
@@ -201,6 +226,7 @@ theorem finalizeCommit_success {st: TreeSyncState Bytes tkt TokenT groupId} {li:
   grind
 
 /-- A property preserved by each truncation step (of a tree whose right subtree is empty) is preserved by `fullyTruncateState`. -/
+public
 theorem fullyTruncateState_preserves (P: TreeSyncState Bytes tkt TokenT groupId → Prop)
   (hstep: ∀ {l: Nat} (tree: TreeSync Bytes tkt (l+1)) (tokens: ASTokens TokenT (l+1)), isTreeEmpty tree.right →
     P { levels := l+1, tree, tokens } → P { levels := l, tree := treeTruncate tree, tokens := asTruncate tokens })
@@ -219,6 +245,7 @@ termination_by st.levels
 
 /-! ## The `finalize_*` functions preserve the TreeSync invariants -/
 
+public
 theorem finalizeCreate_treeValid {ln: LeafNode Bytes tkt} (pend: PendingCreate groupId ln) (token: TokenT)
   (hpend: pend.Valid):
   (finalizeCreate pend token).TreeValid
@@ -226,6 +253,7 @@ theorem finalizeCreate_treeValid {ln: LeafNode Bytes tkt} (pend: PendingCreate g
   grind [TreeSyncState.TreeValid, PendingCreate.Valid, finalizeCreate,
     unmergedLeavesOk_treeCreate, parentHashInvariant_treeCreate, validLeavesInvariant_treeCreate]
 
+public
 theorem finalizeWelcome_treeValid {l: Nat} {t: TreeSync Bytes tkt l} (pend: PendingWelcome groupId t) (tokens: List (Option TokenT))
   (hpend: pend.Valid):
   (finalizeWelcome pend tokens).TreeValid
@@ -241,6 +269,7 @@ theorem treeValid_treeAdd {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (ln: Leaf
   have := findEmptyLeaf_spec t li hli
   grind [unmergedLeavesOk_treeAdd, parentHashInvariant_treeAdd, validLeavesInvariant_treeAdd]
 
+public
 theorem finalizeAdd_treeValid {st: TreeSyncState Bytes tkt TokenT groupId} {ln: LeafNode Bytes tkt}
   (pend: PendingAdd st ln) (token: TokenT) (res: TreeSyncState Bytes tkt TokenT groupId) (li: Nat)
   (h: finalizeAdd pend token = .success (res, li))
@@ -255,6 +284,7 @@ theorem finalizeAdd_treeValid {st: TreeSyncState Bytes tkt TokenT groupId} {ln: 
     grind [treeValid_treeAdd, TreeSyncState.TreeValid, stateUpdateTree,
       unmergedLeavesOk_treeExtend, parentHashInvariant_treeExtend, validLeavesInvariant_treeExtend]
 
+public
 theorem finalizeUpdate_treeValid {st: TreeSyncState Bytes tkt TokenT groupId} {ln: LeafNode Bytes tkt} {li: Nat}
   (pend: PendingUpdate st ln li) (token: TokenT)
   (hpend: pend.Valid) (hst: st.TreeValid):
@@ -263,6 +293,7 @@ theorem finalizeUpdate_treeValid {st: TreeSyncState Bytes tkt TokenT groupId} {l
   grind [TreeSyncState.TreeValid, PendingUpdate.Valid, finalizeUpdate, stateUpdateTree,
     unmergedLeavesOk_treeUpdate, parentHashInvariant_treeUpdate, validLeavesInvariant_treeUpdate]
 
+public
 theorem fullyTruncateState_treeValid (st: TreeSyncState Bytes tkt TokenT groupId) (hst: st.TreeValid):
   (fullyTruncateState st).TreeValid
 := by
@@ -270,6 +301,7 @@ theorem fullyTruncateState_treeValid (st: TreeSyncState Bytes tkt TokenT groupId
   grind [TreeSyncState.TreeValid,
     unmergedLeavesOk_treeTruncate, parentHashInvariant_treeTruncate, validLeavesInvariant_treeTruncate]
 
+public
 theorem finalizeRemove_treeValid {st: TreeSyncState Bytes tkt TokenT groupId} {li: Nat}
   (pend: PendingRemove st li) (hpend: pend.Valid) (hst: st.TreeValid):
   (finalizeRemove pend).TreeValid
@@ -278,6 +310,7 @@ theorem finalizeRemove_treeValid {st: TreeSyncState Bytes tkt TokenT groupId} {l
   grind [TreeSyncState.TreeValid, PendingRemove.Valid, stateUpdateTree,
     unmergedLeavesOk_treeRemove, parentHashInvariant_treeRemove, validLeavesInvariant_treeRemove]
 
+public
 theorem finalizeCommit_treeValid {st: TreeSyncState Bytes tkt TokenT groupId} {li: Nat} {p: PathSync Bytes tkt st.levels}
   (pend: PendingCommit st li p) (token: TokenT) (res: TreeSyncState Bytes tkt TokenT groupId)
   (h: finalizeCommit pend token = .success res)
@@ -291,6 +324,7 @@ theorem finalizeCommit_treeValid {st: TreeSyncState Bytes tkt TokenT groupId} {l
 /-! ## Authentication service invariant (MLS*'s `_valid` lemmas) -/
 
 /-- Port of `finalize_create_valid`. -/
+public
 theorem finalizeCreate_valid {asp: ASParameters Bytes TokenT} {ln: LeafNode Bytes tkt}
   (pend: PendingCreate groupId ln) (token: TokenT)
   (hpend: pend.Valid) (h: asp.credentialOk pend.asInput token):
@@ -302,6 +336,7 @@ theorem finalizeCreate_valid {asp: ASParameters Bytes TokenT} {ln: LeafNode Byte
 Port of `finalize_welcome_valid`.
 MLS* requires `List.Tot.length tokens == pow2 l` (here `hlen`).
 -/
+public
 theorem finalizeWelcome_valid {asp: ASParameters Bytes TokenT} {l: Nat} {t: TreeSync Bytes tkt l}
   (pend: PendingWelcome groupId t) (tokens: List (Option TokenT))
   (hpend: pend.Valid) (hlen: tokens.length = 2^l)
@@ -322,6 +357,7 @@ theorem finalizeWelcome_valid {asp: ASParameters Bytes TokenT} {l: Nat} {t: Tree
     grind [cases Option]
 
 /-- Port of `finalize_add_valid`. -/
+public
 theorem finalizeAdd_valid {asp: ASParameters Bytes TokenT} {st: TreeSyncState Bytes tkt TokenT groupId} {ln: LeafNode Bytes tkt}
   (pend: PendingAdd st ln) (token: TokenT) (res: TreeSyncState Bytes tkt TokenT groupId) (li: Nat)
   (h: finalizeAdd pend token = .success (res, li))
@@ -334,6 +370,7 @@ theorem finalizeAdd_valid {asp: ASParameters Bytes TokenT} {st: TreeSyncState By
     allCredentialsOk_treeExtend, allCredentialsOk_treeAdd, leafNodeToAsInput]
 
 /-- Port of `finalize_update_valid`. -/
+public
 theorem finalizeUpdate_valid {asp: ASParameters Bytes TokenT} {st: TreeSyncState Bytes tkt TokenT groupId}
   {ln: LeafNode Bytes tkt} {li: Nat}
   (pend: PendingUpdate st ln li) (token: TokenT)
@@ -344,6 +381,7 @@ theorem finalizeUpdate_valid {asp: ASParameters Bytes TokenT} {st: TreeSyncState
     allCredentialsOk_treeUpdate, leafNodeToAsInput]
 
 /-- Port of `fully_truncate_state_valid`. -/
+public
 theorem fullyTruncateState_valid {asp: ASParameters Bytes TokenT} (st: TreeSyncState Bytes tkt TokenT groupId)
   (hvalid: treesyncStateValid asp st):
   treesyncStateValid asp (fullyTruncateState st)
@@ -352,6 +390,7 @@ theorem fullyTruncateState_valid {asp: ASParameters Bytes TokenT} (st: TreeSyncS
   grind [treesyncStateValid, treeTruncate, asTruncate, allCredentialsOk_treeTruncate]
 
 /-- Port of `finalize_remove_valid`. -/
+public
 theorem finalizeRemove_valid {asp: ASParameters Bytes TokenT} {st: TreeSyncState Bytes tkt TokenT groupId} {li: Nat}
   (pend: PendingRemove st li) (hpend: pend.Valid) (hvalid: treesyncStateValid asp st):
   treesyncStateValid asp (finalizeRemove pend)
@@ -360,6 +399,7 @@ theorem finalizeRemove_valid {asp: ASParameters Bytes TokenT} {st: TreeSyncState
   grind [treesyncStateValid, PendingRemove.Valid, stateUpdateTree, treeRemove, asRemove, allCredentialsOk_treeRemove]
 
 /-- Port of `finalize_commit_valid`. -/
+public
 theorem finalizeCommit_valid {asp: ASParameters Bytes TokenT} {st: TreeSyncState Bytes tkt TokenT groupId}
   {li: Nat} {p: PathSync Bytes tkt st.levels}
   (pend: PendingCommit st li p) (token: TokenT) (res: TreeSyncState Bytes tkt TokenT groupId)
@@ -374,6 +414,7 @@ theorem finalizeCommit_valid {asp: ASParameters Bytes TokenT} {st: TreeSyncState
 Port of `weaken_asp`.
 MLS*'s hypothesis `asp_strong.token_t == token_t` holds by typing.
 -/
+public
 theorem weakenAsp (aspStrong aspWeak: ASParameters Bytes TokenT) (st: TreeSyncState Bytes tkt TokenT groupId)
   (hweak: asParametersWeaker aspStrong aspWeak) (hvalid: treesyncStateValid aspStrong st):
   treesyncStateValid aspWeak st

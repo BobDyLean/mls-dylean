@@ -1,6 +1,8 @@
-import MLS.Common.Code.Tree
-import MLS.TreeSync.Code.NetworkTypes
-import MLS.TreeDEM.Code.Keys
+module
+
+public import MLS.Common.Code.Tree
+public import MLS.TreeSync.Code.NetworkTypes
+public import MLS.TreeDEM.Code.Keys
 
 /-!
 Port of `MLS.TreeDEM.API.Types`.
@@ -15,6 +17,7 @@ open Comparse
 open MLS MLS.TreeSync
 
 /-- Port of `treedem_state`. -/
+public
 structure TreeDEMState (Bytes: Type) [BytesLike Bytes] where
   treeHeight: Nat
   myLeafIndex: Nat

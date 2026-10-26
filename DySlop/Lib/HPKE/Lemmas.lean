@@ -163,7 +163,6 @@ def aeadLocalPred [HpkePred]: AeadPred where
       )
     | none => False
 
-public
 theorem aeadLocalPred_pred [HpkePred] [BytesWellFormed] [GetUsage] [GetLabel]
   (keyUsage: Usage) (key nonce msg ad: Bytes) (tr: ProofTrace)
   : AeadPred.pred (self := aeadLocalPred) keyUsage key nonce msg ad tr = (
@@ -241,7 +240,6 @@ section Lemmas
 variable [HasHpkeInvariants]
 
 /-- `serialize_wf_lemma` for `LabeledExpandInfo`. -/
-public
 theorem LabeledExpandInfo.pred_serialize
   {τ: Type} (pre: Bytes → τ → Prop) [BytesCompatibleTracePred pre] (x: LabeledExpandInfo) (tr: τ)
   : pre x.info tr →
@@ -254,7 +252,6 @@ theorem LabeledExpandInfo.pred_serialize
   simpa using h
 
 /-- The usage of the AEAD key. -/
-public
 theorem getUsage_key
   [h: KdfExpandUsage.Has kdfExpandUsage] (usg: String × Bytes) (info: Bytes)
   : KdfExpandUsage.getUsage (sharedSecretUsage usg) (serialize ({ len := 32, label := "key", info }: LabeledExpandInfo)) =
@@ -266,7 +263,6 @@ theorem getUsage_key
   simp [kdfExpandLocalUsage_getUsage, sharedSecretUsage, Usage.kdfExpandKey]
 
 /-- The label of the AEAD key. -/
-public
 theorem getLabel_key
   [h: KdfExpandUsage.Has kdfExpandUsage] (usg: String × Bytes) (prkLabel: Label) (len: UInt16) (info: Bytes)
   : KdfExpandUsage.getLabel (sharedSecretUsage usg) prkLabel (serialize ({ len, label := "key", info }: LabeledExpandInfo)) = prkLabel
@@ -278,7 +274,6 @@ theorem getLabel_key
   split <;> simp_all
 
 /-- The label of the AEAD nonce. -/
-public
 theorem getLabel_baseNonce
   [h: KdfExpandUsage.Has kdfExpandUsage] (usg: String × Bytes) (prkLabel: Label) (len: UInt16) (info: Bytes)
   : KdfExpandUsage.getLabel (sharedSecretUsage usg) prkLabel (serialize ({ len, label := "base_nonce", info }: LabeledExpandInfo)) = Label.pub
@@ -289,7 +284,6 @@ theorem getLabel_baseNonce
   simp [kdfExpandLocalUsage_getLabel]
 
 /-- The AEAD predicate for the AEAD key of HPKE. -/
-public
 theorem aeadPred_eq
   [h: AeadPred.Has aeadPred] [BytesWellFormed] [GetUsage] [GetLabel]
   (usg: String × Bytes) (info key nonce msg ad: Bytes) (tr: ProofTrace)

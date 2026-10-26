@@ -1,5 +1,7 @@
-import MLS.TreeSync.Code.Invariants.ParentHash
-import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves
+module
+
+public import MLS.TreeSync.Code.Invariants.ParentHash
+public import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves
 
 /-!
 Port of `MLS.TreeSync.Invariants.ParentHash.Proofs`.
@@ -29,6 +31,8 @@ namespace MLS
 variable {Leaf Node: Type}
 
 /-- Port of `node_index_inside_tree`. -/
+@[expose]
+public
 def Tree.containsNodeIndex {l: Nat} (t: Tree Leaf Node l) (x: NodeIndex): Bool :=
   x.levels ≤ l && t.containsLeafIndex x.position
 
@@ -36,6 +40,7 @@ def Tree.containsNodeIndex {l: Nat} (t: Tree Leaf Node l) (x: NodeIndex): Bool :
 Port of `is_subtree_of`.
 `d` is a subtree of `p`: either `d = p`, or `d` is a subtree of the child of `p` containing `d`.
 -/
+public
 inductive Tree.IsSubtreeOf {ld: Nat} (d: Tree Leaf Node ld): {lp: Nat} → Tree Leaf Node lp → Prop
   | refl: d.IsSubtreeOf d
   | child {lp: Nat} (p: Tree Leaf Node (lp+1)): d.IsSubtreeOf (p.child d.position) → d.IsSubtreeOf p
@@ -46,12 +51,14 @@ grind_pattern Tree.IsSubtreeOf.child => d.IsSubtreeOf (p.child d.position)
 
 namespace Tree.IsSubtreeOf
 
+public
 theorem le {ld lp: Nat} {d: Tree Leaf Node ld} {p: Tree Leaf Node lp} (h: d.IsSubtreeOf p): ld ≤ lp := by
   induction h <;> grind
 
 grind_pattern Tree.IsSubtreeOf.le => d.IsSubtreeOf p
 
 /-- The leaves of a subtree are leaves of the tree. -/
+public
 theorem mem {ld lp: Nat} {d: Tree Leaf Node ld} {p: Tree Leaf Node lp} (h: d.IsSubtreeOf p) {li: Nat}
   (hli: d.containsLeafIndex li):
   p.containsLeafIndex li
@@ -62,6 +69,7 @@ grind_pattern Tree.IsSubtreeOf.mem =>
   d.containsLeafIndex li,
   d.IsSubtreeOf p
 
+public
 theorem containsLeafIndex {ld lp: Nat} {d: Tree Leaf Node ld} {p: Tree Leaf Node lp} (h: d.IsSubtreeOf p):
   p.containsLeafIndex d.position
 := by
@@ -70,6 +78,7 @@ theorem containsLeafIndex {ld lp: Nat} {d: Tree Leaf Node ld} {p: Tree Leaf Node
 grind_pattern Tree.IsSubtreeOf.containsLeafIndex => d.IsSubtreeOf p
 
 /-- A subtree of a node, smaller than it, is a subtree of the child containing it. -/
+public
 theorem child_of_le {ld lp: Nat} {d: Tree Leaf Node ld} {p: Tree Leaf Node (lp+1)} (h: d.IsSubtreeOf p) (hl: ld ≤ lp):
   d.IsSubtreeOf (p.child d.position)
 := by
@@ -82,6 +91,7 @@ grind_pattern Tree.IsSubtreeOf.child_of_le =>
   p.child d.position
 
 /-- A subtree of the child for `li` containing `li` is a subtree of the tree. -/
+public
 theorem of_child {ld lp: Nat} {d: Tree Leaf Node ld} {p: Tree Leaf Node (lp+1)} {li: Nat}
   (h: d.IsSubtreeOf (p.child li)):
   d.IsSubtreeOf p
@@ -112,6 +122,7 @@ theorem child_sibling {ld lp: Nat} {d: Tree Leaf Node (ld+1)} {p: Tree Leaf Node
   constructor <;> apply trans (d := d) <;> grind [of_child, of_sibling]
 
 /-- Port of `leaf_at_subtree`. -/
+public
 theorem leafAt_eq {ld lp: Nat} {d: Tree Leaf Node ld} {p: Tree Leaf Node lp} (h: d.IsSubtreeOf p) {li: Nat}
   (hli: d.containsLeafIndex li):
   leafAt p li = leafAt d li
@@ -141,6 +152,7 @@ variable {Bytes: Type} [BytesLike Bytes] {tkt: TreeKEMTypes Bytes}
 /-! ## Misc lemmas -/
 
 /-- Port of `mem_ul_eq`. -/
+public
 theorem memUl_iff (x: Nat) (l: List UInt32): memUl x l ↔ ∃ y ∈ l, y.toNat = x := by
   induction l <;> grind [memUl]
 
@@ -161,6 +173,7 @@ theorem memUl_filter (p: UInt32 → Bool) (l: List UInt32) (x: Nat):
 grind_pattern memUl_filter => memUl x (l.filter p)
 
 /-- Port of `mem_unmerged_resolution_eq`. -/
+public
 theorem mem_unmergedResolution (l: List UInt32) (x: NodeIndex):
   x ∈ unmergedResolution l ↔ x.levels = 0 ∧ memUl x.position l
 := by
@@ -172,6 +185,8 @@ grind_pattern mem_unmergedResolution => x ∈ unmergedResolution l
 /-! ## `set_eqP` -/
 
 /-- Port of `set_eqP`. -/
+@[expose]
+public
 def SetEqP {α: Type} (l1 l2: List α): Prop :=
   ∀ x, x ∈ l1 ↔ x ∈ l2
 
@@ -181,12 +196,14 @@ theorem setEq_iff {α: Type} [DecidableEq α] (l1 l2: List α): setEq l1 l2 ↔ 
 
 /-! ## Unfolding the definitions -/
 
+public
 theorem resolution_zero (t: TreeSync Bytes tkt 0):
   resolution t = if t.leafContent.isSome then [t.nodeIndex] else []
 := by
   obtain ⟨p, ⟨c⟩⟩ := t
   cases c <;> rfl
 
+public
 theorem resolution_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   resolution t =
     match t.nodeContent with
@@ -197,6 +214,7 @@ theorem resolution_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   cases bt with | node c L R => cases c <;> rfl
 
 /-- Membership in the resolution of a node, through the child / sibling view for any leaf index `li`. -/
+public
 theorem mem_resolution_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat) (x: NodeIndex):
   x ∈ resolution t ↔
     match t.nodeContent with
@@ -206,24 +224,28 @@ theorem mem_resolution_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat) (x:
   grind [resolution_succ]
 
 /-- The resolution of a blank node whose sibling for `li` has an empty resolution. -/
+public
 theorem resolution_succ_of_resolution_sibling {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat)
   (hc: t.nodeContent = none) (hs: resolution (t.sibling li) = []):
   resolution t = resolution (t.child li)
 := by
   grind [resolution_succ]
 
+public
 theorem unmergedLeavesOk_left_right {l: Nat} (t: TreeSync Bytes tkt (l+1)) (h: unmergedLeavesOk t):
   unmergedLeavesOk t.left ∧ unmergedLeavesOk t.right
 := by
   have := unmergedLeavesOk_succ t t.position
   grind
 
+public
 theorem unmergedLeavesOk_child_sibling {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat) (h: unmergedLeavesOk t):
   unmergedLeavesOk (t.child li) ∧ unmergedLeavesOk (t.sibling li)
 := by
   grind [unmergedLeavesOk_succ]
 
 /-- What `unmergedLeavesOk` says about the unmerged leaves of the root. -/
+public
 theorem unmergedLeavesOk_content {l: Nat} (t: TreeSync Bytes tkt (l+1)) (content: ParentNode Bytes tkt)
   (hc: t.nodeContent = some content) (h: unmergedLeavesOk t):
   (∀ x ∈ content.unmergedLeaves.val, t.containsLeafIndex x.toNat ∧ (leafAt t x.toNat).isSome) ∧
@@ -232,6 +254,7 @@ theorem unmergedLeavesOk_content {l: Nat} (t: TreeSync Bytes tkt (l+1)) (content
   have := unmergedLeavesOk_succ t 0
   grind [unmergedLeafExists]
 
+public
 theorem unmergedLeavesOf_eq {l: Nat} (p: TreeSync Bytes tkt (l+1)):
   unmergedLeavesOf p = (p.nodeContent.map (·.unmergedLeaves.val)).getD []
 := by
@@ -250,6 +273,7 @@ theorem mem_lastUpdateRhs_iff {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSy
   grind [lastUpdateRhs, memUl_iff]
 
 /-- `lastUpdateCorrect`, stated with membership in the resolution. -/
+public
 theorem lastUpdateCorrect_iff {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt (lp+1)):
   lastUpdateCorrect d p ↔
     d.nodeIndex ∈ resolution (p.child d.position) ∧
@@ -262,6 +286,7 @@ theorem lastUpdateCorrect_iff {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSy
 /-! ## Resolution lemmas -/
 
 /-- Port of `resolution_inside_tree`. -/
+public
 theorem containsNodeIndex_of_mem_resolution {l: Nat} (t: TreeSync Bytes tkt l) (x: NodeIndex)
   (hx: x ∈ resolution t) (hok: unmergedLeavesOk t):
   t.containsNodeIndex x
@@ -300,14 +325,20 @@ theorem ofLeafIndex_not_mem_resolution {l: Nat} (t: TreeSync Bytes tkt l) (li: N
 /-! ## `last_update` set equality imply equality -/
 
 /-- Port of `node_indices_are_leaf_indices`. -/
+@[expose]
+public
 def NodeIndicesAreLeafIndices (l: List NodeIndex): Prop :=
   ∀ x ∈ l, x.levels = 0
 
 /-- Port of `node_index_lt`. -/
+@[expose]
+public
 def nodeIndexLt (x y: NodeIndex): Bool :=
   x.position < y.position
 
 /-- Port of `node_indices_are_sorted`. -/
+@[expose]
+public
 def nodeIndicesAreSorted (l: List NodeIndex): Bool :=
   decide (l.Pairwise (nodeIndexLt · ·))
 
@@ -391,12 +422,14 @@ theorem eq_of_sorted_of_setEqP (l1 l2: List NodeIndex)
       grind [List.pairwise_cons, List.mem_cons_self, nodeIndexLt]
 
 /-- Port of `last_update_set_eqP_imply_eq`. -/
+public
 theorem lastUpdateLhs_eq_lastUpdateRhs {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt (lp+1))
   (hok: unmergedLeavesOk p) (h: SetEqP (lastUpdateLhs d p) (lastUpdateRhs d p)):
   lastUpdateLhs d p = lastUpdateRhs d p
 := by
   grind [lastUpdateRhs_sorted, eq_of_sorted_of_setEqP, lastUpdateLhs_sorted, NodeIndicesAreLeafIndices, SetEqP]
 
+public
 theorem nodeNotBlank_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)): nodeNotBlank t = t.nodeContent.isSome := by
   simp [nodeNotBlank]
 
@@ -411,6 +444,7 @@ theorem treeAdd_nodeContent {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat) (co
 
 /-! ## Un-add lemmas -/
 
+public
 theorem optionParentNode_ext {o1 o2: Option (ParentNode Bytes tkt)}
   (h1: o1.map (fun c => (c.content, c.parentHash)) = o2.map (fun c => (c.content, c.parentHash)))
   (h2: o1.map (·.unmergedLeaves.val) = o2.map (·.unmergedLeaves.val)):
@@ -419,6 +453,7 @@ theorem optionParentNode_ext {o1 o2: Option (ParentNode Bytes tkt)}
   grind [cases ParentNode, cases Option]
 
 /-- Two `unAddP` of nodes are equal when their children, siblings and contents are. -/
+public
 theorem unAddP_eq_unAddP_succ {l: Nat} (t t': TreeSync Bytes tkt (l+1)) (li: Nat) (pred pred': Nat → Bool)
   (hpos: t.position = t'.position)
   (hchild: unAddP (t.child li) pred = unAddP (t'.child li) pred')
@@ -466,6 +501,7 @@ theorem filter_unAddUnmergedLeaf_nil (l: List UInt32): l.filter (fun x => unAddU
   simp [unAddUnmergedLeaf, memUl]
 
 /-- Port of `un_add_empty`. -/
+public
 theorem unAdd_nil {l: Nat} (t: TreeSync Bytes tkt l): unAdd t [] = t := by
   induction t using Tree.leftRightInduction with
   | leaf t => apply Tree.ext_zero <;> simp [unAdd, unAddP_zero, unAddUnmergedLeaf, memUl]
@@ -649,17 +685,20 @@ theorem lastUpdateCorrect_treeAdd_outside {ld lp: Nat}
       grind [mem_lastUpdateRhs_iff]
     grind [lastUpdateCorrect, lastUpdateDInResC, lastUpdateLhs, setEq_iff, SetEqP]
 
+public
 theorem getParentHashOf_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   getParentHashOf t = t.nodeContent.map (·.parentHash)
 := by
   obtain ⟨_, bt⟩ := t
   cases bt with | node c L R => cases c <;> rfl
 
+public
 theorem getParentHashOf_zero (t: TreeSync Bytes tkt 0) (h: t.leafContent = none): getParentHashOf t = none := by
   obtain ⟨_, ⟨c⟩⟩ := t
   subst h
   rfl
 
+public
 theorem getParentHashOf_leaf (t: TreeSync Bytes tkt 0) (ln: LeafNode Bytes tkt) (h: t.leafContent = some ln):
   getParentHashOf t = if h: ln.data.source == .commit then some (ln.data.parentHash.get h) else none
 := by
@@ -741,6 +780,7 @@ theorem parentHashInvariant_left_right {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   cases bt with | node c L R => cases c <;> simp only [Tree.nodeContent_node, Bool.and_true] <;> rfl
 
 /-- `parentHashInvariant` of a node, through the child / sibling view for any leaf index `li`. -/
+public
 theorem parentHashInvariant_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat):
   parentHashInvariant t = (
     parentHashInvariant (t.child li) && parentHashInvariant (t.sibling li) &&
@@ -751,6 +791,7 @@ theorem parentHashInvariant_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat
   grind [parentHashInvariant_left_right]
 
 /-- `parentHashCorrect`, without the `match`es. -/
+public
 theorem parentHashCorrect_iff {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt (lp+1)):
   parentHashCorrect d p ↔
     ∃ pContent ph, p.nodeContent = some pContent ∧ getParentHashOf d = some ph ∧
@@ -768,6 +809,8 @@ theorem nodeHasParentHash_of_parentHashCorrect {ld lp: Nat} (d: TreeSync Bytes t
 /-! ## Prop invariant definition -/
 
 /-- Port of `parent_hash_linkedP`. -/
+@[expose]
+public
 def ParentHashLinkedP {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt (lp+1)): Prop :=
   d.IsSubtreeOf p ∧ parentHashLinked d p
 
@@ -775,10 +818,14 @@ def ParentHashLinkedP {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes
 Port of `node_has_parent_hash_linkP`.
 MLS*'s condition `TNode? p` holds as `p` has height `lp+1`.
 -/
+@[expose]
+public
 def NodeHasParentHashLinkP {lp: Nat} (p: TreeSync Bytes tkt (lp+1)): Prop :=
   nodeNotBlank p → ∃ (ld: Nat) (d: TreeSync Bytes tkt ld), ld ≤ lp ∧ nodeHasParentHash d ∧ ParentHashLinkedP d p
 
 /-- Port of `parent_hash_invariantP`. -/
+@[expose]
+public
 def ParentHashInvariantP {l: Nat} (t: TreeSync Bytes tkt l): Prop :=
   match t.intoLeftRightView with
   | .leaf _ _ => True
@@ -794,6 +841,7 @@ theorem parentHashInvariantP_left_right {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   grind [ParentHashInvariantP.eq_def]
 
 /-- `ParentHashInvariantP` of a node, through the child / sibling view for any leaf index `li`. -/
+public
 theorem parentHashInvariantP_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat):
   ParentHashInvariantP t ↔
     NodeHasParentHashLinkP t ∧ ParentHashInvariantP (t.child li) ∧ ParentHashInvariantP (t.sibling li)
@@ -835,6 +883,7 @@ theorem nodeHasParentHashLinkP_of_nodeHasParentHashLinkAux {ld lp: Nat}
       apply nodeHasParentHashLinkP_intro p d <;> grind [nodeHasParentHash_of_parentHashCorrect]
 
 /-- Port of `parent_hash_invariant_bool2prop`. -/
+public
 theorem parentHashInvariantP_of_parentHashInvariant {l: Nat} (t: TreeSync Bytes tkt l) (h: parentHashInvariant t):
   ParentHashInvariantP t
 := by
@@ -898,6 +947,7 @@ theorem parentHashInvariant_of_parentHashInvariantP {l: Nat} (t: TreeSync Bytes 
 /-! ## Parent-hash invariant: easy cases -/
 
 /-- Port of `parent_hash_invariant_tree_create`. -/
+public
 theorem parentHashInvariant_treeCreate (ln: LeafNode Bytes tkt):
   parentHashInvariant (treeCreate ln: TreeSync Bytes tkt 0)
 :=
@@ -914,6 +964,7 @@ theorem parentHashInvariant_mkBlankTree (l p: Nat):
     grind [parentHashInvariant_left_right, mkBlankTree, mkBlankTreeGeneral]
 
 /-- Port of `parent_hash_invariant_tree_extend`. -/
+public
 theorem parentHashInvariant_treeExtend {l: Nat} (t: TreeSync Bytes tkt l) (h: parentHashInvariant t):
   parentHashInvariant (treeExtend t)
 := by
@@ -924,6 +975,7 @@ theorem parentHashInvariant_treeExtend {l: Nat} (t: TreeSync Bytes tkt l) (h: pa
 Port of `parent_hash_invariant_tree_truncate`.
 MLS* requires `is_tree_empty (TNode?.right t)`, which is not needed.
 -/
+public
 theorem parentHashInvariant_treeTruncate {l: Nat} (t: TreeSync Bytes tkt (l+1)) (h: parentHashInvariant t):
   parentHashInvariant (treeTruncate t)
 := by
@@ -938,6 +990,7 @@ theorem parentHashInvariant_treeChangePath {l: Nat} (t: TreeSync Bytes tkt l) (l
   | node t ih => grind [treeChangePath.eq_def, parentHashInvariant_succ _ li]
 
 /-- Port of `parent_hash_invariant_tree_update`. -/
+public
 theorem parentHashInvariant_treeUpdate {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (ln: LeafNode Bytes tkt)
   (h: parentHashInvariant t):
   parentHashInvariant (treeUpdate t li ln)
@@ -946,6 +999,7 @@ theorem parentHashInvariant_treeUpdate {l: Nat} (t: TreeSync Bytes tkt l) (li: N
   grind
 
 /-- Port of `parent_hash_invariant_tree_remove`. -/
+public
 theorem parentHashInvariant_treeRemove {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (h: parentHashInvariant t):
   parentHashInvariant (treeRemove t li)
 := by
@@ -1028,6 +1082,7 @@ theorem parentHashInvariantP_treeAdd {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat
         · apply parentHashCorrect_treeAdd_outside d t li content <;> grind
 
 /-- Port of `parent_hash_invariant_tree_add`. -/
+public
 theorem parentHashInvariant_treeAdd {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (content: LeafNode Bytes tkt)
   (t': TreeSync Bytes tkt l) (h: treeAdd t li content = .success t')
   (hli: t.containsLeafIndex li) (hleaf: leafAt t li = none)
@@ -1043,6 +1098,8 @@ Port of `path_is_parent_hash_valid_aux`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def pathIsParentHashValidAux {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l) (parentParentHash: Bytes): Bool
 :=
@@ -1059,6 +1116,7 @@ theorem pathIsParentHashValid_eq {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (p
 :=
   rfl
 
+public
 theorem pathIsParentHashValidAux_leaf (t: TreeSync Bytes tkt 0) (li: Nat) (ln: LeafNode Bytes tkt)
   (parentParentHash: Bytes):
   pathIsParentHashValidAux t li (.leaf ln) parentParentHash =
@@ -1069,6 +1127,7 @@ theorem pathIsParentHashValidAux_leaf (t: TreeSync Bytes tkt 0) (li: Nat) (ln: L
     simp [pure]
   grind [pathIsParentHashValidAux, Path.getPathLeaf]
 
+public
 theorem pathIsParentHashValidAux_node {l: Nat}
   (t: TreeSync Bytes tkt (l+1)) (li: Nat) (optExtContent: Option tkt.NodeContent) (pNext: PathSync Bytes tkt l)
   (parentParentHash: Bytes) (newOptContent: Option (ParentNode Bytes tkt)) (newParentParentHash: Bytes)
@@ -1079,6 +1138,7 @@ theorem pathIsParentHashValidAux_node {l: Nat}
   grind [pathIsParentHashValidAux, Path.getPathLeaf, computeLeafParentHashFromPath_node]
 
 /-- Port of `is_tree_empty_implies_empty_resolution`. -/
+public
 theorem resolution_eq_nil_of_isTreeEmpty {l: Nat} (t: TreeSync Bytes tkt l) (h: isTreeEmpty t): resolution t = [] := by
   induction t using Tree.leftRightInduction with
   | leaf t => simp_all [resolution_zero, isTreeEmpty_zero]
@@ -1166,6 +1226,7 @@ theorem parentHashCorrect_applyPathAux {l ld: Nat}
 `d` is the subtree computed by `find_parent_hash_link` (see `exists_subtree_applyPathAux`):
 it is parent-hash linked to the new node.
 -/
+public
 theorem parentHashLinkedP_applyPathAux {l ld: Nat}
   (t: TreeSync Bytes tkt (l+1)) (li: Nat) (extContent: tkt.NodeContent) (pNext: PathSync Bytes tkt l)
   (parentParentHash: Bytes) (t': TreeSync Bytes tkt (l+1)) (d: TreeSync Bytes tkt ld) (ph: MlsBytes Bytes)
@@ -1234,6 +1295,7 @@ theorem parentHashInvariantP_applyPathAux {l: Nat}
       grind
 
 /-- Port of `parent_hash_invariant_apply_path`. -/
+public
 theorem parentHashInvariant_applyPath {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l)
   (t': TreeSync Bytes tkt l) (h: applyPath t li p = .success t')
   (hinv: parentHashInvariant t) (hvalid: pathIsParentHashValid t li p) (hfilter: pathIsFilterValid t li p):

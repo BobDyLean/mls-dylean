@@ -46,7 +46,6 @@ def findLocalFun (l: List (TaggedLocalFun LocalFun)) (tag: Tag): Option (TaggedL
   l.find? (·.1 = tag)
 
 /-- Port of `find_local_fun_returns_belonging_tag_set`. -/
-public
 theorem fst_of_findLocalFun_eq_some
   (l: List (TaggedLocalFun LocalFun)) (tag: Tag) (x: TaggedLocalFun LocalFun)
   : findLocalFun l tag = some x →
@@ -55,7 +54,6 @@ theorem fst_of_findLocalFun_eq_some
   intro h
   simpa using List.find?_some h
 
-public
 theorem mem_of_findLocalFun_eq_some
   (l: List (TaggedLocalFun LocalFun)) (tag: Tag) (x: TaggedLocalFun LocalFun)
   : findLocalFun l tag = some x →
@@ -63,7 +61,6 @@ theorem mem_of_findLocalFun_eq_some
 :=
   List.mem_of_find?_eq_some
 
-public
 theorem findLocalFun_isSome
   (l: List (TaggedLocalFun LocalFun)) (tag: Tag)
   : (findLocalFun l tag).isSome = (tag ∈ l.map (·.1))
@@ -71,7 +68,6 @@ theorem findLocalFun_isSome
   simp [findLocalFun, List.find?_isSome]
 
 /-- Port of `mk_global_fun_correct_aux`: when tags are unique, `findLocalFun` finds the local function of a tag. -/
-public
 theorem findLocalFun_of_mem
   (l: List (TaggedLocalFun LocalFun)) (x: TaggedLocalFun LocalFun)
   : (l.map (·.1)).Nodup →
@@ -87,7 +83,6 @@ theorem findLocalFun_of_mem
     rcases List.mem_cons.mp h_mem with rfl | h_mem <;> split <;> grind
 
 /-- If `l1` is a sublist of `l2` whose tags are unique, they have the same local functions on the tags of `l1`. -/
-public
 theorem findLocalFun_of_sublist
   (l1 l2: List (TaggedLocalFun LocalFun)) (tag: Tag)
   : l1.Sublist l2 →
@@ -360,7 +355,6 @@ theorem Locals.apply_single
 := by
   simp [Locals.apply, Locals.single, findLocalFun]
 
-public
 theorem Locals.apply_of_hasStep
   {tags1 tags2: List P.Tag} (l1: Locals P.LocalFun tags1) (l2: Locals P.LocalFun tags2) [h: HasStep l1 l2]
   (tag: P.Tag) (raw: P.RawInput) (default: P.Output)

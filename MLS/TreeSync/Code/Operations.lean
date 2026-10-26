@@ -1,6 +1,8 @@
-import MLS.Common.Code.TreeCommon
-import MLS.Common.Proofs.MiscLemmas
-import MLS.TreeSync.Code.ParentHash
+module
+
+public import MLS.Common.Code.TreeCommon
+public import MLS.Common.Proofs.MiscLemmas
+public import MLS.TreeSync.Code.ParentHash
 
 /-!
 Port of `MLS.TreeSync.Operations`.
@@ -40,6 +42,8 @@ This is why this function can fail.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def treeAdd {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (lp: LeafNode Bytes tkt): Result (TreeSync Bytes tkt l) :=
   match t.intoChildSiblingView li with
   | .leaf _ position => pure (ChildSiblingView.leaf (some lp) position).pack
@@ -60,6 +64,8 @@ Remove, or "un-add" the leaves whose index satisfy some predicate.
 This is useful in the proofs, and also to compute the "original sibling"
 in the parent-hash check when joining a group.
 -/
+@[expose]
+public
 def unAddP {l: Nat} (t: TreeSync Bytes tkt l) (pred: Nat → Bool): TreeSync Bytes tkt l :=
   match t.intoLeftRightView with
   | .leaf content position => (LeftRightView.leaf (if pred position then content else none) position).pack
@@ -81,6 +87,8 @@ section CryptoBytes
 variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes}
 
 /-- Port of `compute_new_np_and_ph`. -/
+@[expose]
+public
 def computeNewNpAndPh {l: Nat}
   (optExtContent: Option tkt.NodeContent) (sibling: TreeSync Bytes tkt l) (parentParentHash: Bytes)
   : Result (Option (ParentNode Bytes tkt) × Bytes)
@@ -89,7 +97,7 @@ def computeNewNpAndPh {l: Nat}
     let parentParentHash ← mkMlsBytes parentParentHash "compute_new_np_and_ph" "parent_parent_hash"
     pure (
       match optExtContent with
-      | some extContent => some { content := extContent, parentHash := parentParentHash, unmergedLeaves := ⟨[], by simp [ExtensibleMessageFormat.list, ExtensibleMessageFormat.list.serialize, BytesLike.empty_length, mlsNatPred]⟩ }
+      | some extContent => some { content := extContent, parentHash := parentParentHash, unmergedLeaves := ⟨[], by simp [BytesLike.empty_length, mlsNatPred]⟩ }
       | none => none
     )
   let newParentParentHash ←
@@ -108,6 +116,8 @@ and this function is used to check the validity of the path before applying it o
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def computeLeafParentHashFromPath {PathLeaf: Type} {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: Path PathLeaf (Option tkt.NodeContent) l) (parentParentHash: Bytes): Result Bytes
 :=
@@ -118,6 +128,8 @@ def computeLeafParentHashFromPath {PathLeaf: Type} {l: Nat}
     computeLeafParentHashFromPath child li pNext newParentParentHash
 
 /-- Port of `get_leaf_tbs`. -/
+@[expose]
+public
 def getLeafTbs (ln: LeafNode Bytes tkt) (groupId: MlsBytes Bytes) (leafIndex: UInt32): Bytes :=
   serializeNE (LeafNodeTBS.mf tkt) {
     data := ln.data
@@ -129,6 +141,8 @@ def getLeafTbs (ln: LeafNode Bytes tkt) (groupId: MlsBytes Bytes) (leafIndex: UI
 Port of `leaf_is_valid`.
 Check the signature inside a leaf.
 -/
+@[expose]
+public
 def leafIsValid (ln: LeafNode Bytes tkt) (groupId: MlsBytes Bytes) (leafIndex: Nat): Bool :=
   leafIndex < 2^32 && (
     let tbsBytes := getLeafTbs ln groupId leafIndex.toUInt32
@@ -141,6 +155,8 @@ Port of `path_leaf_is_valid`.
 Check the signature of the path's leaf.
 MLS* requires `li: leaf_index l 0`; this precondition is not needed here.
 -/
+@[expose]
+public
 def pathLeafIsValid {l: Nat}
   (groupId: MlsBytes Bytes) (li: Nat) (p: PathSync Bytes tkt l): Bool
 :=
@@ -152,6 +168,8 @@ Check the parent-hash of the path's leaf.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def pathIsParentHashValid {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l): Bool
 :=
@@ -169,6 +187,8 @@ Check that blank nodes in the path corresponds to filtered nodes.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def pathIsFilterValid {PathLeaf: Type} {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: Path PathLeaf (Option tkt.NodeContent) l): Bool
 :=
@@ -183,6 +203,8 @@ Combine all the validity checks for paths, defined above.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def pathIsValid {l: Nat}
   (groupId: MlsBytes Bytes) (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l): Bool
 :=
@@ -201,6 +223,8 @@ MLS* requires `(get_path_leaf p).source = LNS_update`, see `externalPathToPath`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def externalPathToPathAux {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: ExternalPathSync Bytes tkt l)
   (groupId: MlsBytes Bytes) (signKey: Bytes) (nonce: Bytes)
@@ -229,6 +253,8 @@ MLS* requires `(get_path_leaf p).source == LNS_update`; otherwise, the leaf sour
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def externalPathToPath {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: ExternalPathSync Bytes tkt l)
   (groupId: MlsBytes Bytes) (signKey: Bytes) (nonce: Bytes)
@@ -242,6 +268,8 @@ Port of `apply_path_aux`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def applyPathAux {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l) (parentParentHash: Bytes): Result (TreeSync Bytes tkt l)
 :=
@@ -259,6 +287,8 @@ Apply a path on the tree, and compute the parent-hashes of internal nodes.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def applyPath {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l)
   : Result (TreeSync Bytes tkt l)
@@ -269,6 +299,8 @@ def applyPath {l: Nat}
 Port of `sign_leaf_node_data_key_package`.
 MLS* requires `ln_data.source = LNS_key_package`; otherwise, this function fails.
 -/
+@[expose]
+public
 def signLeafNodeDataKeyPackage (lnData: LeafNodeData Bytes tkt)
   (signKey: Bytes) (nonce: Bytes) : Result (LeafNode Bytes tkt)
 := do
@@ -283,6 +315,8 @@ def signLeafNodeDataKeyPackage (lnData: LeafNodeData Bytes tkt)
 Port of `sign_leaf_node_data_update`.
 MLS* requires `ln_data.source = LNS_update`; otherwise, this function fails.
 -/
+@[expose]
+public
 def signLeafNodeDataUpdate (lnData: LeafNodeData Bytes tkt)
   (groupId: MlsBytes Bytes) (leafIndex: UInt32) (signKey: Bytes) (nonce: Bytes) : Result (LeafNode Bytes tkt)
 := do

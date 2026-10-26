@@ -1,5 +1,9 @@
-import MLS.Comparse.Bytes
-import MLS.Comparse.Derived
+module
+
+public import MLS.Comparse.Bytes
+meta import MLS.Comparse.Bytes
+public import MLS.Comparse.Derived
+meta import MLS.Comparse.Derived
 
 /-!
 Port of `Comparse.Tests.TacticOutput` (the tests on big-endian and QUIC integers).
@@ -22,6 +26,8 @@ attribute [local instance] bytesLikeByteArray
 
 /-! ## Utility functions, from MLS* -/
 
+@[expose]
+public
 def hexCharToHexDigit (c: Char): Option Nat :=
   if '0' ≤ c ∧ c ≤ '9' then some (c.toNat - '0'.toNat)
   else if 'a' ≤ c ∧ c ≤ 'f' then some (c.toNat - 'a'.toNat + 10)
@@ -30,6 +36,8 @@ def hexCharToHexDigit (c: Char): Option Nat :=
 
 -- We do recursion on lists, because recursing on a string is slow
 /-- Port of `hex_list_char_to_list_u8`. -/
+@[expose]
+public
 def hexListCharToListU8: List Char → Option (List UInt8)
   | [] => some []
   | [_] => none
@@ -40,19 +48,27 @@ def hexListCharToListU8: List Char → Option (List UInt8)
     some ((16*d1 + d2).toUInt8::bs)
 
 /-- Port of `hex_string_to_bytes`. -/
+@[expose]
+public
 def hexStringToBytes (s: String): Option ByteArray :=
   (hexListCharToListU8 s.toList).map (fun l => ⟨l.toArray⟩)
 
 /-- Port of `hex_digit_to_hex_string`. -/
+@[expose]
+public
 def hexDigitToHexString (n: Nat): String :=
   String.singleton (if n < 10 then Char.ofNat ('0'.toNat + n) else Char.ofNat ('A'.toNat + n - 10))
 
 /-- Port of `nat_to_hex_string_aux`. -/
+@[expose]
+public
 def natToHexStringAux (n: Nat): String :=
   if n = 0 then ""
   else natToHexStringAux (n/16) ++ hexDigitToHexString (n%16)
 
 /-- Port of `nat_to_hex_string`. -/
+@[expose]
+public
 def natToHexString (n: Nat): String :=
   if n = 0 then "00"
   else
@@ -65,21 +81,28 @@ def natToHexString (n: Nat): String :=
 /-! ## Unit tests -/
 
 /-- Port of `parse_ok`. -/
+@[expose]
+public
 def parseOk {a: Type} [BEq a] (mf: NonExtensibleMessageFormat ByteArray a) (s: String) (x: a): Bool :=
   match hexStringToBytes s with
   | none => false
   | some b => mf.toExtensible.parse b == some x
 
 /-- Port of `parse_fail`. -/
+@[expose]
+public
 def parseFail {a: Type} (mf: NonExtensibleMessageFormat ByteArray a) (s: String): Bool :=
   match hexStringToBytes s with
   | none => false
   | some b => (mf.toExtensible.parse b).isNone
 
 /-- Serialization is the inverse of parsing, on the given test vector. -/
+@[expose]
+public
 def serializeOk {a: Type} (mf: NonExtensibleMessageFormat ByteArray a) (s: String) (x: a): Bool :=
   hexStringToBytes s == some (mf.toExtensible.serialize x)
 
+public
 instance: BEq QuicNat where
   beq x y := x.val == y.val
 
@@ -109,9 +132,13 @@ instance: BEq QuicNat where
 #guard parseOk .uint32BE "FFFFFFFF" (2^32-1)
 
 /-- Port of `mk_quic_nat`. -/
+@[expose]
+public
 def mkQuicNat (sz: Nat) (n: Nat): String :=
   natToHexString (sz * 2^(8*(2^sz)-2) + n)
 
+@[expose]
+public
 def quicNatOk (sz: Nat) (n: Nat): Bool :=
   if h: n < 2^62 then
     parseOk .quicNat (mkQuicNat sz n) ⟨n, h⟩ && serializeOk .quicNat (mkQuicNat sz n) ⟨n, h⟩
@@ -141,6 +168,7 @@ def quicNatOk (sz: Nat) (n: Nat): Bool :=
 -- ps_quic_nat_8_high_ok
 #guard quicNatOk 3 (2^(8*8-2)-1)
 
+public
 structure SimpleRecord where
   simpleRecord1: UInt8
   simpleRecord2: UInt16
@@ -148,14 +176,20 @@ structure SimpleRecord where
   simpleRecord4: UInt32
 deriving BEq
 
+@[expose]
+public
 def SimpleRecord.f: UInt8 × UInt16 × BitVec (8*3) × UInt32 → SimpleRecord :=
   fun (simpleRecord1, simpleRecord2, simpleRecord3, simpleRecord4) =>
     { simpleRecord1, simpleRecord2, simpleRecord3, simpleRecord4 }
 
+@[expose]
+public
 def SimpleRecord.g: SimpleRecord → UInt8 × UInt16 × BitVec (8*3) × UInt32 :=
   fun { simpleRecord1, simpleRecord2, simpleRecord3, simpleRecord4 } =>
     (simpleRecord1, simpleRecord2, simpleRecord3, simpleRecord4)
 
+@[expose]
+public
 def SimpleRecord.mf: NonExtensibleMessageFormat ByteArray SimpleRecord :=
   .isomorphic (.prod .uint8 (.prod .uint16BE (.prod (.bitVecBE 3) .uint32BE))) SimpleRecord.f SimpleRecord.g
 

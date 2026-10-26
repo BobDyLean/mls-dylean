@@ -1,6 +1,8 @@
-import MLS.Common.Proofs.Crypto.Derived
-import MLS.Common.Proofs.TreeCommon
-import MLS.TreeSync.Code.Operations
+module
+
+public import MLS.Common.Proofs.Crypto.Derived
+public import MLS.Common.Proofs.TreeCommon
+public import MLS.TreeSync.Code.Operations
 
 /-!
 Port of `MLS.TreeSync.Operations.Lemmas`, and lemmas unfolding the operations of `MLS.TreeSync.Operations`.
@@ -21,6 +23,7 @@ section BytesLike
 
 variable {Bytes: Type} [BytesLike Bytes] {tkt: TreeKEMTypes Bytes}
 
+public
 theorem treeAdd_zero (t: TreeSync Bytes tkt 0) (li: Nat) (lp: LeafNode Bytes tkt) (t': TreeSync Bytes tkt 0)
   (h: treeAdd t li lp = .success t'):
   t' = (ChildSiblingView.leaf (some lp) t.position).pack
@@ -28,6 +31,7 @@ theorem treeAdd_zero (t: TreeSync Bytes tkt 0) (li: Nat) (lp: LeafNode Bytes tkt
   unfold treeAdd at h
   simp_all
 
+public
 theorem treeAdd_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat) (lp: LeafNode Bytes tkt) (t': TreeSync Bytes tkt (l+1))
   (h: treeAdd t li lp = .success t'):
   ∃ newContent newChild,
@@ -41,6 +45,7 @@ theorem treeAdd_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat) (lp: LeafN
   simp only [Tree.intoChildSiblingView_eq] at h
   split at h <;> simp at h <;> grind
 
+public
 theorem treeAdd_position {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (lp: LeafNode Bytes tkt) (t': TreeSync Bytes tkt l)
   (h: treeAdd t li lp = .success t'):
   t'.position = t.position
@@ -54,6 +59,7 @@ theorem treeAdd_position {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (lp: LeafN
 grind_pattern treeAdd_position => treeAdd t li lp, t'.position
 
 /-- Port of `leaf_at_tree_add`. -/
+public
 theorem leafAt_treeAdd {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (lp: LeafNode Bytes tkt) (li': Nat)
   (t': TreeSync Bytes tkt l) (h: treeAdd t li lp = .success t')
   (hli: t.containsLeafIndex li) (hli': t.containsLeafIndex li'):
@@ -65,19 +71,23 @@ theorem leafAt_treeAdd {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (lp: LeafNod
     obtain ⟨_, _, h1, rfl, -⟩ := treeAdd_succ t li lp t' h
     grind [leafAt.eq_def]
 
-@[simp] theorem unAddP_position {l: Nat} (t: TreeSync Bytes tkt l) (pred: Nat → Bool):
+@[simp]
+public
+theorem unAddP_position {l: Nat} (t: TreeSync Bytes tkt l) (pred: Nat → Bool):
   (unAddP t pred).position = t.position
 := by
   induction t using Tree.leftRightInduction <;> unfold unAddP <;> simp_all
 
 grind_pattern unAddP_position => (unAddP t pred).position
 
+public
 theorem unAddP_zero (t: TreeSync Bytes tkt 0) (pred: Nat → Bool):
   unAddP t pred = (LeftRightView.leaf (if pred t.position then t.leafContent else none) t.position).pack
 := by
   grind [unAddP]
 
 /-- `unAddP` of a node, through the child / sibling view for any leaf index `li`. -/
+public
 theorem unAddP_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat) (pred: Nat → Bool):
   (unAddP t pred).child li = unAddP (t.child li) pred ∧
   (unAddP t pred).sibling li = unAddP (t.sibling li) pred ∧
@@ -110,6 +120,7 @@ theorem computeNewNpAndPh_unmergedLeaves {l: Nat}
   unfold computeNewNpAndPh mkMlsBytes Result.error at h
   split at h <;> cases optExtContent <;> simp at h <;> grind
 
+public
 theorem computeNewNpAndPh_spec {l: Nat}
   (optExtContent: Option tkt.NodeContent) (sibling: TreeSync Bytes tkt l) (parentParentHash: Bytes)
   (newOptContent: Option (ParentNode Bytes tkt)) (newParentParentHash: Bytes)
@@ -124,6 +135,7 @@ theorem computeNewNpAndPh_spec {l: Nat}
   unfold computeNewNpAndPh mkMlsBytes Result.error at h
   split at h <;> cases optExtContent <;> simp at h <;> grind
 
+public
 theorem computeLeafParentHashFromPath_node {PathLeaf: Type} {l: Nat}
   (t: TreeSync Bytes tkt (l+1)) (li: Nat) (optExtContent: Option tkt.NodeContent)
   (pNext: Path PathLeaf (Option tkt.NodeContent) l) (parentParentHash: Bytes)
@@ -135,6 +147,7 @@ theorem computeLeafParentHashFromPath_node {PathLeaf: Type} {l: Nat}
   conv => lhs; unfold computeLeafParentHashFromPath
   simp [h, Bind.bind, Result.bind]
 
+public
 theorem pathIsFilterValid_node {PathLeaf: Type} {l: Nat}
   (t: TreeSync Bytes tkt (l+1)) (li: Nat) (optExtContent: Option tkt.NodeContent)
   (pNext: Path PathLeaf (Option tkt.NodeContent) l):
@@ -144,6 +157,7 @@ theorem pathIsFilterValid_node {PathLeaf: Type} {l: Nat}
   conv => lhs; unfold pathIsFilterValid
   simp
 
+public
 theorem applyPathAux_zero
   (t: TreeSync Bytes tkt 0) (li: Nat) (lp: LeafNode Bytes tkt) (parentParentHash: Bytes)
   (t': TreeSync Bytes tkt 0) (h: applyPathAux t li (.leaf lp) parentParentHash = .success t'):
@@ -152,6 +166,7 @@ theorem applyPathAux_zero
   unfold applyPathAux at h
   simp_all
 
+public
 theorem applyPathAux_node {l: Nat}
   (t: TreeSync Bytes tkt (l+1)) (li: Nat) (optExtContent: Option tkt.NodeContent) (pNext: PathSync Bytes tkt l)
   (parentParentHash: Bytes)
@@ -165,6 +180,7 @@ theorem applyPathAux_node {l: Nat}
   simp at h
   grind
 
+public
 theorem applyPathAux_succ {l: Nat}
   (t: TreeSync Bytes tkt (l+1)) (li: Nat) (p: PathSync Bytes tkt (l+1)) (parentParentHash: Bytes)
   (t': TreeSync Bytes tkt (l+1)) (h: applyPathAux t li p parentParentHash = .success t'):
@@ -178,6 +194,7 @@ theorem applyPathAux_succ {l: Nat}
   simp at h
   grind [computeNewNpAndPh_unmergedLeaves]
 
+public
 theorem applyPathAux_position {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l) (parentParentHash: Bytes)
   (t': TreeSync Bytes tkt l) (h: applyPathAux t li p parentParentHash = .success t'):
@@ -192,6 +209,7 @@ theorem applyPathAux_position {l: Nat}
 grind_pattern applyPathAux_position => applyPathAux t li p parentParentHash, t'.position
 
 /-- Port of `leaf_at_apply_path_aux`. -/
+public
 theorem leafAt_applyPathAux {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l) (parentParentHash: Bytes) (li': Nat)
   (t': TreeSync Bytes tkt l) (h: applyPathAux t li p parentParentHash = .success t')

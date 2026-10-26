@@ -395,7 +395,6 @@ def DySlop.Kem.extractKemSk (pk: Bytes): Option Bytes :=
     some sk
   | none => none
 
-public
 theorem DySlop.Kem.kemPk_extractKemSk (b: Bytes):
   match extractKemSk b with
   | none => True
@@ -407,7 +406,6 @@ theorem DySlop.Kem.kemPk_extractKemSk (b: Bytes):
 variable [ExecTraceTypes] [ProofTraceTypes]
 
 /-- Port of `extract_kem_sk_preserves_well_formedness`. -/
-public
 theorem DySlop.Kem.extractKemSk.preserves_WellFormed
   [BytesInvariants] [BytesInvariants.Has DySlop.Kem.KemPub.invariants]
 : ExtractPreservesWellFormed extractKemSk

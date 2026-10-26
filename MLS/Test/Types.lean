@@ -1,3 +1,5 @@
+module
+
 /-!
 Port of `MLS.Test.Types` (the parts needed by the ported tests).
 -/
@@ -6,11 +8,13 @@ namespace MLS.Test
 
 /-! ## Crypto Basics -/
 
+public
 structure CryptoBasicsRefHash where
   label: String
   value: String
   out: String
 
+public
 structure CryptoBasicsExpandWithLabel where
   secret: String
   label: String
@@ -18,11 +22,13 @@ structure CryptoBasicsExpandWithLabel where
   length: UInt16
   out: String
 
+public
 structure CryptoBasicsDeriveSecret where
   secret: String
   label: String
   out: String
 
+public
 structure CryptoBasicsDeriveTreeSecret where
   secret: String
   label: String
@@ -30,6 +36,7 @@ structure CryptoBasicsDeriveTreeSecret where
   length: UInt16
   out: String
 
+public
 structure CryptoBasicsSignWithLabel where
   priv: String
   pub: String
@@ -37,6 +44,7 @@ structure CryptoBasicsSignWithLabel where
   label: String
   signature: String
 
+public
 structure CryptoBasicsEncryptWithLabel where
   priv: String
   pub: String
@@ -46,6 +54,7 @@ structure CryptoBasicsEncryptWithLabel where
   kemOutput: String
   ciphertext: String
 
+public
 structure CryptoBasicsTest where
   cipherSuite: UInt16
   refHash: CryptoBasicsRefHash
@@ -57,6 +66,7 @@ structure CryptoBasicsTest where
 
 /-! ## Tree Validation -/
 
+public
 structure TreeValidationTest where
   cipherSuite: UInt16
   tree: String
@@ -66,6 +76,7 @@ structure TreeValidationTest where
 
 /-! ## Tree Operations -/
 
+public
 structure TreeOperationsTest where
   treeBefore: String
   proposal: String
@@ -74,12 +85,14 @@ structure TreeOperationsTest where
 
 /-! ## Secret Tree -/
 
+public
 structure SecretTreeSenderData where
   senderDataSecret: String
   ciphertext: String
   key: String
   nonce: String
 
+public
 structure SecretTreeLeaf where
   generation: UInt32
   handshakeKey: String
@@ -87,6 +100,7 @@ structure SecretTreeLeaf where
   applicationKey: String
   applicationNonce: String
 
+public
 structure SecretTreeTest where
   cipherSuite: UInt16
   senderData: SecretTreeSenderData
@@ -95,6 +109,7 @@ structure SecretTreeTest where
 
 /-! ## Message Protection -/
 
+public
 structure MessageProtectionTest where
   cipherSuite: UInt16
 
@@ -123,6 +138,7 @@ structure MessageProtectionTest where
 
 /-! ## Key Schedule -/
 
+public
 structure KeyscheduleTestEpochInput where
   treeHash: String
   commitSecret: String
@@ -132,6 +148,7 @@ structure KeyscheduleTestEpochInput where
   exporterContext: String
   exporterLength: UInt32
 
+public
 structure KeyscheduleTestEpochOutput where
   groupContext: String
 
@@ -151,6 +168,7 @@ structure KeyscheduleTestEpochOutput where
   externalPub: String
   exportedSecret: String
 
+public
 structure KeyscheduleTest where
   cipherSuite: UInt16
   groupId: String
@@ -159,11 +177,13 @@ structure KeyscheduleTest where
 
 /-! ## Pre-Shared Keys -/
 
+public
 structure PskTestPsk where
   pskId: String
   psk: String
   pskNonce: String
 
+public
 structure PskTest where
   cipherSuite: UInt16
   psks: List PskTestPsk
@@ -171,6 +191,7 @@ structure PskTest where
 
 /-! ## Transcript Hashes -/
 
+public
 structure TranscriptHashesTest where
   cipherSuite: UInt16
 
@@ -183,6 +204,7 @@ structure TranscriptHashesTest where
 
 /-! ## Welcome -/
 
+public
 structure WelcomeTest where
   cipherSuite: UInt16
   initPriv: String
@@ -192,16 +214,19 @@ structure WelcomeTest where
 
 /-! ## TreeKEM -/
 
+public
 structure TreeKEMLeafPathSecret where
   node: UInt32
   pathSecret: String
 
+public
 structure TreeKEMLeafPrivate where
   index: UInt32
   encryptionPriv: String
   signaturePriv: String
   pathSecrets: List TreeKEMLeafPathSecret
 
+public
 structure TreeKEMUpdatePath where
   sender: UInt32
   updatePath: String
@@ -209,6 +234,7 @@ structure TreeKEMUpdatePath where
   commitSecret: String
   treeHashAfter: String
 
+public
 structure TreeKEMTest where
   cipherSuite: UInt16
   groupId: String
@@ -220,6 +246,7 @@ structure TreeKEMTest where
 
 /-! ## Messages -/
 
+public
 structure MessagesTest where
   mlsWelcome: String
   mlsGroupInfo: String
@@ -243,6 +270,7 @@ structure MessagesTest where
   publicMessageCommit: String
   privateMessage: String
 
+public
 inductive TestType where
   | cryptoBasics
   | treeValidation
@@ -256,6 +284,7 @@ inductive TestType where
   | treekem
   | messages
 
+public
 inductive Testsuite where
   | cryptoBasicsTest: List CryptoBasicsTest → Testsuite
   | treeValidationTest: List TreeValidationTest → Testsuite

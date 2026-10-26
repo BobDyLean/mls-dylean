@@ -1,12 +1,14 @@
-import MLS.TreeSync.Code.TreeHash
-import MLS.TreeSync.Code.Invariants.ValidLeaves
-import MLS.TreeSync.Code.Invariants.UnmergedLeaves
-import MLS.TreeSync.Code.Invariants.ParentHash
-import MLS.TreeKEM.Code.NetworkTypes
-import MLS.Glue.Code.NetworkBinder
-import MLS.Test.FromExt.CryptoBasics
-import MLS.Test.Types
-import MLS.Test.Utils
+module
+
+public import MLS.TreeSync.Code.TreeHash
+public import MLS.TreeSync.Code.Invariants.ValidLeaves
+public import MLS.TreeSync.Code.Invariants.UnmergedLeaves
+public import MLS.TreeSync.Code.Invariants.ParentHash
+public import MLS.TreeKEM.Code.NetworkTypes
+public import MLS.Glue.Code.NetworkBinder
+public import MLS.Test.FromExt.CryptoBasics
+public import MLS.Test.Types
+public import MLS.Test.Utils
 
 /-!
 Port of `MLS.Test.FromExt.TreeValidation`.
@@ -24,6 +26,8 @@ open MLS.Test
 open MLS.Test.FromExt.CryptoBasics
 
 /-- Port of `compute_tree_hashes`. -/
+@[expose]
+public
 def computeTreeHashes [CryptoBytes ByteArray] {l: Nat} (t: TreeSync ByteArray tkt l): IO (List ByteArray) :=
   match t.intoLeftRightView with
   | .leaf _ _ => do
@@ -36,10 +40,14 @@ def computeTreeHashes [CryptoBytes ByteArray] {l: Nat} (t: TreeSync ByteArray tk
 Port of `node_index_to_node_index`.
 The node index (in the array representation of the tree) of the subtree of height `l` starting at leaf `i`.
 -/
+@[expose]
+public
 def nodeIndexToNodeIndex (n: NodeIndex): Nat :=
   2 * n.position + 2^n.levels - 1
 
 /-- Port of `compute_resolutions`. -/
+@[expose]
+public
 def computeResolutions [BytesLike ByteArray] {l: Nat} (t: TreeSync ByteArray tkt l): List (List Nat) :=
   match t.intoLeftRightView with
   | .leaf _ _ => [(resolution t).map nodeIndexToNodeIndex]
@@ -47,6 +55,8 @@ def computeResolutions [BytesLike ByteArray] {l: Nat} (t: TreeSync ByteArray tkt
     computeResolutions left ++ [(resolution t).map nodeIndexToNodeIndex] ++ computeResolutions right
 
 /-- Port of `test_tree_validation_one`. -/
+@[expose]
+public
 def testTreeValidationOne (t: TreeValidationTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
   | .protocolError _ =>
@@ -79,6 +89,8 @@ def testTreeValidationOne (t: TreeValidationTest): IO Bool := do
     pure true
 
 /-- Port of `test_tree_validation`. -/
+@[expose]
+public
 def testTreeValidation: List TreeValidationTest → IO Nat :=
   testList "Tree Validation" testTreeValidationOne
 

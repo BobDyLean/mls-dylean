@@ -1,3 +1,5 @@
+module
+
 /-!
 Port of `MLS.Result`.
 
@@ -8,6 +10,7 @@ Port-specific differences:
 
 namespace MLS
 
+public
 inductive Result (α: Type) where
   | success: α → Result α
   | internalError: String → Result α
@@ -17,30 +20,40 @@ deriving Repr, BEq
 namespace Result
 
 /-- Port of `internal_failure`. -/
+@[expose]
+public
 def internalFailure {α: Type} (s: String): Result α :=
   .internalError s
 
 /-- Port of `error`. -/
+@[expose]
+public
 def error {α: Type} (s: String): Result α :=
   .protocolError s
 
 /-- Port of `(let?)`. -/
+@[expose]
+public
 def bind {α β: Type} (rx: Result α) (f: α → Result β): Result β :=
   match rx with
   | .success x => f x
   | .internalError x => .internalError x
   | .protocolError x => .protocolError x
 
+public
 instance: Monad Result where
   pure := .success
   bind := Result.bind
 
+public
 instance: LawfulMonad Result := LawfulMonad.mk'
   (id_map := by intro _ x; cases x <;> rfl)
   (pure_bind := by intros; rfl)
   (bind_assoc := by intro _ _ _ x _ _; cases x <;> rfl)
 
 /-- Port of `from_option`. -/
+@[expose]
+public
 def fromOption {α: Type} (s: String) (x: Option α): Result α :=
   match x with
   | none => error s

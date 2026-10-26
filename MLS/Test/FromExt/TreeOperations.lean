@@ -1,9 +1,11 @@
-import MLS.TreeSync.Code.Operations
-import MLS.TreeKEM.Code.NetworkTypes
-import MLS.TreeDEM.Code.NetworkTypes
-import MLS.Glue.Code.NetworkBinder
-import MLS.Test.Types
-import MLS.Test.Utils
+module
+
+public import MLS.TreeSync.Code.Operations
+public import MLS.TreeKEM.Code.NetworkTypes
+public import MLS.TreeDEM.Code.NetworkTypes
+public import MLS.Glue.Code.NetworkBinder
+public import MLS.Test.Types
+public import MLS.Test.Utils
 
 /-!
 Port of `MLS.Test.FromExt.TreeOperations`.
@@ -21,6 +23,8 @@ attribute [local instance] bytesLikeByteArray
 Port of `fully_truncate_tree`.
 Truncate the tree while its right half is empty.
 -/
+@[expose]
+public
 def fullyTruncateTree: {l: Nat} → TreeSync ByteArray tkt l → (newL: Nat) × TreeSync ByteArray tkt newL
   | 0, t => ⟨0, t⟩
   | _+1, t =>
@@ -29,11 +33,15 @@ def fullyTruncateTree: {l: Nat} → TreeSync ByteArray tkt l → (newL: Nat) × 
     else
       ⟨_, t⟩
 
+@[expose]
+public
 def checkLeafIndex {l: Nat} (t: TreeSync ByteArray tkt l) (li: Nat) (name: String): IO Nat :=
   if t.containsLeafIndex li then pure li
   else throw (IO.userError s!"test_tree_operation_one: {name} too big")
 
 /-- Port of `test_tree_operations_one`. -/
+@[expose]
+public
 def testTreeOperationsOne (t: TreeOperationsTest): IO Bool := do
   let some treeBefore := parse (RatchetTree.mf tkt) (← hexStringToBytes t.treeBefore)
     | throw (IO.userError "tree_before: parse failed")
@@ -64,6 +72,8 @@ def testTreeOperationsOne (t: TreeOperationsTest): IO Bool := do
   pure true
 
 /-- Port of `test_tree_operations`. -/
+@[expose]
+public
 def testTreeOperations: List TreeOperationsTest → IO Nat :=
   testList "Tree Operations" testTreeOperationsOne
 

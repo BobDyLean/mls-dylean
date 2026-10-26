@@ -1,4 +1,6 @@
-import OpenSSL
+module
+
+public import OpenSSL
 
 /-!
 Tests of the OpenSSL bindings.
@@ -9,11 +11,15 @@ namespace OpenSSL.Test
 
 open OpenSSL
 
+@[expose]
+public
 def hexDigit (c: Char): Except String UInt8 :=
   if '0' ≤ c ∧ c ≤ '9' then pure (c.toNat - '0'.toNat).toUInt8
   else if 'a' ≤ c ∧ c ≤ 'f' then pure (c.toNat - 'a'.toNat + 10).toUInt8
   else throw s!"invalid hex digit {c}"
 
+@[expose]
+public
 def fromHex (s: String): IO ByteArray := do
   let rec go: List Char → Except String (List UInt8)
     | [] => pure []
@@ -23,26 +29,38 @@ def fromHex (s: String): IO ByteArray := do
   | .ok l => pure ⟨l.toArray⟩
   | .error e => throw (IO.userError e)
 
+@[expose]
+public
 def toHex (b: ByteArray): String :=
   let d (n: Nat): Char := if n < 10 then Char.ofNat ('0'.toNat + n) else Char.ofNat ('a'.toNat + n - 10)
   String.ofList (b.toList.flatMap fun x => [d (x.toNat / 16), d (x.toNat % 16)])
 
+@[expose]
+public
 def bytes (n: Nat) (seed: Nat): ByteArray :=
   ⟨((List.range n).map fun i => ((i * 7 + seed * 13 + 1) % 256).toUInt8).toArray⟩
 
+@[expose]
+public
 def fail {α: Type} (msg: String): IO α := throw (IO.userError msg)
 
+@[expose]
+public
 def expectSome {α: Type} (name: String) (x: Option α): IO α :=
   match x with
   | some x => pure x
   | none => fail s!"{name}: failed"
 
+@[expose]
+public
 def expectEq (name: String) (expected: String) (got: ByteArray): IO Unit :=
   if expected != toHex got then fail s!"{name}: expected {expected}, got {toHex got}" else pure ()
 
 /-! ## Hash, HMAC, HKDF -/
 
 /-- FIPS 180-2, "abc". -/
+@[expose]
+public
 def testHash: IO Unit := do
   let msg := "abc".toUTF8
   expectEq "SHA256" "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
@@ -53,6 +71,8 @@ def testHash: IO Unit := do
     (← expectSome "SHA512" (Hash.hash .sha2_512 msg))
 
 /-- RFC 4231, test case 2. -/
+@[expose]
+public
 def testHmac: IO Unit := do
   let key := "Jefe".toUTF8
   let data := "what do ya want for nothing?".toUTF8
@@ -64,6 +84,8 @@ def testHmac: IO Unit := do
     (← expectSome "HMAC-SHA512" (Hash.hmac .sha2_512 key data))
 
 /-- RFC 5869, test case 1. -/
+@[expose]
+public
 def testHkdf: IO Unit := do
   let ikm ← fromHex "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
   let salt ← fromHex "000102030405060708090a0b0c"
@@ -85,6 +107,8 @@ def testHkdf: IO Unit := do
 /-! ## AEAD -/
 
 /-- RFC 8439 Section 2.8.2, and round trips for every AEAD. -/
+@[expose]
+public
 def testAead: IO Unit := do
   let key ← fromHex "808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f"
   let nonce ← fromHex "070000004041424344454647"
@@ -107,6 +131,8 @@ def testAead: IO Unit := do
 /-! ## Signatures -/
 
 /-- RFC 8032, Section 7.1 TEST 1 and Section 7.4 "Blank". -/
+@[expose]
+public
 def testEdDSA: IO Unit := do
   for (a, sk, pk, sig) in [
     (Signature.Algorithm.ed25519,
@@ -128,6 +154,8 @@ def testEdDSA: IO Unit := do
     if Signature.verify a myPk "x".toUTF8 mySig then fail s!"{name}.verify: accepted a wrong message"
 
 /-- Round trips: signatures are deterministic, verify, and are bound to the message and curve. -/
+@[expose]
+public
 def testECDSA: IO Unit := do
   let msg := "abc".toUTF8
   for a in [Signature.Algorithm.ecdsaP256Sha256, .ecdsaP384Sha384, .ecdsaP521Sha512] do
@@ -148,6 +176,8 @@ def testECDSA: IO Unit := do
 /-! ## HPKE -/
 
 /-- Known-answer tests (generated with OpenSSL 3.6), and round trips. -/
+@[expose]
+public
 def hpkeKats: List (HPKE.Ciphersuite × String × String × String × String) := [
     ({ kem := .dhkemX25519HkdfSha256, kdf := .hkdfSha256, aead := .aes128Gcm }, "b8e91e922013c353d6414276c55589cd51058de93d32d929ab08a0116b5fce6b", "281d5103421a9feb158160a1e1d1d5c598229773c32f12b63a697f13f9416e21", "55ca7f6687c39855491be0865d7d6359e2f4c0a3de509a9e5ae8de2397860979", "2ad75c21f5e594ecff0a4ab0798ad93816d7f1e74be2d6e4c655f813e5bce99d5045b5b4d66c46d44606973bbbd2"),
     ({ kem := .dhkemP256HkdfSha256, kdf := .hkdfSha256, aead := .aes128Gcm }, "d6ec5c9c3b2587fb421e400dffa8a6b71e5a77b12ed6091ed8bd1ba8077156a8", "042bffae0a4abc687cf2c2940d3d8a1c3e4bd7946315f3e04272fc7f58c44597527f2e7cd0a1c0351f9b109282c3aba2dac99e3390ff0a4ea312b26b0a87802a00", "0496b0478d795b66c3d40da0a30d81e066b5b5c3be9186948092ffc022ee94ec8668f257b9d56b9a516ea6e21552f6443b0eb9a0fbf69640d86dfb0602b1406225", "16a0e0d832a41ec68e2bc2c58660ceaff680b4a3df0c7eb531033ab366d0b0b7569c633101716d14d3c56646d7ea"),
@@ -158,6 +188,8 @@ def hpkeKats: List (HPKE.Ciphersuite × String × String × String × String) :=
     ({ kem := .dhkemP384HkdfSha384, kdf := .hkdfSha384, aead := .aes256Gcm }, "6a9f6b6c83e92663c3a60c5d46273d0f8314504ec2c69b5908dd1f57c90b7adc3bcae87d3fc592a574fccc53aa0875a6", "04f3ad4ffc193aeceddfb05afd3408823609601fa6a23679ea1697d13d81e32a44d0a95d308fa12927f17912f0ef9b3a5bac1241d864b5375c99527247e8c4abe7bd1876b7437cf49a5dd25d49ba734499fbd18c755caae3f44ebfb40db76ec9f3", "04c49e5b7004172bff834791cdc3a56da624569cc5543a669faabbd1395bf6891a802d71e0588b9778917b64e0cf1a6100a01a1acee669dfa00add37da6651933325b095302839ee992fd9cd516fb051e4d66ee3ce72aabc8969ac8a9f07073207", "4ae8bb69c8d7e34a8a4cf33390e3393e82a203c5095d244bbc6f3893cd90d83cec8e689ae0e1a2caae873a11d443")
 ]
 
+@[expose]
+public
 def testHpke: IO Unit := do
   for (cs, skR, pkR, enc, ct) in hpkeKats do
     let name := s!"HPKE {repr cs}"
@@ -175,6 +207,8 @@ def testHpke: IO Unit := do
     if (HPKE.openBase cs myEnc mySkR (bytes 20 9) ad myCt).isSome then
       fail s!"{name}.openBase: accepted a wrong info"
 
+@[expose]
+public
 def main: IO Unit := do
   testHash
   testHmac

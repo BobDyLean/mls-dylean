@@ -1,5 +1,7 @@
-import MLS.TreeKEM.Code.API.KeySchedule.Types
-import MLS.TreeKEM.Code.API.Tree.Types
+module
+
+public import MLS.TreeKEM.Code.API.KeySchedule.Types
+public import MLS.TreeKEM.Code.API.Tree.Types
 
 /-!
 Port of `MLS.TreeKEM.API.Types`.
@@ -11,6 +13,7 @@ Port-specific differences:
 namespace MLS.TreeKEM
 
 /-- Port of `treekem_state`. -/
+public
 structure TreeKEMState (Bytes: Type) (leafInd: Nat) where
   treeState: TreeKEMTreeState Bytes leafInd
   keyscheduleState: TreeKEMKeyscheduleState Bytes

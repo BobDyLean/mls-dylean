@@ -1,5 +1,7 @@
-import MLS.TreeSync.Code.Invariants.ValidLeaves
-import MLS.TreeSync.Proofs.Operations
+module
+
+public import MLS.TreeSync.Code.Invariants.ValidLeaves
+public import MLS.TreeSync.Proofs.Operations
 
 /-!
 Port of `MLS.TreeSync.Invariants.ValidLeaves.Proofs`.
@@ -34,6 +36,7 @@ theorem validLeavesInvariant_succ (groupId: MlsBytes Bytes) {l: Nat} (t: TreeSyn
   grind [validLeavesInvariant.eq_def]
 
 /-- Port of `valid_leaves_invariant_tree_create`. -/
+public
 theorem validLeavesInvariant_treeCreate (groupId: MlsBytes Bytes) (ln: LeafNode Bytes tkt)
   (h: leafIsValid ln groupId 0):
   validLeavesInvariant groupId (treeCreate ln: TreeSync Bytes tkt 0)
@@ -53,6 +56,7 @@ theorem validLeavesInvariant_treeChangePath (groupId: MlsBytes Bytes) {l: Nat} (
 Port of `valid_leaves_invariant_tree_update`.
 MLS* requires `ln.data.source == LNS_update`; this hypothesis is not needed here.
 -/
+public
 theorem validLeavesInvariant_treeUpdate (groupId: MlsBytes Bytes) {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat)
   (ln: LeafNode Bytes tkt)
   (hli: t.containsLeafIndex li) (hln: leafIsValid ln groupId li) (hinv: validLeavesInvariant groupId t):
@@ -61,6 +65,7 @@ theorem validLeavesInvariant_treeUpdate (groupId: MlsBytes Bytes) {l: Nat} (t: T
   apply validLeavesInvariant_treeChangePath groupId t li (some ln) <;> grind
 
 /-- Port of `valid_leaves_invariant_tree_remove`. -/
+public
 theorem validLeavesInvariant_treeRemove (groupId: MlsBytes Bytes) {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat)
   (hli: t.containsLeafIndex li) (hinv: validLeavesInvariant groupId t):
   validLeavesInvariant groupId (treeRemove t li)
@@ -71,6 +76,7 @@ theorem validLeavesInvariant_treeRemove (groupId: MlsBytes Bytes) {l: Nat} (t: T
 Port of `valid_leaves_invariant_tree_add`.
 MLS* requires `ln.data.source == LNS_key_package`; this hypothesis is not needed here.
 -/
+public
 theorem validLeavesInvariant_treeAdd (groupId: MlsBytes Bytes) {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat)
   (ln: LeafNode Bytes tkt) (t': TreeSync Bytes tkt l) (h: treeAdd t li ln = .success t')
   (hli: t.containsLeafIndex li) (hln: leafIsValid ln groupId li) (hinv: validLeavesInvariant groupId t):
@@ -99,6 +105,7 @@ theorem validLeavesInvariant_applyPathAux (groupId: MlsBytes Bytes) {l: Nat}
     grind [validLeavesInvariant_succ _ _ li, Path.getPathLeaf]
 
 /-- Port of `valid_leaves_invariant_apply_path`. -/
+public
 theorem validLeavesInvariant_applyPath (groupId: MlsBytes Bytes) {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l) (t': TreeSync Bytes tkt l)
   (h: applyPath t li p = .success t')
@@ -119,6 +126,7 @@ theorem validLeavesInvariant_mkBlankTree (groupId: MlsBytes Bytes) (l p: Nat):
     simp_all [mkBlankTree]
 
 /-- Port of `valid_leaves_invariant_tree_extend`. -/
+public
 theorem validLeavesInvariant_treeExtend (groupId: MlsBytes Bytes) {l: Nat} (t: TreeSync Bytes tkt l)
   (hinv: validLeavesInvariant groupId t):
   validLeavesInvariant groupId (treeExtend t)
@@ -129,6 +137,7 @@ theorem validLeavesInvariant_treeExtend (groupId: MlsBytes Bytes) {l: Nat} (t: T
 Port of `valid_leaves_invariant_tree_truncate`.
 MLS* requires `is_tree_empty (TNode?.right t)`; this hypothesis is not needed here.
 -/
+public
 theorem validLeavesInvariant_treeTruncate (groupId: MlsBytes Bytes) {l: Nat} (t: TreeSync Bytes tkt (l+1))
   (hinv: validLeavesInvariant groupId t):
   validLeavesInvariant groupId (treeTruncate t)

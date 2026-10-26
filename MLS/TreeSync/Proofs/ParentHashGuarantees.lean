@@ -1,5 +1,7 @@
-import MLS.TreeSync.Proofs.Invariants.ParentHash
-import MLS.TreeSync.Proofs.ParentHash
+module
+
+public import MLS.TreeSync.Proofs.Invariants.ParentHash
+public import MLS.TreeSync.Proofs.ParentHash
 
 /-!
 Port of `MLS.TreeSync.Proofs.ParentHashGuarantees`.
@@ -38,6 +40,7 @@ namespace MLS
 variable {Leaf Node: Type}
 
 /-- Port of `is_subtree_of_node_index_inside`. -/
+public
 theorem Tree.IsSubtreeOf.containsNodeIndex {ld lp: Nat} {d: Tree Leaf Node ld} {p: Tree Leaf Node lp}
   (h: d.IsSubtreeOf p) {x: NodeIndex} (hx: d.containsNodeIndex x):
   p.containsNodeIndex x
@@ -58,6 +61,8 @@ theorem Tree.position_eq_of_sibling_position_eq {l: Nat} (t1 t2: Tree Leaf Node 
 Each element of the list is related to the next one by `R`.
 MLS* defines it for each relation (e.g. `tree_list_is_parent_hash_linkedP`).
 -/
+@[expose]
+public
 def ListChain {α: Type} (R: α → α → Prop): List α → Prop
   | [] | [_] => True
   | a :: b :: l => R a b ∧ ListChain R (b :: l)
@@ -127,6 +132,8 @@ so we first have to remove it before stating our integrity theorem.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def canonicalizeLeafSignature {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat): TreeSync Bytes tkt l :=
   match t.intoChildSiblingView li with
   | .leaf oln position =>
@@ -141,6 +148,8 @@ Remove unmerged leaves from a subtree.
 Unmerged leaves represent leaves that were added after the subtree was last authenticated,
 hence we remove them to state our integrity theorem.
 -/
+@[expose]
+public
 def canonicalizeUnmergedLeaves {l: Nat} (t: TreeSync Bytes tkt l): TreeSync Bytes tkt l :=
   unAdd t (unmergedLeavesOf t)
 
@@ -150,6 +159,8 @@ Do the full canonicalization:
 - remove unmerged leaves of the root node,
 - remove the signature of one leaf (the one who last updated the subtree).
 -/
+@[expose]
+public
 def canonicalize {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat): TreeSync Bytes tkt l :=
   canonicalizeLeafSignature (canonicalizeUnmergedLeaves t) li
 
@@ -158,6 +169,8 @@ Port of `equivalent`.
 Two subtrees are said to be equivalent (with respect to a leaf index `li`)
 when they have the same canonicalization.
 -/
+@[expose]
+public
 def Equivalent {l1 l2: Nat} (t1: TreeSync Bytes tkt l1) (t2: TreeSync Bytes tkt l2) (li: Nat): Prop :=
   t1.containsLeafIndex li ∧
     (⟨l1, canonicalize t1 li⟩: (l: Nat) × TreeSync Bytes tkt l) = ⟨l2, canonicalize t2 li⟩
@@ -165,20 +178,27 @@ def Equivalent {l1 l2: Nat} (t1: TreeSync Bytes tkt l1) (t2: TreeSync Bytes tkt 
 /-! ## Theorems about canonicalization -/
 
 /-- Port of `is_unmerged_leaves_canonicalized`. -/
+@[expose]
+public
 def isUnmergedLeavesCanonicalized {l: Nat} (t: TreeSync Bytes tkt l): Bool :=
   (unmergedLeavesOf t).isEmpty
 
 /-- Port of `is_leaf_signature_canonicalized`. -/
+@[expose]
+public
 def isLeafSignatureCanonicalized {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat): Bool :=
   match leafAt t li with
   | none => true
   | some ln => BytesLike.recognizeEmpty ln.signature.val
 
 /-- Port of `is_canonicalized`. -/
+@[expose]
+public
 def isCanonicalized {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat): Bool :=
   isUnmergedLeavesCanonicalized t && isLeafSignatureCanonicalized t li
 
-@[simp] theorem canonicalizeLeafSignature_position {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat):
+@[simp]
+theorem canonicalizeLeafSignature_position {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat):
   (canonicalizeLeafSignature t li).position = t.position
 := by
   induction t using Tree.childInduction li <;> grind [canonicalizeLeafSignature.eq_def]
@@ -228,6 +248,7 @@ theorem canonicalizeLeafSignature_eq_self {l: Nat} (t: TreeSync Bytes tkt l) (li
     apply Tree.ext_succ li <;> grind [isLeafSignatureCanonicalized, leafAt.eq_def]
 
 /-- Port of `canonicalize_idempotent`. -/
+public
 theorem canonicalize_eq_self {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (h: isCanonicalized t li):
   canonicalize t li = t
 := by
@@ -376,6 +397,7 @@ theorem canonicalize_eq_of_lastUpdateCorrect {ld lp: Nat} (d: TreeSync Bytes tkt
 Port of `is_subtree_with_blanks_between`.
 `d` is a subtree of `p`, and the nodes between them are blank, with empty siblings.
 -/
+public
 inductive IsSubtreeWithBlanksBetween {ld: Nat} (d: TreeSync Bytes tkt ld): {lp: Nat} → TreeSync Bytes tkt lp → Prop
   | refl: IsSubtreeWithBlanksBetween d d
   | child {lp: Nat} (p: TreeSync Bytes tkt (lp+1)):
@@ -503,7 +525,8 @@ theorem isSubtreeWithBlanksBetween_of_lastUpdateCorrect {ld lp: Nat}
   · exact (unmergedLeavesOk_child_sibling p d.position hok).1
   · exact hli
 
-@[simp] theorem canonicalize_position {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat):
+@[simp]
+theorem canonicalize_position {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat):
   (canonicalize t li).position = t.position
 := by
   simp [canonicalize, canonicalizeUnmergedLeaves, unAdd]
@@ -585,6 +608,8 @@ if D1 and D2 are equivalent then P1 and P2 are equivalent.
 MLS* also takes `li`, which is not used.
 This function computes the pair of bytes, its specification is `parentHashGuaranteeTheoremStep_spec`.
 -/
+@[expose]
+public
 def parentHashGuaranteeTheoremStep {ld1 ld2 lp1 lp2: Nat}
   (d1: TreeSync Bytes tkt ld1) (d2: TreeSync Bytes tkt ld2)
   (p1: TreeSync Bytes tkt (lp1+1)) (p2: TreeSync Bytes tkt (lp2+1))
@@ -637,6 +662,8 @@ theorem parentHashGuaranteeTheoremStep_spec {ld1 ld2 lp1 lp2: Nat}
 Port of `get_leaf_tree_tbs`.
 MLS* requires `t.position < 2^32` and `node_not_blank t`; otherwise, the result is `none`.
 -/
+@[expose]
+public
 def getLeafTreeTbs (t: TreeSync Bytes tkt 0) (groupId: MlsBytes Bytes): Option Bytes :=
   match t.leafContent with
   | some ln => if t.position < 2^32 then some (getLeafTbs ln groupId t.position.toUInt32) else none
@@ -687,9 +714,11 @@ theorem equivalent_of_getLeafTreeTbs (t1 t2: TreeSync Bytes tkt 0) (groupId1 gro
 /-! ## Induction -/
 
 /-- Port of `one_tree`. -/
+public
 abbrev OneTree (Bytes: Type) [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) := (l: Nat) × TreeSync Bytes tkt l
 
 /-- Port of `tree_list`. -/
+public
 abbrev TreeList (Bytes: Type) [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) := List (OneTree Bytes tkt)
 
 /--
@@ -697,11 +726,15 @@ Port of `tree_parent_hash_linkedP`.
 MLS*'s conditions `leaf_index_inside lp ip id`, `node_has_parent_hash d` and `node_not_blank p`
 follow from `ParentHashLinkedP`.
 -/
+@[expose]
+public
 def TreeParentHashLinkedP: OneTree Bytes tkt → OneTree Bytes tkt → Prop
   | ⟨ld, d⟩, ⟨lp+1, p⟩ => ld ≤ lp ∧ ParentHashLinkedP d p ∧ unmergedLeavesOk p
   | _, ⟨0, _⟩ => False
 
 /-- Port of `tree_list_is_parent_hash_linkedP`. -/
+@[expose]
+public
 def TreeListIsParentHashLinkedP (tl: TreeList Bytes tkt): Prop :=
   ListChain TreeParentHashLinkedP tl
 
@@ -709,11 +742,15 @@ def TreeListIsParentHashLinkedP (tl: TreeList Bytes tkt): Prop :=
 Port of `tree_list_starts_with_tbs`.
 MLS*'s condition `i < pow2 32` is in `getLeafTreeTbs`.
 -/
+@[expose]
+public
 def TreeListStartsWithTbs: TreeList Bytes tkt → Bytes → Prop
   | ⟨0, t⟩ :: _, tbs => nodeHasParentHash t ∧ ∃ groupId, getLeafTreeTbs t groupId = some tbs
   | _, _ => False
 
 /-- Port of `tree_list_contains_leaf_index`. -/
+@[expose]
+public
 def treeListContainsLeafIndex: TreeList Bytes tkt → Nat → Bool
   | [], _ => true
   | ⟨_, t⟩ :: _, li => t.containsLeafIndex li
@@ -722,6 +759,8 @@ def treeListContainsLeafIndex: TreeList Bytes tkt → Nat → Bool
 Port of `tree_list_ends_at_root`.
 MLS* defines it by recursion on the list.
 -/
+@[expose]
+public
 def TreeListEndsAtRoot (tl: TreeList Bytes tkt): Prop :=
   ∃ x ∈ tl.getLast?, getParentHashOf x.2 = some rootParentHash
 
@@ -729,26 +768,36 @@ def TreeListEndsAtRoot (tl: TreeList Bytes tkt): Prop :=
 Port of `get_leaf_index_from_tree_list`.
 MLS* requires `Cons? tl`; otherwise, the result is `0`.
 -/
+@[expose]
+public
 def getLeafIndexFromTreeList: TreeList Bytes tkt → Nat
   | [] => 0
   | ⟨_, t⟩ :: _ => t.position
 
 /-- Port of `first_tree_equivalent`. -/
+@[expose]
+public
 def FirstTreeEquivalent: TreeList Bytes tkt → TreeList Bytes tkt → Nat → Prop
   | ⟨_, t1⟩ :: _, ⟨_, t2⟩ :: _, li => Equivalent t1 t2 li
   | _, _, _ => False
 
 /-- Port of `tree_list_equivalent_subset`. -/
+@[expose]
+public
 def TreeListEquivalentSubset: TreeList Bytes tkt → TreeList Bytes tkt → Nat → Prop
   | [], _, _ => True
   | _ :: _, [], _ => False
   | ⟨_, t1⟩ :: tail1, ⟨_, t2⟩ :: tail2, li => Equivalent t1 t2 li ∧ TreeListEquivalentSubset tail1 tail2 li
 
 /-- Port of `tree_is_canonicalized`. -/
+@[expose]
+public
 def TreeIsCanonicalized (li: Nat) (x: OneTree Bytes tkt): Prop :=
   x.2.containsLeafIndex li ∧ isCanonicalized x.2 li
 
 /-- Port of `tree_list_is_canonicalized`. -/
+@[expose]
+public
 def TreeListIsCanonicalized (li: Nat) (tl: TreeList Bytes tkt): Prop :=
   ∀ x ∈ tl, TreeIsCanonicalized li x
 
@@ -758,6 +807,8 @@ Instead of testing whether `p1` and `p2` are equivalent (which needs decidable e
 the induction goes on when the step does not return a hash collision.
 This function computes the pair of bytes, its specification is `parentHashGuaranteeTheoremAux_spec`.
 -/
+@[expose]
+public
 def parentHashGuaranteeTheoremAux: TreeList Bytes tkt → TreeList Bytes tkt → Nat → Bytes × Bytes
   | ⟨_, d1⟩ :: ⟨lp1+1, p1⟩ :: tail1, ⟨_, d2⟩ :: ⟨lp2+1, p2⟩ :: tail2, li =>
     let stepCollision := parentHashGuaranteeTheoremStep d1 d2 p1 p2
@@ -824,10 +875,13 @@ MLS* also takes `tbs`, which is only used in the specification,
 and uses the leaf index of `tl2` (equal to the one of `tl1`).
 This function computes the pair of bytes, its specification is `parentHashGuaranteeTheorem_spec`.
 -/
+@[expose]
+public
 def parentHashGuaranteeTheorem (tl1 tl2: TreeList Bytes tkt): Bytes × Bytes :=
   parentHashGuaranteeTheoremAux tl1 tl2 (getLeafIndexFromTreeList tl1)
 
 /-- Specification of `parentHashGuaranteeTheorem` (MLS*'s postcondition of `parent_hash_guarantee_theorem`). -/
+public
 theorem parentHashGuaranteeTheorem_spec (tl1 tl2: TreeList Bytes tkt) (tbs: Bytes)
   (h1: TreeListIsParentHashLinkedP tl1) (h2: TreeListIsParentHashLinkedP tl2)
   (hs1: TreeListStartsWithTbs tl1 tbs) (hs2: TreeListStartsWithTbs tl2 tbs) (hroot: TreeListEndsAtRoot tl2):
@@ -855,6 +909,7 @@ these functions compute the witness of this existential
 Given a tree that satisfy the parent-hash invariant,
 there is a list of trees that are parent-hash linked, start at a leaf, and end at this tree.
 -/
+public
 theorem exists_treeList_of_parentHashInvariant {l: Nat} (t: TreeSync Bytes tkt l)
   (hph: nodeHasParentHash t) (hok: unmergedLeavesOk t) (hinv: parentHashInvariant t):
   ∃ tl: TreeList Bytes tkt,
@@ -890,6 +945,8 @@ and computes the same list.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`) and `Success? (apply_path_aux t p parent_parent_hash)`;
 otherwise, the function follows the path to the leaf closest to `li`, or fails.
 -/
+@[expose]
+public
 def pathToTreeListAux {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l) (parentParentHash: Bytes)
   : Result (TreeList Bytes tkt)
@@ -916,6 +973,8 @@ and end at the root.
 MLS* requires `li: leaf_index l 0` and `Success? (apply_path t p)`;
 otherwise, the function follows the path to the leaf closest to `li`, or fails.
 -/
+@[expose]
+public
 def pathToTreeList {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l): Result (TreeList Bytes tkt) :=
   List.reverse <$> pathToTreeListAux t li p rootParentHash.val
 
@@ -1134,6 +1193,7 @@ theorem pathToTreeListAux_getLast? {l: Nat}
 Port of `path_to_tree_list_lemma` (with `path_to_tree_list_aux_lemma`).
 MLS* requires `li: leaf_index l 0` (i.e. `t.containsLeafIndex li`) and `Success? (apply_path t p)`.
 -/
+public
 theorem pathToTreeList_spec {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l)
   (tl: TreeList Bytes tkt) (t': TreeSync Bytes tkt l)
   (h: pathToTreeList t li p = .success tl) (ht': applyPath t li p = .success t')
@@ -1159,12 +1219,16 @@ MLS* defines it by recursion on the path, following `path_to_tree_list_aux`
 MLS* requires `li: leaf_index l i` and `Success? (apply_path_aux t p parent_parent_hash)`;
 otherwise, the predicate holds when `pathToTreeListAux` fails.
 -/
+@[expose]
+public
 def PathToTreeListPreAux (pre: OneTree Bytes tkt → Prop) {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l) (parentParentHash: Bytes): Prop
 :=
   ∀ tl, pathToTreeListAux t li p parentParentHash = .success tl → ∀ x ∈ tl, pre x
 
 /-- Port of `path_to_tree_list_pre`. -/
+@[expose]
+public
 def PathToTreeListPre (pre: OneTree Bytes tkt → Prop) {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l): Prop
 :=
@@ -1179,6 +1243,7 @@ theorem pathToTreeListPreAux_iff (pre: OneTree Bytes tkt → Prop) {l: Nat}
   grind [PathToTreeListPreAux]
 
 /-- Port of `path_to_tree_list_pre_lemma`. -/
+public
 theorem pathToTreeListPre_iff (pre: OneTree Bytes tkt → Prop) {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l) (tl: TreeList Bytes tkt)
   (h: pathToTreeList t li p = .success tl):
@@ -1196,6 +1261,7 @@ theorem PathToTreeListPreAux.weaken {preStrong preWeak: OneTree Bytes tkt → Pr
   grind [PathToTreeListPreAux]
 
 /-- Port of `path_to_tree_list_pre_weaken`. -/
+public
 theorem PathToTreeListPre.weaken {preStrong preWeak: OneTree Bytes tkt → Prop} {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l)
   (h: PathToTreeListPre preStrong t li p) (himp: ∀ x, preStrong x → preWeak x):

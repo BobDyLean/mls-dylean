@@ -1,4 +1,7 @@
-import MLS.Comparse.Derived
+module
+
+public import MLS.Comparse.Derived
+import all Comparse.Formats.Basic
 
 /-!
 Port of `MLS.NetworkTypes`.
@@ -25,54 +28,75 @@ variable {Bytes: Type} [BytesLike Bytes]
 
 /-! ## MLS variable-length integers, bytes and lists -/
 
+@[expose]
+public
 def mlsNatPred (n: Nat): Prop := n < 2^30
 
+public
 instance: DecidablePred mlsNatPred := fun n => inferInstanceAs (Decidable (n < 2^30))
 
+public
 abbrev MlsNat := {n: Nat // mlsNatPred n}
 
+@[expose]
+public
 def MlsNat.f (n: {n: QuicNat // mlsNatPred n.val}): MlsNat := ⟨n.val.val, n.property⟩
+@[expose]
+public
 def MlsNat.g (n: MlsNat): {n: QuicNat // mlsNatPred n.val} :=
   ⟨⟨n.val, by grind [mlsNatPred]⟩, n.property⟩
 
+public
 instance: LeftInverse MlsNat.g MlsNat.f := ⟨by intro _; rfl⟩
+public
 instance: RightInverse MlsNat.g MlsNat.f := ⟨by intro _; rfl⟩
 
+@[expose]
+public
 def MlsNat.mf: NonExtensibleMessageFormat Bytes MlsNat :=
   .isomorphic (.subtype .quicNat (fun n => mlsNatPred n.val)) MlsNat.f MlsNat.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- MLS integers contain no bytes (their well-formedness is trivial). -/
 @[simp]
+public
 theorem MlsNat.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsNat):
   (MlsNat.mf (Bytes := Bytes)).wf pred x = True
 := by
   simp [MlsNat.mf]
 
+public
 abbrev MlsBytes (Bytes: Type) [BytesLike Bytes] := {b: Bytes // mlsNatPred (BytesLike.length b)}
 
 /-- The empty `MlsBytes`. -/
+@[expose]
+public
 def MlsBytes.empty: MlsBytes Bytes :=
   ⟨BytesLike.empty, by simp [mlsNatPred, BytesLike.empty_length]⟩
 
+public
 def MlsBytes.mf: NonExtensibleMessageFormat Bytes (MlsBytes Bytes) :=
   .lengthPrefix mlsNatPred MlsNat.mf .bytes
 
 namespace MlsBytes.mf
 
+public
 instance: (MlsBytes.mf (Bytes := Bytes)).IsNonAmbiguous := by
   dsimp only [MlsBytes.mf]
   exact inferInstanceAs (NonExtensibleMessageFormat.lengthPrefix mlsNatPred MlsNat.mf .bytes).IsNonAmbiguous
 
+public
 instance: (MlsBytes.mf (Bytes := Bytes)).HasUniqueRepresentation := by
   dsimp only [MlsBytes.mf]
   exact inferInstanceAs (NonExtensibleMessageFormat.lengthPrefix mlsNatPred MlsNat.mf .bytes).HasUniqueRepresentation
 
+public
 instance: (MlsBytes.mf (Bytes := Bytes)).ParseConsumes := by
   dsimp only [MlsBytes.mf]
   exact inferInstanceAs (NonExtensibleMessageFormat.lengthPrefix mlsNatPred MlsNat.mf .bytes).ParseConsumes
 
 @[simp]
+public
 theorem wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsBytes Bytes):
   (MlsBytes.mf (Bytes := Bytes)).wf pred x = pred x.val
 :=
@@ -80,11 +104,14 @@ theorem wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsBytes Byt
 
 end MlsBytes.mf
 
+public
 abbrev MlsList
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes]
 :=
   {l: List a // mlsNatPred (BytesLike.length ((ExtensibleMessageFormat.list mf).serialize l))}
 
+@[expose]
+public
 def MlsList.mf
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes]
   : NonExtensibleMessageFormat Bytes (MlsList mf)
@@ -93,6 +120,7 @@ def MlsList.mf
 
 namespace MlsList.mf
 
+public
 instance
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes] [mf.IsNonAmbiguous]
   : (MlsList.mf mf).IsNonAmbiguous
@@ -100,6 +128,7 @@ instance
   dsimp only [MlsList.mf]
   infer_instance
 
+public
 instance
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes] [mf.HasUniqueRepresentation]
   : (MlsList.mf mf).HasUniqueRepresentation
@@ -107,6 +136,7 @@ instance
   dsimp only [MlsList.mf]
   infer_instance
 
+public
 instance
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes]
   : (MlsList.mf mf).ParseConsumes
@@ -115,6 +145,7 @@ instance
   infer_instance
 
 @[simp]
+public
 theorem wf_eq
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes]
   (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsList mf)
@@ -126,8 +157,11 @@ end MlsList.mf
 
 /-! ## ASCII strings -/
 
+@[expose]
+public
 def isAsciiString (s: String): Prop := ∀ c ∈ s.toList, c.toNat < 128
 
+public
 instance: DecidablePred isAsciiString := fun s =>
   inferInstanceAs (Decidable (∀ c ∈ s.toList, c.toNat < 128))
 
@@ -135,28 +169,35 @@ instance: DecidablePred isAsciiString := fun s =>
 Port of `mls_ascii_string`.
 We encode ASCII strings with their UTF-8 encoding, which coincides with the ASCII encoding.
 -/
+public
 abbrev MlsAsciiString :=
   {s: Subtype isAsciiString // mlsNatPred (BytesLike.length ((ExtensibleMessageFormat.subtype (Bytes := Bytes) .string isAsciiString).serialize s))}
 
+@[expose]
+public
 def MlsAsciiString.mf: NonExtensibleMessageFormat Bytes (MlsAsciiString (Bytes := Bytes)) :=
   .lengthPrefix mlsNatPred MlsNat.mf (.subtype .string isAsciiString)
 
 namespace MlsAsciiString.mf
 
+public
 instance: (MlsAsciiString.mf (Bytes := Bytes)).IsNonAmbiguous := by
   dsimp only [MlsAsciiString.mf]
   infer_instance
 
+public
 instance: (MlsAsciiString.mf (Bytes := Bytes)).HasUniqueRepresentation := by
   dsimp only [MlsAsciiString.mf]
   infer_instance
 
+public
 instance: (MlsAsciiString.mf (Bytes := Bytes)).ParseConsumes := by
   dsimp only [MlsAsciiString.mf]
   infer_instance
 
 /-- ASCII strings contain no bytes (their well-formedness is trivial). -/
 @[simp]
+public
 theorem wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsAsciiString (Bytes := Bytes)):
   (MlsAsciiString.mf (Bytes := Bytes)).wf pred x = True
 := by
@@ -167,24 +208,32 @@ end MlsAsciiString.mf
 /-! ## HPKEPublicKey, MAC -/
 
 /-- opaque HPKEPublicKey<V>; -/
+public
 abbrev HpkePublicKey (Bytes: Type) [BytesLike Bytes] := MlsBytes Bytes
 
+@[expose]
+public
 def HpkePublicKey.mf: NonExtensibleMessageFormat Bytes (HpkePublicKey Bytes) := MlsBytes.mf
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
+public
 theorem HpkePublicKey.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: HpkePublicKey Bytes):
   (HpkePublicKey.mf (Bytes := Bytes)).wf pred x = pred x.val
 := by
   simp [HpkePublicKey.mf]
 
 /-- opaque MAC<V>; -/
+public
 abbrev Mac (Bytes: Type) [BytesLike Bytes] := MlsBytes Bytes
 
+@[expose]
+public
 def Mac.mf: NonExtensibleMessageFormat Bytes (Mac Bytes) := MlsBytes.mf
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
+public
 theorem Mac.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Mac Bytes):
   (Mac.mf (Bytes := Bytes)).wf pred x = pred x.val
 := by
@@ -199,33 +248,43 @@ enum {
     (255)
 } ProtocolVersion;
 -/
+public
 inductive ProtocolVersion where
   | reserved
   | mls10
   | unknown (n: UInt16) (h: 1 < n.toNat)
 deriving DecidableEq
 
+@[expose]
+public
 def ProtocolVersion.ofUInt16 (n: UInt16): ProtocolVersion :=
   if h: 1 < n.toNat then .unknown n h
   else if n = 0 then .reserved
   else .mls10
 
+@[expose]
+public
 def ProtocolVersion.toUInt16: ProtocolVersion → UInt16
   | .reserved => 0
   | .mls10 => 1
   | .unknown n _ => n
 
+public
 instance: LeftInverse ProtocolVersion.toUInt16 ProtocolVersion.ofUInt16 where
   left_inv n := by grind [ProtocolVersion.ofUInt16, ProtocolVersion.toUInt16, ← UInt16.toNat_inj]
 
+public
 instance: RightInverse ProtocolVersion.toUInt16 ProtocolVersion.ofUInt16 where
   right_inv x := by cases x <;> grind [ProtocolVersion.ofUInt16, ProtocolVersion.toUInt16]
 
+@[expose]
+public
 def ProtocolVersion.mf: NonExtensibleMessageFormat Bytes ProtocolVersion :=
   .isomorphic .uint16BE ProtocolVersion.ofUInt16 ProtocolVersion.toUInt16
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
+public
 theorem ProtocolVersion.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ProtocolVersion):
   (ProtocolVersion.mf (Bytes := Bytes)).wf pred x = True
 := by
@@ -234,6 +293,7 @@ theorem ProtocolVersion.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pre
 /-! ## CipherSuite -/
 
 /-- uint16 CipherSuite; -/
+public
 inductive CipherSuite where
   | reserved
   | mls_128_dhkemx25519_aes128gcm_sha256_ed25519
@@ -246,6 +306,8 @@ inductive CipherSuite where
   | unknown (n: UInt16) (h: 7 < n.toNat)
 deriving DecidableEq
 
+@[expose]
+public
 def CipherSuite.ofUInt16 (n: UInt16): CipherSuite :=
   if h: 7 < n.toNat then .unknown n h
   else if n = 0 then .reserved
@@ -257,6 +319,8 @@ def CipherSuite.ofUInt16 (n: UInt16): CipherSuite :=
   else if n = 6 then .mls_256_dhkemx448_chacha20poly1305_sha512_ed448
   else .mls_256_dhkemp384_aes256gcm_sha384_p384
 
+@[expose]
+public
 def CipherSuite.toUInt16: CipherSuite → UInt16
   | .reserved => 0
   | .mls_128_dhkemx25519_aes128gcm_sha256_ed25519 => 1
@@ -268,17 +332,22 @@ def CipherSuite.toUInt16: CipherSuite → UInt16
   | .mls_256_dhkemp384_aes256gcm_sha384_p384 => 7
   | .unknown n _ => n
 
+public
 instance: LeftInverse CipherSuite.toUInt16 CipherSuite.ofUInt16 where
   left_inv n := by grind [CipherSuite.ofUInt16, CipherSuite.toUInt16, ← UInt16.toNat_inj]
 
+public
 instance: RightInverse CipherSuite.toUInt16 CipherSuite.ofUInt16 where
   right_inv x := by cases x <;> grind [CipherSuite.ofUInt16, CipherSuite.toUInt16]
 
+@[expose]
+public
 def CipherSuite.mf: NonExtensibleMessageFormat Bytes CipherSuite :=
   .isomorphic .uint16BE CipherSuite.ofUInt16 CipherSuite.toUInt16
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
+public
 theorem CipherSuite.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: CipherSuite):
   (CipherSuite.mf (Bytes := Bytes)).wf pred x = True
 := by
@@ -287,6 +356,7 @@ theorem CipherSuite.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (
 /-! ## ExtensionType -/
 
 /-- uint16 ExtensionType; -/
+public
 inductive ExtensionType where
   | reserved
   | applicationId
@@ -297,6 +367,8 @@ inductive ExtensionType where
   | unknown (n: UInt16) (h: 5 < n.toNat)
 deriving DecidableEq
 
+@[expose]
+public
 def ExtensionType.ofUInt16 (n: UInt16): ExtensionType :=
   if h: 5 < n.toNat then .unknown n h
   else if n = 0 then .reserved
@@ -306,6 +378,8 @@ def ExtensionType.ofUInt16 (n: UInt16): ExtensionType :=
   else if n = 4 then .externalPub
   else .externalSenders
 
+@[expose]
+public
 def ExtensionType.toUInt16: ExtensionType → UInt16
   | .reserved => 0
   | .applicationId => 1
@@ -315,17 +389,22 @@ def ExtensionType.toUInt16: ExtensionType → UInt16
   | .externalSenders => 5
   | .unknown n _ => n
 
+public
 instance: LeftInverse ExtensionType.toUInt16 ExtensionType.ofUInt16 where
   left_inv n := by grind [ExtensionType.ofUInt16, ExtensionType.toUInt16, ← UInt16.toNat_inj]
 
+public
 instance: RightInverse ExtensionType.toUInt16 ExtensionType.ofUInt16 where
   right_inv x := by cases x <;> grind [ExtensionType.ofUInt16, ExtensionType.toUInt16]
 
+@[expose]
+public
 def ExtensionType.mf: NonExtensibleMessageFormat Bytes ExtensionType :=
   .isomorphic .uint16BE ExtensionType.ofUInt16 ExtensionType.toUInt16
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
+public
 theorem ExtensionType.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ExtensionType):
   (ExtensionType.mf (Bytes := Bytes)).wf pred x = True
 := by
@@ -339,23 +418,33 @@ struct {
     opaque extension_data<V>;
 } Extension;
 -/
+public
 structure Extension (Bytes: Type) [BytesLike Bytes] where
   extensionType: ExtensionType
   extensionData: MlsBytes Bytes
 
+@[expose]
+public
 def Extension.f: ExtensionType × MlsBytes Bytes → Extension Bytes :=
   fun (extensionType, extensionData) => { extensionType, extensionData }
+@[expose]
+public
 def Extension.g: Extension Bytes → ExtensionType × MlsBytes Bytes :=
   fun { extensionType, extensionData } => (extensionType, extensionData)
 
+public
 instance: LeftInverse (Extension.g (Bytes := Bytes)) Extension.f := ⟨by intro _; rfl⟩
+public
 instance: RightInverse (Extension.g (Bytes := Bytes)) Extension.f := ⟨by intro _; rfl⟩
 
+@[expose]
+public
 def Extension.mf: NonExtensibleMessageFormat Bytes (Extension Bytes) :=
   .isomorphic (.prod ExtensionType.mf MlsBytes.mf) Extension.f Extension.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
+public
 theorem Extension.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Extension Bytes):
   (Extension.mf (Bytes := Bytes)).wf pred x = pred x.extensionData.val
 := by
@@ -363,16 +452,21 @@ theorem Extension.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x:
 
 /-! ## Optional -/
 
+@[expose]
+public
 def MlsOption.internalType (a: Type): Fin 2 → Type
   | 0 => Unit
   | 1 => a
 
+@[expose]
+public
 def MlsOption.internalType.mf
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a)
   : (present: Fin 2) → NonExtensibleMessageFormat Bytes (internalType a present)
   | 0 => .unit
   | 1 => mf
 
+public
 instance
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.IsNonAmbiguous]
   : ∀ present, (MlsOption.internalType.mf mf present).IsNonAmbiguous
@@ -380,6 +474,7 @@ instance
     dsimp only [MlsOption.internalType.mf, MlsOption.internalType]
     infer_instance
 
+public
 instance
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.HasUniqueRepresentation]
   : ∀ present, (MlsOption.internalType.mf mf present).HasUniqueRepresentation
@@ -396,21 +491,29 @@ struct {
     }
 } optional<T>;
 -/
+@[expose]
+public
 def MlsOption.f {a: Type}: (present: Fin 2) × MlsOption.internalType a present → Option a
   | ⟨0, ()⟩ => none
   | ⟨1, x⟩ => some x
 
+@[expose]
+public
 def MlsOption.g {a: Type}: Option a → (present: Fin 2) × MlsOption.internalType a present
   | none => ⟨0, ()⟩
   | some x => ⟨1, x⟩
 
+public
 instance {a: Type}: LeftInverse (MlsOption.g (a := a)) MlsOption.f := ⟨by
   intro ⟨present, x⟩
   match present, x with
   | 0, () => rfl
   | 1, _ => rfl⟩
+public
 instance {a: Type}: RightInverse (MlsOption.g (a := a)) MlsOption.f := ⟨by intro x; cases x <;> rfl⟩
 
+@[expose]
+public
 def MlsOption.mf
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a)
   : NonExtensibleMessageFormat Bytes (Option a)
@@ -419,6 +522,7 @@ def MlsOption.mf
 
 namespace MlsOption.mf
 
+public
 instance
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.IsNonAmbiguous]
   : (MlsOption.mf mf).IsNonAmbiguous
@@ -426,6 +530,7 @@ instance
   dsimp only [MlsOption.mf]
   infer_instance
 
+public
 instance
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.HasUniqueRepresentation]
   : (MlsOption.mf mf).HasUniqueRepresentation
@@ -433,6 +538,7 @@ instance
   dsimp only [MlsOption.mf]
   infer_instance
 
+public
 instance
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a)
   : (MlsOption.mf mf).ParseConsumes
@@ -441,6 +547,7 @@ instance
   infer_instance
 
 @[simp]
+public
 theorem wf_eq
   {a: Type} (mf: NonExtensibleMessageFormat Bytes a)
   (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Option a)
@@ -457,17 +564,23 @@ end MlsOption.mf
 /-! ## Static option -/
 
 /-- Special "option" type, when we know statically whether it is a "Some" or "None". -/
+@[expose]
+public
 def StaticOption (b: Bool) (a: Type): Type :=
   match b with
   | true => a
   | false => Unit
 
+@[expose]
+public
 def StaticOption.mk {b: Bool} {a: Type} (x: a): StaticOption b a :=
   match b with
   | true => x
   | false => ()
 
 /-- The value of a static option known to be present. -/
+@[expose]
+public
 def StaticOption.get {a: Type}: {b: Bool} → StaticOption b a → b = true → a
   | true, x, _ => x
 
@@ -475,10 +588,14 @@ def StaticOption.get {a: Type}: {b: Bool} → StaticOption b a → b = true → 
 Build a static option in a monad, computing its content only when it is present.
 Useful when `b` is not a constructor (e.g. `content.sender.isMember`).
 -/
+@[expose]
+public
 def StaticOption.mkM {m: Type → Type} [Pure m] {a: Type}: (b: Bool) → (b = true → m a) → m (StaticOption b a)
   | true, x => x rfl
   | false, _ => pure ()
 
+@[expose]
+public
 def StaticOption.mf
   {a: Type} (b: Bool) (mf: NonExtensibleMessageFormat Bytes a)
   : NonExtensibleMessageFormat Bytes (StaticOption b a)
@@ -489,6 +606,7 @@ def StaticOption.mf
 
 namespace StaticOption.mf
 
+public
 instance
   {a: Type} (b: Bool) (mf: NonExtensibleMessageFormat Bytes a) [mf.IsNonAmbiguous]
   : (StaticOption.mf b mf).IsNonAmbiguous
@@ -497,6 +615,7 @@ instance
   · exact inferInstanceAs (NonExtensibleMessageFormat.unit (Bytes := Bytes)).IsNonAmbiguous
   · exact inferInstanceAs mf.IsNonAmbiguous
 
+public
 instance
   {a: Type} (b: Bool) (mf: NonExtensibleMessageFormat Bytes a) [mf.HasUniqueRepresentation]
   : (StaticOption.mf b mf).HasUniqueRepresentation
@@ -506,6 +625,7 @@ instance
   · exact inferInstanceAs mf.HasUniqueRepresentation
 
 @[simp]
+public
 theorem wf_eq
   {a: Type} (b: Bool) (mf: NonExtensibleMessageFormat Bytes a)
   (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: StaticOption b a)
@@ -530,6 +650,7 @@ struct {
     Extension extensions<V>;
 } GroupContext;
 -/
+public
 structure GroupContext (Bytes: Type) [BytesLike Bytes] where
   version: ProtocolVersion
   cipherSuite: CipherSuite
@@ -539,6 +660,8 @@ structure GroupContext (Bytes: Type) [BytesLike Bytes] where
   confirmedTranscriptHash: MlsBytes Bytes
   extensions: MlsList (Extension.mf (Bytes := Bytes))
 
+@[expose]
+public
 def GroupContext.f:
   ProtocolVersion × CipherSuite × MlsBytes Bytes × UInt64 × MlsBytes Bytes × MlsBytes Bytes × MlsList (Extension.mf (Bytes := Bytes))
   → GroupContext Bytes
@@ -546,6 +669,8 @@ def GroupContext.f:
   fun (version, cipherSuite, groupId, epoch, treeHash, confirmedTranscriptHash, extensions) =>
     { version, cipherSuite, groupId, epoch, treeHash, confirmedTranscriptHash, extensions }
 
+@[expose]
+public
 def GroupContext.g:
   GroupContext Bytes
   → ProtocolVersion × CipherSuite × MlsBytes Bytes × UInt64 × MlsBytes Bytes × MlsBytes Bytes × MlsList (Extension.mf (Bytes := Bytes))
@@ -553,9 +678,13 @@ def GroupContext.g:
   fun { version, cipherSuite, groupId, epoch, treeHash, confirmedTranscriptHash, extensions } =>
     (version, cipherSuite, groupId, epoch, treeHash, confirmedTranscriptHash, extensions)
 
+public
 instance: LeftInverse (GroupContext.g (Bytes := Bytes)) GroupContext.f := ⟨by intro _; rfl⟩
+public
 instance: RightInverse (GroupContext.g (Bytes := Bytes)) GroupContext.f := ⟨by intro _; rfl⟩
 
+@[expose]
+public
 def GroupContext.mf: NonExtensibleMessageFormat Bytes (GroupContext Bytes) :=
   .isomorphic
     (.prod ProtocolVersion.mf (.prod CipherSuite.mf (.prod MlsBytes.mf (.prod .uint64BE
@@ -564,6 +693,7 @@ def GroupContext.mf: NonExtensibleMessageFormat Bytes (GroupContext Bytes) :=
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
+public
 theorem GroupContext.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: GroupContext Bytes):
   (GroupContext.mf (Bytes := Bytes)).wf pred x = (
     pred x.groupId.val ∧ pred x.treeHash.val ∧ pred x.confirmedTranscriptHash.val ∧
@@ -580,6 +710,7 @@ uint16 ProposalType;
 Defined here because needed in TreeSync's proposal list in leaf node capabilities.
 Actual sum type defined in `MLS.TreeDEM.NetworkTypes`.
 -/
+public
 inductive ProposalType where
   | reserved
   | add
@@ -592,6 +723,8 @@ inductive ProposalType where
   | unknown (n: UInt16) (h: 7 < n.toNat)
 deriving DecidableEq
 
+@[expose]
+public
 def ProposalType.ofUInt16 (n: UInt16): ProposalType :=
   if h: 7 < n.toNat then .unknown n h
   else if n = 0 then .reserved
@@ -603,6 +736,8 @@ def ProposalType.ofUInt16 (n: UInt16): ProposalType :=
   else if n = 6 then .externalInit
   else .groupContextExtensions
 
+@[expose]
+public
 def ProposalType.toUInt16: ProposalType → UInt16
   | .reserved => 0
   | .add => 1
@@ -614,17 +749,22 @@ def ProposalType.toUInt16: ProposalType → UInt16
   | .groupContextExtensions => 7
   | .unknown n _ => n
 
+public
 instance: LeftInverse ProposalType.toUInt16 ProposalType.ofUInt16 where
   left_inv n := by grind [ProposalType.ofUInt16, ProposalType.toUInt16, ← UInt16.toNat_inj]
 
+public
 instance: RightInverse ProposalType.toUInt16 ProposalType.ofUInt16 where
   right_inv x := by cases x <;> grind [ProposalType.ofUInt16, ProposalType.toUInt16]
 
+@[expose]
+public
 def ProposalType.mf: NonExtensibleMessageFormat Bytes ProposalType :=
   .isomorphic .uint16BE ProposalType.ofUInt16 ProposalType.toUInt16
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
+public
 theorem ProposalType.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ProposalType):
   (ProposalType.mf (Bytes := Bytes)).wf pred x = True
 := by
@@ -633,12 +773,16 @@ theorem ProposalType.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] 
 /-! ## SignaturePublicKey -/
 
 /-- opaque SignaturePublicKey<V>; -/
+public
 abbrev SignaturePublicKey (Bytes: Type) [BytesLike Bytes] := MlsBytes Bytes
 
+@[expose]
+public
 def SignaturePublicKey.mf: NonExtensibleMessageFormat Bytes (SignaturePublicKey Bytes) := MlsBytes.mf
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
+public
 theorem SignaturePublicKey.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: SignaturePublicKey Bytes):
   (SignaturePublicKey.mf (Bytes := Bytes)).wf pred x = pred x.val
 := by
@@ -647,6 +791,7 @@ theorem SignaturePublicKey.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred 
 /-! ## CredentialType -/
 
 /-- uint16 CredentialType; -/
+public
 inductive CredentialType where
   | reserved
   | basic
@@ -654,29 +799,38 @@ inductive CredentialType where
   | unknown (n: UInt16) (h: 2 < n.toNat)
 deriving DecidableEq
 
+@[expose]
+public
 def CredentialType.ofUInt16 (n: UInt16): CredentialType :=
   if h: 2 < n.toNat then .unknown n h
   else if n = 0 then .reserved
   else if n = 1 then .basic
   else .x509
 
+@[expose]
+public
 def CredentialType.toUInt16: CredentialType → UInt16
   | .reserved => 0
   | .basic => 1
   | .x509 => 2
   | .unknown n _ => n
 
+public
 instance: LeftInverse CredentialType.toUInt16 CredentialType.ofUInt16 where
   left_inv n := by grind [CredentialType.ofUInt16, CredentialType.toUInt16, ← UInt16.toNat_inj]
 
+public
 instance: RightInverse CredentialType.toUInt16 CredentialType.ofUInt16 where
   right_inv x := by cases x <;> grind [CredentialType.ofUInt16, CredentialType.toUInt16]
 
+@[expose]
+public
 def CredentialType.mf: NonExtensibleMessageFormat Bytes CredentialType :=
   .isomorphic .uint16BE CredentialType.ofUInt16 CredentialType.toUInt16
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
+public
 theorem CredentialType.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: CredentialType):
   (CredentialType.mf (Bytes := Bytes)).wf pred x = True
 := by
@@ -689,12 +843,16 @@ struct {
     opaque cert_data<V>;
 } Certificate;
 -/
+public
 abbrev Certificate (Bytes: Type) [BytesLike Bytes] := MlsBytes Bytes
 
+@[expose]
+public
 def Certificate.mf: NonExtensibleMessageFormat Bytes (Certificate Bytes) := MlsBytes.mf
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
+public
 theorem Certificate.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Certificate Bytes):
   (Certificate.mf (Bytes := Bytes)).wf pred x = pred x.val
 := by
@@ -714,49 +872,65 @@ struct {
     };
 } Credential;
 -/
+public
 inductive Credential (Bytes: Type) [BytesLike Bytes] where
   | basic (identity: MlsBytes Bytes)
   | x509 (chain: MlsList (Certificate.mf (Bytes := Bytes)))
 
+@[expose]
+public
 def Credential.internalType (Bytes: Type) [BytesLike Bytes]: CredentialType → Type
   | .basic => MlsBytes Bytes
   | .x509 => MlsList (Certificate.mf (Bytes := Bytes))
   | _ => Empty
 
+@[expose]
+public
 def Credential.internalType.mf: (t: CredentialType) → NonExtensibleMessageFormat Bytes (internalType Bytes t)
   | .basic => MlsBytes.mf
   | .x509 => MlsList.mf Certificate.mf
   | .reserved | .unknown .. => .empty
 
+public
 instance: ∀ t, (Credential.internalType.mf (Bytes := Bytes) t).IsNonAmbiguous
   | .basic | .x509 | .reserved | .unknown .. => by
     dsimp only [Credential.internalType.mf, Credential.internalType]
     infer_instance
 
+public
 instance: ∀ t, (Credential.internalType.mf (Bytes := Bytes) t).HasUniqueRepresentation
   | .basic | .x509 | .reserved | .unknown .. => by
     dsimp only [Credential.internalType.mf, Credential.internalType]
     infer_instance
 
+@[expose]
+public
 def Credential.f: (t: CredentialType) × Credential.internalType Bytes t → Credential Bytes
   | ⟨.basic, identity⟩ => .basic identity
   | ⟨.x509, chain⟩ => .x509 chain
   | ⟨.reserved, x⟩ | ⟨.unknown .., x⟩ => nomatch x
 
+@[expose]
+public
 def Credential.g: Credential Bytes → (t: CredentialType) × Credential.internalType Bytes t
   | .basic identity => ⟨.basic, identity⟩
   | .x509 chain => ⟨.x509, chain⟩
 
+public
 instance: LeftInverse (Credential.g (Bytes := Bytes)) Credential.f := ⟨by
   intro ⟨t, x⟩; cases t <;> first | rfl | exact nomatch x⟩
+public
 instance: RightInverse (Credential.g (Bytes := Bytes)) Credential.f := ⟨by
   intro x; cases x <;> rfl⟩
 
+@[expose]
+public
 def Credential.mf: NonExtensibleMessageFormat Bytes (Credential Bytes) :=
   .isomorphic (.sigma CredentialType.mf Credential.internalType.mf) Credential.f Credential.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
+public
 theorem Credential.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: Credential Bytes):
   (Credential.mf (Bytes := Bytes)).wf pred x = (
     match x with

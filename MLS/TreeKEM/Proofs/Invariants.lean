@@ -1,8 +1,10 @@
-import MLS.Common.Proofs.Result
-import MLS.Common.Proofs.Crypto.Derived
-import MLS.Common.Proofs.TreeCommon
-import MLS.TreeKEM.Code.Operations
-import MLS.Glue.Proofs.NetworkBinder.Properties
+module
+
+public import MLS.Common.Proofs.Result
+public import MLS.Common.Proofs.Crypto.Derived
+public import MLS.Common.Proofs.TreeCommon
+public import MLS.TreeKEM.Code.Operations
+public import MLS.Glue.Proofs.NetworkBinder.Properties
 
 /-!
 Port of `MLS.TreeKEM.Invariants` and `MLS.TreeKEM.Invariants.Proofs`.
@@ -29,10 +31,14 @@ variable {Bytes: Type}
 /--
 Port of `unmerged_leaf_exists`.
 -/
+@[expose]
+public
 def unmergedLeafExists {l: Nat} (t: TreeKEM Bytes l) (li: Nat): Prop :=
   t.containsLeafIndex li ∧ (leafAt t li).isSome
 
 /-- Port of `treekem_invariant`. -/
+@[expose]
+public
 def treekemInvariant {l: Nat} (t: TreeKEM Bytes l): Prop :=
   match t.intoLeftRightView with
   | .leaf _ _ => True
@@ -45,17 +51,21 @@ termination_by l
 Port of `treekem_priv_invariant`.
 TODO (as in MLS*): and contain public key of (get_path_leaf p) ?
 -/
+@[expose]
+public
 def treekemPrivInvariant {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (_p: TreeKEMPriv Bytes l): Prop :=
   t.containsLeafIndex li ∧ (leafAt t li).isSome
 
 /-! ## Unfolding lemmas -/
 
+public
 theorem treekemInvariant_zero (t: TreeKEM Bytes 0): treekemInvariant t := by
   obtain ⟨_, bt⟩ := t
   cases bt
   rw [treekemInvariant.eq_def]
   trivial
 
+public
 theorem treekemInvariant_left_right {l: Nat} (t: TreeKEM Bytes (l+1)):
   treekemInvariant t ↔
     (∀ pn ∈ t.nodeContent, ∀ x ∈ pn.unmergedLeaves, unmergedLeafExists t x) ∧
@@ -82,6 +92,7 @@ theorem treekemInvariant_mkBlankTreeGeneral (l p: Nat):
 
 /-! ## Projections of `treeAdd` and `treeApplyPath` -/
 
+public
 theorem treeAdd_zero (t: TreeKEM Bytes 0) (li: Nat) (lp: TreeKEMLeaf Bytes):
   treeAdd t li lp = (ChildSiblingView.leaf (some lp) t.position).pack
 := by
@@ -97,33 +108,43 @@ theorem treeAdd_succ {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (lp: TreeKEMLea
   rw [treeAdd.eq_def]
   simp
 
-@[simp] theorem treeAdd_position {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (lp: TreeKEMLeaf Bytes):
+@[simp]
+public
+theorem treeAdd_position {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (lp: TreeKEMLeaf Bytes):
   (treeAdd t li lp).position = t.position
 := by
   induction t using Tree.childInduction li with
   | leaf t => simp [treeAdd_zero]
   | node t ih => rw [treeAdd_succ]; simp [ih]
 
-@[simp] theorem child_treeAdd {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (lp: TreeKEMLeaf Bytes):
+@[simp]
+public
+theorem child_treeAdd {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (lp: TreeKEMLeaf Bytes):
   (treeAdd t li lp).child li = treeAdd (t.child li) li lp
 := by
   rw [treeAdd_succ]
   simp
 
-@[simp] theorem sibling_treeAdd {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (lp: TreeKEMLeaf Bytes):
+@[simp]
+public
+theorem sibling_treeAdd {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (lp: TreeKEMLeaf Bytes):
   (treeAdd t li lp).sibling li = t.sibling li
 := by
   rw [treeAdd_succ]
   simp
 
-@[simp] theorem nodeContent_treeAdd {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (lp: TreeKEMLeaf Bytes):
+@[simp]
+public
+theorem nodeContent_treeAdd {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (lp: TreeKEMLeaf Bytes):
   (treeAdd t li lp).nodeContent =
     t.nodeContent.map fun content => { content with unmergedLeaves := insertSorted li content.unmergedLeaves }
 := by
   rw [treeAdd_succ]
   simp
 
-@[simp] theorem unAddP_position {l: Nat} (t: TreeKEM Bytes l) (pred: Nat → Bool):
+@[simp]
+public
+theorem unAddP_position {l: Nat} (t: TreeKEM Bytes l) (pred: Nat → Bool):
   (unAddP t pred).position = t.position
 := by
   induction t using Tree.leftRightInduction <;> unfold unAddP <;> simp_all
@@ -141,6 +162,7 @@ section BytesLike
 
 variable [BytesLike Bytes]
 
+public
 theorem treeApplyPath_zero (t: TreeKEM Bytes 0) (li: Nat) (p: PathKEM Bytes 0):
   treeApplyPath t li p = (ChildSiblingView.leaf (some p.getPathLeaf) t.position).pack
 := by
@@ -156,32 +178,41 @@ theorem treeApplyPath_succ {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (oupn: Op
   rw [treeApplyPath.eq_def]
   simp
 
-@[simp] theorem treeApplyPath_position {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: PathKEM Bytes l):
+@[simp]
+public
+theorem treeApplyPath_position {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: PathKEM Bytes l):
   (treeApplyPath t li p).position = t.position
 := by
   induction t using Tree.childInduction li with
   | leaf t => simp [treeApplyPath_zero]
   | node t ih => cases p; rw [treeApplyPath_succ]; simp [ih]
 
-@[simp] theorem child_treeApplyPath {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (oupn: Option (UpdatePathNode Bytes)) (pNext: PathKEM Bytes l):
+@[simp]
+public
+theorem child_treeApplyPath {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (oupn: Option (UpdatePathNode Bytes)) (pNext: PathKEM Bytes l):
   (treeApplyPath t li (.node oupn pNext)).child li = treeApplyPath (t.child li) li pNext
 := by
   rw [treeApplyPath_succ]
   simp
 
-@[simp] theorem sibling_treeApplyPath {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (oupn: Option (UpdatePathNode Bytes)) (pNext: PathKEM Bytes l):
+@[simp]
+public
+theorem sibling_treeApplyPath {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (oupn: Option (UpdatePathNode Bytes)) (pNext: PathKEM Bytes l):
   (treeApplyPath t li (.node oupn pNext)).sibling li = t.sibling li
 := by
   rw [treeApplyPath_succ]
   simp
 
-@[simp] theorem nodeContent_treeApplyPath {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (oupn: Option (UpdatePathNode Bytes)) (pNext: PathKEM Bytes l):
+@[simp]
+public
+theorem nodeContent_treeApplyPath {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (oupn: Option (UpdatePathNode Bytes)) (pNext: PathKEM Bytes l):
   (treeApplyPath t li (.node oupn pNext)).nodeContent = oupn.map fun upn => { publicKey := upn.encryptionKey.val, unmergedLeaves := [] }
 := by
   rw [treeApplyPath_succ]
   simp
 
 /-- Port of `leaf_at_tree_apply_path`. -/
+public
 theorem leafAt_treeApplyPath {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: PathKEM Bytes l) (li': Nat)
   (hli: t.containsLeafIndex li) (hli': t.containsLeafIndex li'):
   leafAt (treeApplyPath t li p) li' = if li = li' then some p.getPathLeaf else leafAt t li'
@@ -215,6 +246,7 @@ theorem unmergedLeafExists_treeAdd {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (lp: 
   grind [leafAt_treeAdd, Tree.containsLeafIndex, treeAdd_position]
 
 /-- Port of `treekem_invariant_add`. -/
+public
 theorem treekemInvariant_treeAdd {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (lp: TreeKEMLeaf Bytes)
   (hli: t.containsLeafIndex li) (hinv: treekemInvariant t):
   treekemInvariant (treeAdd t li lp)
@@ -231,6 +263,7 @@ theorem treekemInvariant_treeAdd {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (lp: Tr
       exact ih (Tree.mem_child_self t hli) ((treekemInvariant_succ t li).mp hinv).2.1
 
 /-- Port of `treekem_priv_invariant_add`. -/
+public
 theorem treekemPrivInvariant_treeAdd {l: Nat} (t: TreeKEM Bytes l) (myLi: Nat) (p: TreeKEMPriv Bytes l) (li: Nat) (lp: TreeKEMLeaf Bytes)
   (hli: t.containsLeafIndex li) (hinv: treekemPrivInvariant t myLi p):
   treekemPrivInvariant (treeAdd t li lp) myLi p
@@ -238,6 +271,7 @@ theorem treekemPrivInvariant_treeAdd {l: Nat} (t: TreeKEM Bytes l) (myLi: Nat) (
   unmergedLeafExists_treeAdd t li lp myLi hli (.inr hinv)
 
 /-- Port of `treekem_invariant_change_path`. -/
+public
 theorem treekemInvariant_treeChangePath {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (content: Option (TreeKEMLeaf Bytes))
   (hinv: treekemInvariant t):
   treekemInvariant (treeChangePath t li content none)
@@ -251,6 +285,7 @@ theorem treekemInvariant_treeChangePath {l: Nat} (t: TreeKEM Bytes l) (li: Nat) 
       exact ih ((treekemInvariant_succ t li).mp hinv).2.1
 
 /-- Port of `treekem_priv_invariant_change_path`. -/
+public
 theorem treekemPrivInvariant_treeChangePath {l: Nat} (t: TreeKEM Bytes l) (myLi: Nat) (p: TreeKEMPriv Bytes l)
   (li: Nat) (content: Option (TreeKEMLeaf Bytes))
   (hli: t.containsLeafIndex li) (hne: li ≠ myLi) (hinv: treekemPrivInvariant t myLi p):
@@ -260,6 +295,7 @@ theorem treekemPrivInvariant_treeChangePath {l: Nat} (t: TreeKEM Bytes l) (myLi:
   grind [leafAt_treeChangePath, Tree.containsLeafIndex]
 
 /-- Port of `treekem_invariant_update`. -/
+public
 theorem treekemInvariant_treeUpdate {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (lp: TreeKEMLeaf Bytes)
   (hinv: treekemInvariant t):
   treekemInvariant (treeUpdate t li lp)
@@ -267,6 +303,7 @@ theorem treekemInvariant_treeUpdate {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (lp:
   treekemInvariant_treeChangePath t li (some lp) hinv
 
 /-- Port of `treekem_invariant_remove`. -/
+public
 theorem treekemInvariant_treeRemove {l: Nat} (t: TreeKEM Bytes l) (li: Nat)
   (hinv: treekemInvariant t):
   treekemInvariant (treeRemove t li)
@@ -274,12 +311,14 @@ theorem treekemInvariant_treeRemove {l: Nat} (t: TreeKEM Bytes l) (li: Nat)
   treekemInvariant_treeChangePath t li none hinv
 
 /-- Port of `treekem_invariant_extend`. -/
+public
 theorem treekemInvariant_treeExtend {l: Nat} (t: TreeKEM Bytes l) (hinv: treekemInvariant t):
   treekemInvariant (treeExtend t)
 := by
   simp [treekemInvariant_left_right, treeExtend, mkBlankTree, hinv, treekemInvariant_mkBlankTreeGeneral]
 
 /-- Port of `treekem_priv_invariant_extend`. -/
+public
 theorem treekemPrivInvariant_treeExtend {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: TreeKEMPriv Bytes l)
   (hinv: treekemPrivInvariant t li p):
   treekemPrivInvariant (treeExtend t) li (pathExtend p)
@@ -288,6 +327,7 @@ theorem treekemPrivInvariant_treeExtend {l: Nat} (t: TreeKEM Bytes l) (li: Nat) 
   grind [leafAt_treeExtend, treeExtend, Tree.containsLeafIndex]
 
 /-- Port of `treekem_invariant_truncate`. -/
+public
 theorem treekemInvariant_treeTruncate {l: Nat} (t: TreeKEM Bytes (l+1)) (hinv: treekemInvariant t):
   treekemInvariant (treeTruncate t)
 := by
@@ -297,6 +337,7 @@ theorem treekemInvariant_treeTruncate {l: Nat} (t: TreeKEM Bytes (l+1)) (hinv: t
 Port of `treekem_priv_invariant_truncate`.
 MLS* requires `li: leaf_index (l-1) 0` (here `hli`).
 -/
+public
 theorem treekemPrivInvariant_treeTruncate {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (p: TreeKEMPriv Bytes (l+1))
   (hli: li < t.position + 2^l) (hinv: treekemPrivInvariant t li p):
   treekemPrivInvariant (treeTruncate t) li (pathTruncate p)
@@ -310,6 +351,7 @@ section BytesLike
 variable [BytesLike Bytes]
 
 /-- Port of `treekem_invariant_apply_path`. -/
+public
 theorem treekemInvariant_treeApplyPath {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: PathKEM Bytes l)
   (hinv: treekemInvariant t):
   treekemInvariant (treeApplyPath t li p)
@@ -324,6 +366,7 @@ theorem treekemInvariant_treeApplyPath {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (
     · simpa using ih pNext ((treekemInvariant_succ t li).mp hinv).2.1
 
 /-- Port of `treekem_priv_invariant_apply_path` (for any new private path). -/
+public
 theorem treekemPrivInvariant_treeApplyPath {l: Nat} (t: TreeKEM Bytes l) (myLi: Nat) (priv priv': TreeKEMPriv Bytes l)
   (li: Nat) (p: PathKEM Bytes l)
   (hli: t.containsLeafIndex li) (hinv: treekemPrivInvariant t myLi priv):
@@ -354,6 +397,7 @@ theorem generatePathSecrets_succ {l: Nat} (t: TreeKEM Bytes (l+1)) (leafSk pathS
   split at h2 <;> simp_all
 
 /-- Port of `path_filtering_ok_generate_path_secrets`. -/
+public
 theorem pathFilteringOk_generatePathSecrets {l: Nat} (t: TreeKEM Bytes l) (leafSk pathSecret0: Bytes) (li: Nat)
   (p: PathSecrets Bytes l) (commitSecret: Bytes)
   (h: generatePathSecrets t leafSk pathSecret0 li = .success (p, commitSecret)):
@@ -365,6 +409,7 @@ theorem pathFilteringOk_generatePathSecrets {l: Nat} (t: TreeKEM Bytes l) (leafS
     obtain ⟨pNext, myPathSecret, h1, rfl⟩ := generatePathSecrets_succ t leafSk pathSecret0 li p commitSecret h
     cases h': isTreeEmpty (t.sibling li) <;> simp_all
 
+public
 theorem encryptPathSecrets_zero (t: TreeKEM Bytes 0) (li: Nat) (leafIkm: Bytes)
   (groupContext: GroupContext Bytes) (rand: Randomness Bytes) (res: PathKEM Bytes 0) (priv: TreeKEMPriv Bytes 0)
   (h: encryptPathSecrets t li (.leaf leafIkm) groupContext rand = .success (res, priv)):
@@ -374,6 +419,7 @@ theorem encryptPathSecrets_zero (t: TreeKEM Bytes 0) (li: Nat) (leafIkm: Bytes)
   simp only [Tree.intoChildSiblingView_zero, Result.bind_eq_success, Result.pure_eq_success] at h
   grind [Path.getPathLeaf]
 
+public
 theorem encryptPathSecrets_succ {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (opn: Option Bytes) (pNext: PathSecrets Bytes l)
   (groupContext: GroupContext Bytes) (rand: Randomness Bytes) (res: PathKEM Bytes (l+1)) (priv: TreeKEMPriv Bytes (l+1))
   (h: encryptPathSecrets t li (.node opn pNext) groupContext rand = .success (res, priv)):
@@ -399,6 +445,7 @@ Port of `path_filtering_ok_encrypt_path_secrets`.
 `t` corresponds to the un-added tree, used to perform encryption.
 MLS* requires that `t` and `refT` are at the same position (by typing, here `hpos`).
 -/
+public
 theorem pathFilteringOk_encryptPathSecrets {l: Nat} (refT t: TreeKEM Bytes l) (li: Nat) (p: PathSecrets Bytes l)
   (groupContext: GroupContext Bytes) (rand: Randomness Bytes) (res: PathKEM Bytes l) (priv: TreeKEMPriv Bytes l)
   (h: encryptPathSecrets t li p groupContext rand = .success (res, priv))

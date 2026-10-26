@@ -1,7 +1,9 @@
-import MLS.Common.Code.Tree
-import MLS.TreeSync.Code.Types
-import MLS.TreeKEM.Code.KeySchedule
-import MLS.Bootstrap.Code.KeyPackageRef
+module
+
+public import MLS.Common.Code.Tree
+public import MLS.TreeSync.Code.Types
+public import MLS.TreeKEM.Code.KeySchedule
+public import MLS.Bootstrap.Code.KeyPackageRef
 
 /-!
 Port of `MLS.Bootstrap.Welcome`.
@@ -23,16 +25,22 @@ variable {Bytes: Type} [CryptoBytes Bytes]
 /-! ## Utility functions -/
 
 /-- Port of `welcome_secret_to_key`. -/
+@[expose]
+public
 def welcomeSecretToKey (welcomeSecret: Bytes): Result Bytes :=
   expandWithLabel welcomeSecret "key" BytesLike.empty (CryptoBytes.aeadKeyLength Bytes)
 
 /-- Port of `welcome_secret_to_nonce`. -/
+@[expose]
+public
 def welcomeSecretToNonce (welcomeSecret: Bytes): Result Bytes :=
   expandWithLabel welcomeSecret "nonce" BytesLike.empty (CryptoBytes.aeadNonceLength Bytes)
 
 /-! ## Decrypting a welcome -/
 
 /-- Port of `find_my_encrypted_group_secret`. -/
+@[expose]
+public
 def findMyEncryptedGroupSecret {a: Type} (kpRefToKpSecrets: Bytes → Option a):
   List (EncryptedGroupSecrets Bytes) → Option (KeyPackageRef Bytes × a × HpkeCiphertext Bytes)
   | [] => none
@@ -42,12 +50,16 @@ def findMyEncryptedGroupSecret {a: Type} (kpRefToKpSecrets: Bytes → Option a):
     | none => findMyEncryptedGroupSecret kpRefToKpSecrets t
 
 /-- Port of `_decrypt_group_secrets` (Lean identifiers cannot start with `_`). -/
+@[expose]
+public
 def decryptGroupSecrets' (myHpkeSk: Bytes) (myHpkeCiphertext: HpkeCiphertext Bytes) (ad: Bytes): Result (GroupSecrets Bytes) := do
   let kemOutput ← mkHpkeKemOutput myHpkeCiphertext.kemOutput.val "decrypt_welcome" "kem_output"
   let groupSecretsBytes ← decryptWithLabel myHpkeSk "Welcome" ad kemOutput myHpkeCiphertext.ciphertext.val
   Result.fromOption "decrypt_group_secrets: malformed group secrets" (GroupSecrets.mf.toExtensible.parse groupSecretsBytes)
 
 /-- Port of `decrypt_group_secrets`. -/
+@[expose]
+public
 def decryptGroupSecrets {a: Type} (w: Welcome Bytes) (kpRefToKpSecrets: Bytes → Option a) (kpSecretsToHpkeSk: a → Result Bytes):
   Result (GroupSecrets Bytes × (KeyPackageRef Bytes × a))
 := do
@@ -58,6 +70,8 @@ def decryptGroupSecrets {a: Type} (w: Welcome Bytes) (kpRefToKpSecrets: Bytes �
   pure (groupSecrets, (myKpRef, myKpSecrets))
 
 /-- Port of `decrypt_group_info`. -/
+@[expose]
+public
 def decryptGroupInfo (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes × Bytes)) (encryptedGroupInfo: Bytes):
   Result (GroupInfo Bytes)
 := do
@@ -70,6 +84,8 @@ def decryptGroupInfo (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes × 
 /-! ## Encrypting a welcome -/
 
 /-- Port of `encrypt_one_group_secrets`. -/
+@[expose]
+public
 def encryptOneGroupSecrets (kp: KeyPackage Bytes TreeKEM.tkt) (encryptedGroupInfo: Bytes) (gs: GroupSecrets Bytes) (rand: Bytes):
   Result (EncryptedGroupSecrets Bytes)
 := do
@@ -88,6 +104,8 @@ def encryptOneGroupSecrets (kp: KeyPackage Bytes TreeKEM.tkt) (encryptedGroupInf
   }
 
 /-- Port of `encrypt_welcome_entropy_length`. -/
+@[expose]
+public
 def encryptWelcomeEntropyLength: List (KeyPackage Bytes TreeKEM.tkt × Option Bytes) → List Nat
   | [] => []
   | _::t => (CryptoBytes.hpkePrivateKeyLength Bytes)::encryptWelcomeEntropyLength t
@@ -95,6 +113,8 @@ def encryptWelcomeEntropyLength: List (KeyPackage Bytes TreeKEM.tkt × Option By
 end CryptoBytes
 
 /-- Port of `mk_group_secrets`. -/
+@[expose]
+public
 def mkGroupSecrets {Bytes: Type} [BytesLike Bytes]
   (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes)) (pathSecret: Option Bytes): Result (GroupSecrets Bytes)
 := do
@@ -121,6 +141,8 @@ Port of `encrypt_group_secrets`.
 MLS* requires `rand: randomness bytes (encrypt_welcome_entropy_length key_packages)`;
 otherwise, this function fails when there is not enough randomness.
 -/
+@[expose]
+public
 def encryptGroupSecrets (encryptedGroupInfo: Bytes) (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes)):
   (keyPackages: List (KeyPackage Bytes TreeKEM.tkt × Option Bytes)) → Randomness Bytes → Result (List (EncryptedGroupSecrets Bytes))
   | [], _ => pure []
@@ -132,6 +154,8 @@ def encryptGroupSecrets (encryptedGroupInfo: Bytes) (joinerSecret: Bytes) (psks:
     pure (resHead::resTail)
 
 /-- Port of `encrypt_group_info`. -/
+@[expose]
+public
 def encryptGroupInfo (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes × Bytes)) (groupInfo: GroupInfo Bytes):
   Result (MlsBytes Bytes)
 := do
@@ -147,6 +171,8 @@ Port of `encrypt_welcome`.
 MLS* requires `rand: randomness bytes (encrypt_welcome_entropy_length key_packages)`;
 otherwise, this function fails when there is not enough randomness.
 -/
+@[expose]
+public
 def encryptWelcome (groupInfo: GroupInfo Bytes) (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes × Bytes))
   (keyPackages: List (KeyPackage Bytes TreeKEM.tkt × Option Bytes)) (rand: Randomness Bytes)
   : Result (Welcome Bytes)
@@ -164,6 +190,8 @@ def encryptWelcome (groupInfo: GroupInfo Bytes) (joinerSecret: Bytes) (psks: Lis
 /-! ## Utility functions -/
 
 /-- Port of `sign_welcome_group_info`. -/
+@[expose]
+public
 def signWelcomeGroupInfo (signSk: Bytes) (giTbs: GroupInfoTBS Bytes) (rand: Bytes): Result (GroupInfo Bytes) := do
   let tbsBytes := serializeNE GroupInfoTBS.mf giTbs
   let signature ← signWithLabel signSk "GroupInfoTBS" tbsBytes rand
@@ -176,6 +204,8 @@ end CryptoBytes
 Port of `get_signer_verification_key`.
 MLS* requires the tree to be at position `0` (`treesync bytes tkt l 0`).
 -/
+@[expose]
+public
 def getSignerVerificationKey {Bytes: Type} [BytesLike Bytes] {tkt: TreeKEMTypes Bytes} {l: Nat}
   (t: TreeSync Bytes tkt l) (groupInfo: GroupInfo Bytes): Result Bytes
 :=
@@ -187,6 +217,8 @@ def getSignerVerificationKey {Bytes: Type} [BytesLike Bytes] {tkt: TreeKEMTypes 
     | some ln => pure ln.data.signatureKey.val
 
 /-- Port of `verify_welcome_group_info`. -/
+@[expose]
+public
 def verifyWelcomeGroupInfo {Bytes: Type} [CryptoBytes Bytes] (signPk: Bytes) (gi: GroupInfo Bytes): Bool :=
   let tbsBytes := serializeNE GroupInfoTBS.mf gi.tbs
   verifyWithLabel signPk "GroupInfoTBS" tbsBytes gi.signature.val

@@ -407,7 +407,6 @@ def DySlop.Signature.extractSignkey (vk: Bytes): Option Bytes :=
     some sk
   | none => none
 
-public
 theorem DySlop.Signature.vk_extractSignkey (b: Bytes):
   match extractSignkey b with
   | none => True
@@ -419,7 +418,6 @@ theorem DySlop.Signature.vk_extractSignkey (b: Bytes):
 variable [ExecTraceTypes] [ProofTraceTypes]
 
 /-- Port of `extract_signkey_preserves_well_formedness`. -/
-public
 theorem DySlop.Signature.extractSignkey.preserves_WellFormed
   [BytesInvariants] [DySlop.Signature.SignPred] [BytesInvariants.Has DySlop.Signature.invariants]
 : ExtractPreservesWellFormed extractSignkey

@@ -1,5 +1,7 @@
-import MLS.TreeDEM.Code.Message.Framing
-import MLS.TreeDEM.Code.API.Types
+module
+
+public import MLS.TreeDEM.Code.Message.Framing
+public import MLS.TreeDEM.Code.API.Types
 
 /-!
 Port of `MLS.TreeDEM.API`.
@@ -19,6 +21,7 @@ open MLS MLS.TreeSync
 Port of `treedem_init_arguments`.
 `my_leaf_index` is a `Nat` (MLS*'s `leaf_index tree_height 0`).
 -/
+public
 structure TreeDEMInitArguments (Bytes: Type) [BytesLike Bytes] where
   treeHeight: Nat
   myLeafIndex: Nat
@@ -35,6 +38,8 @@ variable {Bytes: Type} [CryptoBytes Bytes]
 Port of `init`.
 MLS* requires `my_leaf_index: leaf_index tree_height 0` (i.e. `myLeafIndex < 2^treeHeight`); otherwise, see `leafKdf`.
 -/
+@[expose]
+public
 def init (args: TreeDEMInitArguments Bytes): Result (TreeDEMState Bytes) := do
   let { treeHeight, myLeafIndex, groupContext, encryptionSecret, senderDataSecret, membershipKey, mySignatureKey, verificationKeys } := args
   let leafTreeSecret ← leafKdf encryptionSecret treeHeight 0 myLeafIndex
@@ -64,6 +69,8 @@ This function will compute it.
 Port of `authenticate_non_commit`.
 MLS* requires `msg.content.content_type =!= CT_commit`; otherwise, this function fails.
 -/
+@[expose]
+public
 def authenticateNonCommit (st: TreeDEMState Bytes) (wf: WireFormat) (msg: FramedContent Bytes) (nonce: Bytes):
   Result (AuthenticatedContent Bytes)
 := do
@@ -93,6 +100,8 @@ then the confirmation tag.
 Port of `start_authenticate_commit`.
 MLS* requires `msg.content.content_type == CT_commit`; this function does not need it.
 -/
+@[expose]
+public
 def startAuthenticateCommit (st: TreeDEMState Bytes) (wf: WireFormat) (msg: FramedContent Bytes) (nonce: Bytes):
   Result (ConfirmedTranscriptHashInput Bytes)
 := do
@@ -107,6 +116,8 @@ def startAuthenticateCommit (st: TreeDEMState Bytes) (wf: WireFormat) (msg: Fram
 Port of `finish_authenticate_commit`.
 MLS* requires `msg.content.content.content_type == CT_commit`; otherwise, this function fails.
 -/
+@[expose]
+public
 def finishAuthenticateCommit (msg: ConfirmedTranscriptHashInput Bytes) (confirmationTag: Bytes): Result (AuthenticatedContent Bytes) :=
   if !(msg.content.content.contentType == .commit) then
     Result.internalFailure "finish_authenticate_commit: not a commit"
@@ -127,6 +138,8 @@ def finishAuthenticateCommit (msg: ConfirmedTranscriptHashInput Bytes) (confirma
 /-! Functions to verify the authentication. -/
 
 /-- Port of `verify_signature`. -/
+@[expose]
+public
 def verifySignature (st: TreeDEMState Bytes) (msg: AuthenticatedContent Bytes): Bool :=
   let optVerifKey :=
     match msg.content.sender with
@@ -140,6 +153,8 @@ def verifySignature (st: TreeDEMState Bytes) (msg: AuthenticatedContent Bytes): 
     checkMessageSignature verifKey.val msg.auth.signature.val msg.wireFormat msg.content (StaticOption.mk st.groupContext)
 
 /-- Port of `verify_confirmation_tag`. -/
+@[expose]
+public
 def verifyConfirmationTag (_st: TreeDEMState Bytes) (msg: AuthenticatedContent Bytes) (confirmationTag: Bytes): Result Bool :=
   if h: msg.content.content.contentType == .commit then
     pure ((msg.auth.confirmationTag.get h).val == confirmationTag)
@@ -154,10 +169,14 @@ def verifyConfirmationTag (_st: TreeDEMState Bytes) (msg: AuthenticatedContent B
 Port of `protect_public`.
 MLS* requires `msg.wire_format == WF_mls_public_message`; this function does not need it.
 -/
+@[expose]
+public
 def protectPublic (st: TreeDEMState Bytes) (msg: AuthenticatedContent Bytes): Result (PublicMessage Bytes) :=
   authenticatedContentToPublicMessage msg (StaticOption.mk st.groupContext) (StaticOption.mk st.membershipKey)
 
 /-- Port of `unprotect_public`. -/
+@[expose]
+public
 def unprotectPublic (st: TreeDEMState Bytes) (msg: PublicMessage Bytes): Result (AuthenticatedContent Bytes) :=
   publicMessageToAuthenticatedContent msg (StaticOption.mk st.groupContext) (StaticOption.mk st.membershipKey)
 
@@ -171,6 +190,8 @@ Port of `protect_private`.
 MLS* requires `msg.wire_format == WF_mls_private_message`; this function does not need it.
 MLS* requires `reuse_guard` to have length `4`; otherwise, this function fails.
 -/
+@[expose]
+public
 def protectPrivate (st: TreeDEMState Bytes) (msg: AuthenticatedContent Bytes) (reuseGuard: Bytes):
   Result (PrivateMessage Bytes × TreeDEMState Bytes)
 := do
@@ -186,6 +207,8 @@ def protectPrivate (st: TreeDEMState Bytes) (msg: AuthenticatedContent Bytes) (r
   pure (res, newSt)
 
 /-- Port of `unprotect_private`. -/
+@[expose]
+public
 def unprotectPrivate (st: TreeDEMState Bytes) (msg: PrivateMessage Bytes): Result (AuthenticatedContent Bytes × TreeDEMState Bytes) := do
   let res ← privateMessageToAuthenticatedContent msg st.treeHeight st.encryptionSecret st.senderDataSecret
   pure (res, st)

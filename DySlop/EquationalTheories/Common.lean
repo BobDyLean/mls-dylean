@@ -38,7 +38,6 @@ theorem stripPrefix?_append (p s: String): stripPrefix? p (p ++ s) = some s := b
     simp
   simp only [stripPrefix?, this, ite_true]
 
-public
 theorem eq_of_stripPrefix? (p s r: String): stripPrefix? p s = some r → s = p ++ r := by
   simp only [stripPrefix?]
   split
@@ -46,7 +45,6 @@ theorem eq_of_stripPrefix? (p s r: String): stripPrefix? p s = some r → s = p 
     grind
   · simp
 
-public
 theorem append_left_injective (p: String): Function.Injective (p ++ ·) := by
   intro a b h
   have := congrArg String.toList h

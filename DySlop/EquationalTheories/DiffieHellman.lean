@@ -448,7 +448,6 @@ def DySlop.DiffieHellman.extractDhSk (pk: Bytes): Option Bytes :=
     some sk
   | none => none
 
-public
 theorem DySlop.DiffieHellman.dhPk_extractDhSk (b: Bytes):
   match extractDhSk b with
   | none => True
@@ -460,7 +459,6 @@ theorem DySlop.DiffieHellman.dhPk_extractDhSk (b: Bytes):
 variable [ExecTraceTypes] [ProofTraceTypes]
 
 /-- Port of `extract_dh_sk_preserves_well_formedness`. -/
-public
 theorem DySlop.DiffieHellman.extractDhSk.preserves_WellFormed
   [DySlop.DiffieHellman.DhUsage]
   [BytesInvariants] [BytesInvariants.Has DySlop.DiffieHellman.invariants]

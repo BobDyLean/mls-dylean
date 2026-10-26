@@ -1,5 +1,7 @@
-import MLS.Common.Code.Crypto.Derived
-import MLS.Bootstrap.Code.NetworkTypes
+module
+
+public import MLS.Common.Code.Crypto.Derived
+public import MLS.Bootstrap.Code.NetworkTypes
 
 /-!
 Port of `MLS.Bootstrap.KeyPackageRef`.
@@ -13,6 +15,8 @@ open MLS
 variable {Bytes: Type} [CryptoBytes Bytes]
 
 /-- Port of `compute_key_package_ref`. -/
+@[expose]
+public
 def computeKeyPackageRef (kp: KeyPackage Bytes TreeKEM.tkt): Result (KeyPackageRef Bytes) := do
   let kpBytes := serializeNE (KeyPackage.mf TreeKEM.tkt) kp
   let res ← makeKeypackageRef kpBytes

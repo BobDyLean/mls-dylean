@@ -1,5 +1,7 @@
-import MLS.TreeKEM.Code.KeySchedule
-import MLS.TreeKEM.Code.API.KeySchedule.Types
+module
+
+public import MLS.TreeKEM.Code.KeySchedule
+public import MLS.TreeKEM.Code.API.KeySchedule.Types
 
 /-!
 Port of `MLS.TreeKEM.API.KeySchedule`.
@@ -17,6 +19,8 @@ open MLS
 variable {Bytes: Type} [CryptoBytes Bytes]
 
 /-- Port of `create_from_epoch_secret`. -/
+@[expose]
+public
 def createFromEpochSecret (epochSecret: Bytes) (groupContext: GroupContext Bytes):
   Result (TreeKEMKeyscheduleState Bytes × Bytes)
 := do
@@ -44,6 +48,8 @@ def createFromEpochSecret (epochSecret: Bytes) (groupContext: GroupContext Bytes
   }, encryptionSecret)
 
 /-- Port of `create_from_joiner_secret`. -/
+@[expose]
+public
 def createFromJoinerSecret (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes × Bytes)) (groupContext: GroupContext Bytes):
   Result (TreeKEMKeyscheduleState Bytes × Bytes)
 := do
@@ -51,11 +57,14 @@ def createFromJoinerSecret (joinerSecret: Bytes) (psks: List (PreSharedKeyId Byt
   createFromEpochSecret epochSecret groupContext
 
 /-- Port of `secrets_for_welcome`. -/
+public
 structure SecretsForWelcome (Bytes: Type) where
   joinerSecret: Bytes
   welcomeSecret: Bytes
 
 /-- Port of `commit`. -/
+@[expose]
+public
 def commit (st: TreeKEMKeyscheduleState Bytes) (optCommitSecret: Option Bytes)
   (psks: List (PreSharedKeyId Bytes × Bytes)) (newGroupContext: GroupContext Bytes)
   : Result (TreeKEMKeyscheduleState Bytes × Bytes × SecretsForWelcome Bytes)
@@ -70,6 +79,8 @@ def commit (st: TreeKEMKeyscheduleState Bytes) (optCommitSecret: Option Bytes)
   })
 
 /-- Port of `export`. -/
+@[expose]
+public
 def «export» (st: TreeKEMKeyscheduleState Bytes) (label: String) (context: Bytes) (len: Nat): Result Bytes :=
   mlsExporter st.epochKeys.exporterSecret label context len
 

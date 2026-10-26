@@ -1,5 +1,7 @@
-import MLS.Common.Proofs.Crypto.Derived
-import DySlop.EquationalTheories.Common
+module
+
+public import MLS.Common.Proofs.Crypto.Derived
+public import DySlop.EquationalTheories.Common
 
 /-!
 Decoding of the messages labeled by `get_mls_label` (`SignContent`, `KdfLabel`, `EncryptContext`):
@@ -17,6 +19,8 @@ open Comparse
 variable {Bytes: Type} [BytesLike Bytes] {α: Type}
 
 /-- Parse `buf` with `mf`, and strip the prefix `"MLS 1.0 "` from the label of the result. -/
+@[expose]
+public
 def parseWithMlsLabel (mf: NonExtensibleMessageFormat Bytes α) (label: α → MlsAsciiString (Bytes := Bytes)) (buf: Bytes)
   : Option (String × α)
 :=
@@ -27,6 +31,7 @@ def parseWithMlsLabel (mf: NonExtensibleMessageFormat Bytes α) (label: α → M
     | none => none
   | none => none
 
+public
 theorem parseWithMlsLabel_serializeNE
   (mf: NonExtensibleMessageFormat Bytes α) [mf.IsNonAmbiguous] (label: α → MlsAsciiString (Bytes := Bytes))
   (x: α) (l: String)
@@ -39,6 +44,7 @@ theorem parseWithMlsLabel_serializeNE
   simp only [h, stripPrefix?_append]
 
 /-- `parse_wf_lemma` for `parseWithMlsLabel`. -/
+public
 theorem wf_of_parseWithMlsLabel
   (mf: NonExtensibleMessageFormat Bytes α) [mf.HasUniqueRepresentation] (label: α → MlsAsciiString (Bytes := Bytes))
   (pred: Bytes → Prop) [BytesCompatiblePred pred] (buf: Bytes) (l: String) (x: α)

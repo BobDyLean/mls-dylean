@@ -1,9 +1,11 @@
-import MLS.Common.Code.Crypto.Builtins
-import DY.Comparse
-import DY.EquationalTheory.Hash
-import DySlop.EquationalTheories
-import DySlop.Lib.HPKE
-import DY.Actions.PersistentLocalState
+module
+
+public import MLS.Common.Code.Crypto.Builtins
+public import DY.Comparse
+public import DY.EquationalTheory.Hash
+public import DySlop.EquationalTheories
+public import DySlop.Lib.HPKE
+public import DY.Actions.PersistentLocalState
 
 /-!
 Port of `MLS.Symbolic`: the `CryptoBytes` instance on symbolic bytes.
@@ -34,6 +36,7 @@ The top-level protocol provides them after combining the corresponding instances
 (`instance: HasSymbolicBytes where`, `instance: HasSymbolicInvariants where`).
 -/
 
+public
 class HasSymbolicBytes where
   [bytesFunc: BytesFunctor]
   [bytesFunc0: BytesFunctor.Has DY.Literal.SubF]
@@ -66,8 +69,9 @@ attribute [           scoped instance] HasSymbolicBytes.bytesLen1
 attribute [           scoped instance] HasSymbolicBytes.bytesLen2
 
 /-- The bundle of HPKE, to use its definitions. -/
-scoped instance [HasSymbolicBytes]: DySlop.HPKE.HasHpkeBytes where
+public scoped instance [HasSymbolicBytes]: DySlop.HPKE.HasHpkeBytes where
 
+public
 class HasSymbolicInvariants extends HasSymbolicBytes where
   [execTraceTypes: ExecTraceTypes]
   [proofTraceTypes: ProofTraceTypes]
@@ -98,13 +102,14 @@ attribute [           scoped instance] HasSymbolicInvariants.bytesInv4
 attribute [           scoped instance] HasSymbolicInvariants.bytesInv5
 
 /-- The bundle of HPKE, to use its theorems. -/
-scoped instance [HasSymbolicInvariants]: DySlop.HPKE.HasHpkeInvariants where
+public scoped instance [HasSymbolicInvariants]: DySlop.HPKE.HasHpkeInvariants where
 
 /-! ## Typeclass instantiation on DY* -/
 
 variable [HasSymbolicBytes]
 
 /-- Port of `bytes_has_crypto_bytes`, for the ciphersuite of `crypto_bytes_bytes`. -/
+public
 instance cryptoBytesBytes: CryptoBytes Bytes where
   toBytesLike := inferInstance
   ciphersuite := .mls_128_dhkemx25519_chacha20poly1305_sha256_ed25519
@@ -113,7 +118,7 @@ instance cryptoBytesBytes: CryptoBytes Bytes where
   hashHash_ne_empty buf := by
     intro h
     have := congrArg BytesLike.length (Result.success.inj h)
-    simp [BytesLike.length, BytesLike.empty, DY.Hash.length_hash, DY.Hash.hashLength] at this
+    simp [BytesLike.length, BytesLike.empty, DY.Hash.length_hash, DY.Hash.hashLength_neq_0] at this
   hashOutputLength := 32
 
   kdfLength := 32
@@ -159,22 +164,26 @@ instance cryptoBytesBytes: CryptoBytes Bytes where
   applyReuseGuard _ _ := Result.internalFailure "apply_reuse_guard: not supported on symbolic bytes"
 
 @[simp]
+public
 theorem cryptoBytesBytes_signSign (signatureKey buf entropy: Bytes):
   CryptoBytes.signSign signatureKey buf entropy = .success (DySlop.Signature.sign signatureKey entropy buf)
 := rfl
 
 @[simp]
+public
 theorem cryptoBytesBytes_kdfExpand (prk info: Bytes) (len: Nat):
   CryptoBytes.kdfExpand prk info len =
     if len = 0 then Result.internalFailure "kdf_expand: len cannot be zero" else .success (DySlop.KdfExpand.kdfExpand prk info len)
 := rfl
 
 @[simp]
+public
 theorem cryptoBytesBytes_hpkeEncrypt (pkR info ad plaintext entropy: Bytes):
   CryptoBytes.hpkeEncrypt pkR info ad plaintext entropy = .success (DySlop.HPKE.hpkeEnc pkR entropy plaintext info ad)
 := rfl
 
 @[simp]
+public
 theorem cryptoBytesBytes_hpkeDecrypt (enc skR info ad ciphertext: Bytes):
   CryptoBytes.hpkeDecrypt enc skR info ad ciphertext = (
     match DySlop.HPKE.hpkeDec skR (enc, ciphertext) info ad with
@@ -183,6 +192,7 @@ theorem cryptoBytesBytes_hpkeDecrypt (enc skR info ad ciphertext: Bytes):
 := rfl
 
 @[simp]
+public
 theorem cryptoBytesBytes_signVerify (verificationKey buf signature: Bytes):
   CryptoBytes.signVerify verificationKey buf signature = DySlop.Signature.verify verificationKey buf signature
 := rfl
@@ -191,6 +201,8 @@ theorem cryptoBytesBytes_signVerify (verificationKey buf signature: Bytes):
   Port of `mk_mls_sigkey_usage`.
   The principal is encoded as a literal (MLS* serializes the structure `mls_principal`, containing only the principal).
 -/
+@[expose]
+public
 def mkMlsSigkeyUsage (who: Participant): Usage :=
   Usage.sigKey "MLS.LeafSignKey" (DY.Literal.literalToBytes who.toUTF8)
 

@@ -1,11 +1,13 @@
-import MLS.TreeSync.Code.Operations
-import MLS.TreeSync.Code.TreeHash
-import MLS.TreeKEM.Code.API.Tree
-import MLS.Glue.Code.NetworkBinder
-import MLS.Glue.Code.TreeSyncTreeKEMBinder
-import MLS.Test.FromExt.CryptoBasics
-import MLS.Test.Types
-import MLS.Test.Utils
+module
+
+public import MLS.TreeSync.Code.Operations
+public import MLS.TreeSync.Code.TreeHash
+public import MLS.TreeKEM.Code.API.Tree
+public import MLS.Glue.Code.NetworkBinder
+public import MLS.Glue.Code.TreeSyncTreeKEMBinder
+public import MLS.Test.FromExt.CryptoBasics
+public import MLS.Test.Types
+public import MLS.Test.Utils
 
 /-!
 Port of `MLS.Test.FromExt.TreeKEM`.
@@ -28,22 +30,29 @@ open MLS.Test.FromExt.CryptoBasics
 Port of `MLS.TreeMath.Internal.level`.
 The level of a node index (in the array representation of the tree): its number of trailing ones.
 -/
+@[expose]
+public
 def level (x: Nat): Nat :=
   if x % 2 = 1 then level (x / 2) + 1 else 0
 
 /-- Port of `participant_state`. -/
+public
 structure ParticipantState where
   leafInd: Nat
   state: TreeKEMTreeState ByteArray leafInd
   signatureKey: ByteArray
 
 /-- Port of `List.nth` (from `FStar.List`), which fails when the index is too big. -/
+@[expose]
+public
 def listNth {α: Type} (l: List α) (n: Nat): IO α :=
   match l[n]? with
   | some x => pure x
   | none => throw (IO.userError "nth: index too big")
 
 /-- Cast a TreeKEM state of `l` levels. -/
+@[expose]
+public
 def getLevels {leafInd: Nat} (st: TreeKEMTreeState ByteArray leafInd) (l: Nat) (name: String): IO (PLift (st.levels = l)) :=
   if h: st.levels = l then pure ⟨h⟩
   else throw (IO.userError s!"{name}: bad levels")
@@ -53,6 +62,8 @@ section CryptoBytes
 variable [CryptoBytes ByteArray]
 
 /-- Port of `set_path_secret`. -/
+@[expose]
+public
 def setPathSecret {l: Nat} (pathSecret: ByteArray) (height: Nat) (t: TreeKEM ByteArray l) (li: Nat)
   (p: TreeKEMPriv ByteArray l) : IO (TreeKEMPriv ByteArray l)
 :=
@@ -72,6 +83,8 @@ def setPathSecret {l: Nat} (pathSecret: ByteArray) (height: Nat) (t: TreeKEM Byt
         pure (.node priv (← setPathSecret pathSecret height child li pNext))
 
 /-- Port of `get_leaf_treekem_tree_state`. -/
+@[expose]
+public
 def getLeafTreekemTreeState {l: Nat} (tree: TreeKEM ByteArray l) (leafPriv: TreeKEMLeafPrivate): IO ParticipantState := do
   let leafInd := leafPriv.index.toNat
   if !(leafInd < 2^l) then throw (IO.userError "get_leaf_treekem_tree_state: leaf_ind too big")
@@ -90,6 +103,8 @@ def getLeafTreekemTreeState {l: Nat} (tree: TreeKEM ByteArray l) (leafPriv: Tree
   }
 
 /-- Port of `check_one_update_path`. -/
+@[expose]
+public
 def checkOneUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (_tsync: TreeSync ByteArray tkt l)
   (li: Nat) (treekemPath: PathKEM ByteArray l) (expectedCommitSecret: ByteArray) (expectedOptPathSecrets: List (Option String))
   (st: ParticipantState)
@@ -115,6 +130,8 @@ def checkOneUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (_tsync: 
     checkEqual "commit_secret" bytesToHexString expectedCommitSecret commitSecret
 
 /-- Port of `check_update_path`. -/
+@[expose]
+public
 def checkUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (tsync: TreeSync ByteArray tkt l)
   (treekemTreeStates: List ParticipantState) (t: TreeKEMUpdatePath)
   : IO Unit
@@ -141,6 +158,8 @@ def checkUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (tsync: Tree
   checkEqual "tree_hash_after" bytesToHexString (← hexStringToBytes t.treeHashAfter) treeHashAfter.val
 
 /-- Port of `generate_my_update_path`. -/
+@[expose]
+public
 def generateMyUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (tsync: TreeSync ByteArray tkt l)
   (st: ParticipantState)
   : IO (UpdatePath ByteArray × ByteArray)
@@ -173,6 +192,8 @@ def generateMyUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (tsync:
   pure (← extractResult (compressUpdatePath uncompressedUpdatePath), createCommitResult.commitSecret)
 
 /-- Port of `check_one_my_update_path`. -/
+@[expose]
+public
 def checkOneMyUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (tsync: TreeSync ByteArray tkt l)
   (st: ParticipantState) (sender: Nat) (updatePath: UpdatePath ByteArray) (expectedCommitSecret: ByteArray)
   : IO Unit
@@ -190,6 +211,8 @@ def checkOneMyUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (tsync:
     checkEqual "commit_secret" bytesToHexString expectedCommitSecret commitSecret
 
 /-- Port of `check_my_update_path`. -/
+@[expose]
+public
 def checkMyUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (tsync: TreeSync ByteArray tkt l)
   (states: List ParticipantState)
   : IO Unit
@@ -202,6 +225,8 @@ def checkMyUpdatePath {l: Nat} (groupContext: GroupContext ByteArray) (tsync: Tr
 end CryptoBytes
 
 /-- Port of `test_treekem_one`. -/
+@[expose]
+public
 def testTreekemOne (t: TreeKEMTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
   | .protocolError _ =>
@@ -227,6 +252,8 @@ def testTreekemOne (t: TreeKEMTest): IO Bool := do
     pure true
 
 /-- Port of `test_treekem`. -/
+@[expose]
+public
 def testTreekem: List TreeKEMTest → IO Nat :=
   testList "TreeKEM" testTreekemOne
 

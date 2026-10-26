@@ -1,7 +1,9 @@
-import MLS.TreeKEM.Code.PSK
-import MLS.Test.FromExt.CryptoBasics
-import MLS.Test.Types
-import MLS.Test.Utils
+module
+
+public import MLS.TreeKEM.Code.PSK
+public import MLS.Test.FromExt.CryptoBasics
+public import MLS.Test.Types
+public import MLS.Test.Utils
 
 /-!
 Port of `MLS.Test.FromExt.PreSharedKeys`.
@@ -15,6 +17,8 @@ open MLS.Test
 open MLS.Test.FromExt.CryptoBasics
 
 /-- Port of `test_psk_one`. -/
+@[expose]
+public
 def testPskOne (t: PskTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
   | .protocolError _ =>
@@ -33,6 +37,8 @@ def testPskOne (t: PskTest): IO Bool := do
     pure true
 
 /-- Port of `test_psk`. -/
+@[expose]
+public
 def testPsk: List PskTest → IO Nat :=
   testList "Pre-Shared Keys" testPskOne
 

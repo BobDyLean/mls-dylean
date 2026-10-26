@@ -1,4 +1,6 @@
-import Comparse
+module
+
+public import Comparse
 
 /-!
 `BytesLike` structure for `ByteArray`,
@@ -14,12 +16,15 @@ open Comparse
 
 namespace ByteArray
 
+@[expose]
+public
 def splitAt (b : ByteArray) (i : Nat) : Option (ByteArray × ByteArray) :=
   if i ≤ b.size then some (b.extract 0 i, b.extract i b.size) else none
 
 end ByteArray
 
-@[reducible]
+@[expose, reducible]
+public
 def bytesLikeByteArray : BytesLike ByteArray where
   length := ByteArray.size
   empty := .empty

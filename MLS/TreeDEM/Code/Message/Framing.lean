@@ -1,5 +1,7 @@
-import MLS.TreeDEM.Code.NetworkTypes
-import MLS.TreeDEM.Code.Keys
+module
+
+public import MLS.TreeDEM.Code.NetworkTypes
+public import MLS.TreeDEM.Code.Keys
 
 /-!
 Port of `MLS.TreeDEM.Message.Framing`.
@@ -25,6 +27,8 @@ section BytesLike
 variable {Bytes: Type} [BytesLike Bytes]
 
 /-- Port of `compute_tbs`. -/
+@[expose]
+public
 def computeTbs (wireFormat: WireFormat) (content: FramedContent Bytes)
   (groupContext: StaticOption content.sender.hasGroupContext (GroupContext Bytes)): FramedContentTBS Bytes
 :=
@@ -39,6 +43,8 @@ def computeTbs (wireFormat: WireFormat) (content: FramedContent Bytes)
 Port of `compute_tbm`.
 MLS* requires `S_member? content.sender`; this function does not need it.
 -/
+@[expose]
+public
 def computeTbm (content: FramedContent Bytes) (auth: FramedContentAuthData Bytes content.content.contentType)
   (groupContext: GroupContext Bytes): AuthenticatedContentTBM Bytes
 :=
@@ -55,6 +61,8 @@ section CryptoBytes
 variable {Bytes: Type} [CryptoBytes Bytes]
 
 /-- Port of `compute_message_signature`. -/
+@[expose]
+public
 def computeMessageSignature (sk: Bytes) (rand: Bytes) (wireFormat: WireFormat) (msg: FramedContent Bytes)
   (groupContext: StaticOption msg.sender.hasGroupContext (GroupContext Bytes)): Result (MlsBytes Bytes)
 := do
@@ -64,6 +72,8 @@ def computeMessageSignature (sk: Bytes) (rand: Bytes) (wireFormat: WireFormat) (
   mkMlsBytes signature "compute_message_signature" "signature"
 
 /-- Port of `check_message_signature`. -/
+@[expose]
+public
 def checkMessageSignature (pk: Bytes) (signature: Bytes) (wireFormat: WireFormat) (msg: FramedContent Bytes)
   (groupContext: StaticOption msg.sender.hasGroupContext (GroupContext Bytes)): Bool
 :=
@@ -75,6 +85,8 @@ def checkMessageSignature (pk: Bytes) (signature: Bytes) (wireFormat: WireFormat
 Port of `compute_message_membership_tag`.
 MLS* requires `S_member? msg.sender`; this function does not need it.
 -/
+@[expose]
+public
 def computeMessageMembershipTag (membershipKey: Bytes) (msg: FramedContent Bytes)
   (auth: FramedContentAuthData Bytes msg.content.contentType) (groupContext: GroupContext Bytes): Result Bytes
 :=
@@ -83,6 +95,8 @@ def computeMessageMembershipTag (membershipKey: Bytes) (msg: FramedContent Bytes
   CryptoBytes.hmacHmac membershipKey serializedTbm
 
 /-- Port of `check_authenticated_content_signature`. -/
+@[expose]
+public
 def checkAuthenticatedContentSignature (msg: AuthenticatedContent Bytes) (vk: Bytes)
   (groupContext: StaticOption msg.content.sender.hasGroupContext (GroupContext Bytes)): Bool
 :=
@@ -91,6 +105,8 @@ def checkAuthenticatedContentSignature (msg: AuthenticatedContent Bytes) (vk: By
 /-! ## From/to public message -/
 
 /-- Port of `public_message_to_authenticated_content`. -/
+@[expose]
+public
 def publicMessageToAuthenticatedContent (pt: PublicMessage Bytes)
   (groupContext: StaticOption pt.content.sender.isMember (GroupContext Bytes))
   (membershipKey: StaticOption pt.content.sender.isMember Bytes)
@@ -116,6 +132,8 @@ Port of `authenticated_content_to_public_message`.
 MLS* requires `auth_msg.wire_format == WF_mls_public_message`; this function does not need it.
 Unlike MLS*, this function fails when the membership tag is too long to be a `Mac Bytes`.
 -/
+@[expose]
+public
 def authenticatedContentToPublicMessage (authMsg: AuthenticatedContent Bytes)
   (groupContext: StaticOption authMsg.content.sender.isMember (GroupContext Bytes))
   (membershipKey: StaticOption authMsg.content.sender.isMember Bytes)
@@ -133,6 +151,8 @@ def authenticatedContentToPublicMessage (authMsg: AuthenticatedContent Bytes)
 /-! ## From/to private message -/
 
 /-- Port of `get_ciphertext_sample`. -/
+@[expose]
+public
 def getCiphertextSample (ct: Bytes): Bytes :=
   let len := CryptoBytes.kdfLength Bytes
   if BytesLike.length ct ≤ len then
@@ -152,6 +172,8 @@ variable {Bytes: Type} [BytesLike Bytes]
 Port of `private_framed_content_to_sender_data_aad`.
 Used in decryption
 -/
+@[expose]
+public
 def privateFramedContentToSenderDataAad (ct: PrivateMessage Bytes): SenderDataAAD Bytes :=
   {
     groupId := ct.groupId
@@ -163,6 +185,8 @@ def privateFramedContentToSenderDataAad (ct: PrivateMessage Bytes): SenderDataAA
 Port of `framed_content_to_sender_data_aad`.
 Used in encryption
 -/
+@[expose]
+public
 def framedContentToSenderDataAad (content: FramedContent Bytes): SenderDataAAD Bytes :=
   {
     groupId := content.groupId
@@ -177,12 +201,16 @@ section CryptoBytes
 variable {Bytes: Type} [CryptoBytes Bytes]
 
 /-- Port of `sender_data_key_nonce`. -/
+@[expose]
+public
 def senderDataKeyNonce (ciphertextSample: Bytes) (senderDataSecret: Bytes): Result (Bytes × Bytes) := do
   let senderDataKey ← expandWithLabel senderDataSecret "key" ciphertextSample (CryptoBytes.aeadKeyLength Bytes)
   let senderDataNonce ← expandWithLabel senderDataSecret "nonce" ciphertextSample (CryptoBytes.aeadNonceLength Bytes)
   pure (senderDataKey, senderDataNonce)
 
 /-- Port of `decrypt_sender_data`. -/
+@[expose]
+public
 def decryptSenderData (ad: SenderDataAAD Bytes) (ciphertextSample: Bytes) (senderDataSecret: Bytes) (encryptedSenderData: Bytes):
   Result (SenderData Bytes)
 := do
@@ -191,6 +219,8 @@ def decryptSenderData (ad: SenderDataAAD Bytes) (ciphertextSample: Bytes) (sende
   Result.fromOption "decrypt_sender_data: malformed sender data" (SenderData.mf.toExtensible.parse senderData)
 
 /-- Port of `encrypt_sender_data`. -/
+@[expose]
+public
 def encryptSenderData (ad: SenderDataAAD Bytes) (ciphertextSample: Bytes) (senderDataSecret: Bytes) (senderData: SenderData Bytes):
   Result Bytes
 := do
@@ -203,6 +233,8 @@ end CryptoBytes
 Port of `private_message_to_private_content_aad`.
 Used in decryption
 -/
+@[expose]
+public
 def privateMessageToPrivateContentAad {Bytes: Type} [BytesLike Bytes] (ct: PrivateMessage Bytes): PrivateContentAAD Bytes :=
   {
     groupId := ct.groupId
@@ -215,6 +247,8 @@ def privateMessageToPrivateContentAad {Bytes: Type} [BytesLike Bytes] (ct: Priva
 Port of `framed_content_to_private_content_aad`.
 Used in encryption
 -/
+@[expose]
+public
 def framedContentToPrivateContentAad {Bytes: Type} [BytesLike Bytes] (content: FramedContent Bytes): PrivateContentAAD Bytes :=
   {
     groupId := content.groupId
@@ -228,6 +262,8 @@ section CryptoBytes
 variable {Bytes: Type} [CryptoBytes Bytes]
 
 /-- Port of `decrypt_private_message_content`. -/
+@[expose]
+public
 def decryptPrivateMessageContent (ad: PrivateContentAAD Bytes) (key: Bytes) (nonce: Bytes) (ct: Bytes):
   Result (PrivateMessageContent Bytes ad.contentType)
 := do
@@ -236,12 +272,16 @@ def decryptPrivateMessageContent (ad: PrivateContentAAD Bytes) (key: Bytes) (non
     ((PrivateMessageContent.mf ad.contentType).parse ciphertextContent)
 
 /-- Port of `encrypt_private_message_content`. -/
+@[expose]
+public
 def encryptPrivateMessageContent (ad: PrivateContentAAD Bytes) (key: Bytes) (nonce: Bytes)
   (pt: PrivateMessageContent Bytes ad.contentType): Result Bytes
 :=
   CryptoBytes.aeadEncrypt key nonce (serializeNE PrivateContentAAD.mf ad) ((PrivateMessageContent.mf ad.contentType).serialize pt)
 
 /-- Port of `private_message_to_authenticated_content`. -/
+@[expose]
+public
 def privateMessageToAuthenticatedContent (ct: PrivateMessage Bytes) (l: Nat) (encryptionSecret: Bytes) (senderDataSecret: Bytes):
   Result (AuthenticatedContent Bytes)
 := do
@@ -289,6 +329,8 @@ Port of `authenticated_content_to_private_message`.
 MLS* requires `msg.wire_format == WF_mls_private_message`; this function does not need it.
 MLS* requires `reuse_guard` to have length `4`; otherwise, this function fails.
 -/
+@[expose]
+public
 def authenticatedContentToPrivateMessage (authMsg: AuthenticatedContent Bytes) (ratchet: RatchetState Bytes)
   (reuseGuard: Bytes) (senderDataSecret: Bytes)
   : Result (PrivateMessage Bytes × RatchetState Bytes)

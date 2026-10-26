@@ -1,6 +1,8 @@
-import MLS.Common.Proofs.Result
-import MLS.Common.Proofs.TreeCommon
-import MLS.Glue.Code.NetworkBinder
+module
+
+public import MLS.Common.Proofs.Result
+public import MLS.Common.Proofs.TreeCommon
+public import MLS.Glue.Code.NetworkBinder
 
 /-!
 Port of `MLS.NetworkBinder.Properties` and `MLS.NetworkBinder.Properties.Proofs`.
@@ -23,6 +25,8 @@ Port of `path_filtering_ok`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def pathFilteringOk {TreeLeaf TreeNode PathLeaf PathNode: Type} {l: Nat}
   (t: Tree (Option TreeLeaf) (Option TreeNode) l) (li: Nat) (p: Path PathLeaf (Option PathNode) l): Bool
 :=
@@ -37,7 +41,9 @@ section
 
 variable {TreeLeaf TreeNode PathLeaf PathNode: Type}
 
-@[simp] theorem pathFilteringOk_zero (t: Tree (Option TreeLeaf) (Option TreeNode) 0) (li: Nat)
+@[simp]
+public
+theorem pathFilteringOk_zero (t: Tree (Option TreeLeaf) (Option TreeNode) 0) (li: Nat)
   (p: Path PathLeaf (Option PathNode) 0):
   pathFilteringOk t li p
 := by
@@ -45,7 +51,9 @@ variable {TreeLeaf TreeNode PathLeaf PathNode: Type}
   rw [pathFilteringOk.eq_def]
   simp
 
-@[simp] theorem pathFilteringOk_succ {l: Nat} (t: Tree (Option TreeLeaf) (Option TreeNode) (l+1)) (li: Nat)
+@[simp]
+public
+theorem pathFilteringOk_succ {l: Nat} (t: Tree (Option TreeLeaf) (Option TreeNode) (l+1)) (li: Nat)
   (opn: Option PathNode) (pNext: Path PathLeaf (Option PathNode) l):
   pathFilteringOk t li (.node opn pNext) = ((opn.isNone == isTreeEmpty (t.sibling li)) && pathFilteringOk (t.child li) li pNext)
 := by
@@ -92,6 +100,7 @@ theorem pathFilteringOk_uncompressUpdatePathAux {l: Nat} (li: Nat) (t: Tree (Opt
         simp_all [ih _ _ h1]
 
 /-- Port of `path_filtering_ok_uncompress_update_path`. -/
+public
 theorem pathFilteringOk_uncompressUpdatePath {l: Nat} (li: Nat) (t: Tree (Option TreeLeaf) (Option TreeNode) l)
   (updatePath: TreeKEM.UpdatePath Bytes) (res: SparseUpdatePath Bytes l)
   (h: uncompressUpdatePath li t updatePath = .success res):
@@ -100,6 +109,7 @@ theorem pathFilteringOk_uncompressUpdatePath {l: Nat} (li: Nat) (t: Tree (Option
   pathFilteringOk_uncompressUpdatePathAux li t _ _ res h
 
 /-- Port of `path_filtering_ok_update_path_to_treesync`. -/
+public
 theorem pathFilteringOk_updatePathToTreesync {l: Nat} (t: Tree (Option TreeLeaf) (Option TreeNode) l) (li: Nat)
   (p: SparseUpdatePath Bytes l) (h: pathFilteringOk t li p):
   pathFilteringOk t li (updatePathToTreesync p)
@@ -109,6 +119,7 @@ theorem pathFilteringOk_updatePathToTreesync {l: Nat} (t: Tree (Option TreeLeaf)
   | node t ih => cases p with | node opn pNext => cases opn <;> simp_all [updatePathToTreesync] <;> rfl
 
 /-- Port of `path_filtering_ok_update_path_to_treekem`. -/
+public
 theorem pathFilteringOk_updatePathToTreekem {l: Nat} (t: Tree (Option TreeLeaf) (Option TreeNode) l) (li: Nat)
   (p: SparseUpdatePath Bytes l) (h: pathFilteringOk t li p):
   pathFilteringOk t li (updatePathToTreekem p)
@@ -147,6 +158,7 @@ theorem compress_uncompress_updatePathAux {l: Nat} (li: Nat) (t: Tree (Option Tr
         grind [List.getLast?_eq_some_iff]
 
 /-- Port of `compress_uncompress_update_path`. -/
+public
 theorem compress_uncompress_updatePath {l: Nat} (li: Nat) (t: Tree (Option TreeLeaf) (Option TreeNode) l)
   (updatePath: TreeKEM.UpdatePath Bytes) (p: SparseUpdatePath Bytes l)
   (h: uncompressUpdatePath li t updatePath = .success p):
@@ -173,6 +185,7 @@ theorem uncompress_compress_updatePathAux {l: Nat} (t: Tree (Option TreeLeaf) (O
     cases opn <;> simp_all [compressUpdatePathAux, Bind.bind, Result.bind]
 
 /-- Port of `uncompress_compress_update_path`. -/
+public
 theorem uncompress_compress_updatePath {l: Nat} (t: Tree (Option TreeLeaf) (Option TreeNode) l) (li: Nat)
   (p: SparseUpdatePath Bytes l) (updatePath: TreeKEM.UpdatePath Bytes)
   (h: pathFilteringOk t li p) (hc: compressUpdatePath p = .success updatePath):

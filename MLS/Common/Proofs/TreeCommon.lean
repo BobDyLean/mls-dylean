@@ -1,5 +1,7 @@
-import MLS.Common.Code.TreeCommon
-import MLS.Common.Proofs.Tree
+module
+
+public import MLS.Common.Code.TreeCommon
+public import MLS.Common.Proofs.Tree
 
 /-!
 Port of `MLS.TreeCommon.Lemmas`.
@@ -14,6 +16,7 @@ namespace MLS
 
 variable {Leaf Node: Type}
 
+public
 theorem mem_insertSorted {α: Type} [LT α] [DecidableLT α] [DecidableEq α] (x: α) (l: List α) (elem: α):
   elem ∈ insertSorted x l ↔ elem = x ∨ elem ∈ l
 := by
@@ -23,7 +26,9 @@ grind_pattern mem_insertSorted => elem ∈ insertSorted x l
 
 /-! ## `treeChangePath`, `treeUpdate` and `treeRemove` -/
 
-@[simp] theorem treeChangePath_position {l: Nat} (t: Tree Leaf Node l) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
+@[simp]
+public
+theorem treeChangePath_position {l: Nat} (t: Tree Leaf Node l) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
   (treeChangePath t li leafContent nodeContent).position = t.position
 := by
   induction t using Tree.childInduction li <;> unfold treeChangePath <;> simp_all
@@ -31,6 +36,7 @@ grind_pattern mem_insertSorted => elem ∈ insertSorted x l
 grind_pattern treeChangePath_position => (treeChangePath t li leafContent nodeContent).position
 
 /-- Port of `leaf_at_tree_change_path`. -/
+public
 theorem leafAt_treeChangePath {l: Nat} (t: Tree Leaf Node l) (li: Nat) (leafContent: Leaf) (nodeContent: Node) (li': Nat)
   (hli: t.containsLeafIndex li) (hli': t.containsLeafIndex li'):
   leafAt (treeChangePath t li leafContent nodeContent) li' = if li = li' then leafContent else leafAt t li'
@@ -44,25 +50,32 @@ theorem treeChangePath_succ {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (leafCo
   rw [treeChangePath.eq_def]
   simp
 
-@[simp] theorem child_treeChangePath {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
+@[simp]
+public
+theorem child_treeChangePath {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
   (treeChangePath t li leafContent nodeContent).child li = treeChangePath (t.child li) li leafContent nodeContent
 := by
   rw [treeChangePath_succ]
   simp
 
-@[simp] theorem sibling_treeChangePath {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
+@[simp]
+public
+theorem sibling_treeChangePath {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
   (treeChangePath t li leafContent nodeContent).sibling li = t.sibling li
 := by
   rw [treeChangePath_succ]
   simp
 
-@[simp] theorem nodeContent_treeChangePath {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
+@[simp]
+public
+theorem nodeContent_treeChangePath {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
   (treeChangePath t li leafContent nodeContent).nodeContent = nodeContent
 := by
   rw [treeChangePath_succ]
   simp
 
 /-- Port of `leaf_at_tree_update`. -/
+public
 theorem leafAt_treeUpdate {l: Nat} (t: Tree (Option Leaf) (Option Node) l) (li: Nat) (leafContent: Leaf) (li': Nat)
   (hli: t.containsLeafIndex li) (hli': t.containsLeafIndex li'):
   leafAt (treeUpdate t li leafContent) li' = if li = li' then some leafContent else leafAt t li'
@@ -70,6 +83,7 @@ theorem leafAt_treeUpdate {l: Nat} (t: Tree (Option Leaf) (Option Node) l) (li: 
   leafAt_treeChangePath t li (some leafContent) none li' hli hli'
 
 /-- Port of `leaf_at_tree_remove`. -/
+public
 theorem leafAt_treeRemove {l: Nat} (t: Tree (Option Leaf) (Option Node) l) (li: Nat) (li': Nat)
   (hli: t.containsLeafIndex li) (hli': t.containsLeafIndex li'):
   leafAt (treeRemove t li) li' = if li = li' then none else leafAt t li'
@@ -78,7 +92,9 @@ theorem leafAt_treeRemove {l: Nat} (t: Tree (Option Leaf) (Option Node) l) (li: 
 
 /-! ## Blank trees and tree extension -/
 
-@[simp] theorem mkBlankTreeGeneral_position (l p: Nat) (leafContent: Leaf) (nodeContent: Node):
+@[simp]
+public
+theorem mkBlankTreeGeneral_position (l p: Nat) (leafContent: Leaf) (nodeContent: Node):
   (mkBlankTreeGeneral l p leafContent nodeContent).position = p
 := by
   induction l generalizing p <;> simp_all [mkBlankTreeGeneral]
@@ -92,27 +108,32 @@ theorem leafAt_mkBlankTreeGeneral (l p: Nat) (leafContent: Leaf) (nodeContent: N
   induction l generalizing p <;> grind [leafAt.eq_def, mkBlankTreeGeneral]
 
 /-- Port of `leaf_at_tree_extend`. -/
+public
 theorem leafAt_treeExtend {l: Nat} (t: Tree (Option Leaf) (Option Node) l) (li: Nat):
   leafAt (treeExtend t) li = if li < t.position + 2^l then leafAt t li else none
 := by
   grind [treeExtend, leafAt.eq_def, mkBlankTree, leafAt_mkBlankTreeGeneral]
 
+public
 theorem isTreeEmpty_zero (t: Tree (Option Leaf) (Option Node) 0): isTreeEmpty t = t.leafContent.isNone := by
   grind [isTreeEmpty.eq_def]
 
 /-- `isTreeEmpty` of a node, through the child / sibling view for any leaf index `li`. -/
+public
 theorem isTreeEmpty_succ {l: Nat} (t: Tree (Option Leaf) (Option Node) (l+1)) (li: Nat):
   isTreeEmpty t = (t.nodeContent.isNone && isTreeEmpty (t.child li) && isTreeEmpty (t.sibling li))
 := by
   grind [isTreeEmpty.eq_def]
 
 /-- Port of `is_tree_empty_leaf_at`. -/
+public
 theorem leafAt_of_isTreeEmpty {l: Nat} (t: Tree (Option Leaf) (Option Node) l) (li: Nat) (h: isTreeEmpty t):
   leafAt t li = none
 := by
   induction t using Tree.childInduction li <;> unfold leafAt <;> simp_all [isTreeEmpty_zero, isTreeEmpty_succ _ li]
 
 /-- Port of the refinement on the result of `find_empty_leaf`. -/
+public
 theorem findEmptyLeaf_spec {l: Nat} (t: Tree (Option Leaf) (Option Node) l) (li: Nat) (h: findEmptyLeaf t = some li):
   t.containsLeafIndex li ∧ leafAt t li = none
 := by
@@ -140,6 +161,7 @@ theorem findEmptyLeaf_mkBlankTree (l p: Nat):
     simp [LeftRightView.pack, Tree.intoLeftRightView, hx]
 
 /-- Port of `find_empty_leaf_tree_extend`. -/
+public
 theorem findEmptyLeaf_treeExtend {l: Nat} (t: Tree (Option Leaf) (Option Node) l):
   (findEmptyLeaf (treeExtend t)).isSome
 := by
@@ -159,6 +181,7 @@ theorem length_getLeafList {Leaf Node: Type} {l: Nat} (t: Tree Leaf Node l):
 Port of `index_get_leaf_list`.
 Stated with `[ind]?`, which also gives the length of the list.
 -/
+public
 theorem index_getLeafList {Leaf Node: Type} {l: Nat} (t: Tree Leaf Node l) (ind: Nat) (h: ind < 2^l):
   (getLeafList t)[ind]? = some (leafAt t (t.position + ind))
 := by

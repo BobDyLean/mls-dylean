@@ -1,6 +1,8 @@
-import MLS.Common.Symbolic.Crypto.Derived.MlsLabel
-import MLS.Symbolic.Code.Symbolic
-import DySlop.Lib.Crypto.Signature.Split
+module
+
+public import MLS.Common.Symbolic.Crypto.Derived.MlsLabel
+public import MLS.Symbolic.Code.Symbolic
+public import DySlop.Lib.Crypto.Signature.Split
 
 /-!
 Port of `MLS.Crypto.Derived.Symbolic.SignWithLabel`: split predicate for SignWithLabel,
@@ -30,12 +32,15 @@ variable [BytesFunctor] [ExecTraceTypes] [ProofTraceTypes]
 /-! ## Local SignWithLabel predicates -/
 
 /-- Local SignWithLabel predicates for the labels `labels` (MLS*'s `list (valid_label & signwithlabel_crypto_pred)`). -/
+public
 abbrev SignWithLabelPred.Local (labels: List String) := Locals (fun _: String => SignPred) labels
 
 /-- Local SignWithLabel predicates stay true when the trace grows. -/
+public
 abbrev SignWithLabelPred.LocalProof [BytesInvariants] {labels: List String} (l: SignWithLabelPred.Local labels): Prop :=
   l.All (fun _ spred => SignPred.Later spred)
 
+public
 theorem SignWithLabelPred.LocalProof.single
   [BytesInvariants] {label: String} {spred: SignPred}
   : spred.Later →
@@ -43,6 +48,7 @@ theorem SignWithLabelPred.LocalProof.single
 :=
   Locals.All.single (prop := fun _ spred => SignPred.Later spred)
 
+public
 theorem SignWithLabelPred.LocalProof.combine
   [BytesInvariants] {n: Nat} (ls: Fin n → (labels: List String) × SignWithLabelPred.Local labels)
   : (∀ id, SignWithLabelPred.LocalProof (ls id).2) →
@@ -56,6 +62,7 @@ section Code
 
 variable [HasSymbolicBytes]
 
+public
 theorem signWithLabel_eq_success
   (sk: Bytes) (label: String) (msg nonce signature: Bytes)
   : signWithLabel sk label msg nonce = .success signature →
@@ -70,6 +77,7 @@ theorem signWithLabel_eq_success
   refine ⟨{ label := mlsLabel, content }, ?_⟩
   grind
 
+public
 theorem verifyWithLabel_eq_true
   (vk: Bytes) (label: String) (content signature: Bytes)
   : verifyWithLabel vk label content signature = true →
@@ -95,7 +103,8 @@ section SplitPredicate
 variable [HasSymbolicBytes] [ExecTraceTypes] [ProofTraceTypes]
 
 /-- Port of `split_signwithlabel_crypto_pred_params`. -/
-@[reducible]
+@[expose, reducible]
+public
 def SignWithLabelPred.splitParams: SplitFunction.Params where
   Tag := String
   -- the instances, the usage of the signature key, the verification key, the message, the trace
@@ -112,7 +121,8 @@ def SignWithLabelPred.splitParams: SplitFunction.Params where
   default _ := False
 
 /-- MLS*'s `apply_global_fun` of `split_signwithlabel_crypto_pred_params`. -/
-@[reducible]
+@[expose, reducible]
+public
 def SignWithLabelPred.applyGlobal (spred: SignPred) (x: SignWithLabelPred.splitParams.Input): Prop :=
   @SignPred.pred _ _ _ spred x.1.wf x.1.usage x.1.label x.2.1 x.2.2.1 x.2.2.2.1 x.2.2.2.2
 
@@ -126,6 +136,7 @@ theorem SignWithLabelPred.splitParams_decode
   simp [h]
 
 /-- The local SignWithLabel predicate for the label `label`, applied to a content. -/
+public
 abbrev SignWithLabelPred.Local.pred {labels: List String} (l: SignWithLabelPred.Local labels)
   [BytesWellFormed] [GetUsage] [GetLabel]
   (label: String) (skUsg: Usage) (vk content: Bytes) (tr: ProofTrace)
@@ -133,6 +144,7 @@ abbrev SignWithLabelPred.Local.pred {labels: List String} (l: SignWithLabelPred.
 :=
   Params.Locals.apply SignWithLabelPred.splitParams l label (⟨⟩, skUsg, vk, content, tr) False
 
+public
 theorem SignWithLabelPred.Local.pred_single
   {label: String} (spred: SignPred)
   [BytesWellFormed] [GetUsage] [GetLabel]
@@ -143,7 +155,8 @@ theorem SignWithLabelPred.Local.pred_single
   Params.Locals.apply_single SignWithLabelPred.splitParams spred _ _
 
 /-- Port of `mk_mls_sign_pred` (and of `mk_global_mls_sign_pred`): the sign predicate defined by local SignWithLabel predicates. -/
-@[instance_reducible]
+@[expose, instance_reducible]
+public
 def SignWithLabelPred.ofLocal {labels: List String} (l: SignWithLabelPred.Local labels): SignPred where
   pred skUsg vk msg tr := Params.Locals.toFun SignWithLabelPred.splitParams l (⟨⟩, skUsg, vk, msg, tr)
 
@@ -156,16 +169,19 @@ theorem SignWithLabelPred.ofLocal_pred
 := rfl
 
 /-- The local sign predicate for the usage tag `"MLS.LeafSignKey"`, defined by local SignWithLabel predicates. -/
+public
 abbrev SignWithLabelPred.toSignPred {labels: List String} (l: SignWithLabelPred.Local labels): SignPred.Local ["MLS.LeafSignKey"] :=
   Locals.single (SignWithLabelPred.ofLocal l)
 
 /-- Port of `has_mls_signwithlabel_pred` (with `has_signwithlabel_pred`, i.e. `has_local_fun`). -/
+public
 class SignWithLabelPred.Has [signPred: SignPred] {labels: List String} (l: SignWithLabelPred.Local labels): Prop where
   pf: ∃ mlsSignPred: SignPred,
     -- the global sign predicate is explicit, otherwise `mlsSignPred` would be used as the `SignPred` instance
     @SignPred.Has _ _ _ signPred _ (Locals.single (tag := "MLS.LeafSignKey") mlsSignPred) ∧
     SignWithLabelPred.splitParams.HasLocal (SignWithLabelPred.applyGlobal mlsSignPred) l
 
+public
 instance SignWithLabelPred.Has.ofHasStep
   [SignPred] {labels1 labels2: List String} (l1: SignWithLabelPred.Local labels1) (l2: SignWithLabelPred.Local labels2)
   [HasStep l1 l2] [h: SignWithLabelPred.Has l2]
@@ -176,6 +192,7 @@ where
     exact ⟨mlsSignPred, h_sign, Params.HasLocal.of_hasStep SignWithLabelPred.splitParams _ l1 l2 h_local⟩
 
 /-- Port of `mk_mls_sign_pred_correct`. -/
+public
 theorem SignWithLabelPred.Has.ofToSignPred
   [SignPred] {labels: List String} (l: SignWithLabelPred.Local labels) [h: SignPred.Has (SignWithLabelPred.toSignPred l)]
   : SignWithLabelPred.Has l
@@ -183,6 +200,7 @@ theorem SignWithLabelPred.Has.ofToSignPred
   ⟨⟨SignWithLabelPred.ofLocal l, h, Params.Locals.toFun_hasLocal SignWithLabelPred.splitParams l⟩⟩
 
 /-- The global sign predicate on a signed content, given the local SignWithLabel predicates. -/
+public
 theorem SignWithLabelPred.Has.signPred_eq
   [SignPred] {labels: List String} (l: SignWithLabelPred.Local labels) [h: SignWithLabelPred.Has l]
   [BytesWellFormed] [GetUsage] [GetLabel]
@@ -206,6 +224,7 @@ section Proofs
 variable [HasSymbolicInvariants]
 
 /-- Port of `mk_global_mls_sign_pred_later`. -/
+public
 theorem SignWithLabelPred.ofLocal_later
   {labels: List String} (l: SignWithLabelPred.Local labels)
   : SignWithLabelPred.LocalProof l →
@@ -227,6 +246,7 @@ theorem SignWithLabelPred.ofLocal_later
     · exact id
 
 /-- The local sign predicate for `"MLS.LeafSignKey"` stays true when the trace grows. -/
+public
 theorem SignWithLabelPred.LocalProof.toSignPred
   {labels: List String} {l: SignWithLabelPred.Local labels}
   : SignWithLabelPred.LocalProof l →
@@ -235,6 +255,7 @@ theorem SignWithLabelPred.LocalProof.toSignPred
   SignPred.LocalProof.single (SignWithLabelPred.ofLocal_later l h)
 
 /-- Port of `bytes_invariant_sign_with_label`. -/
+public
 theorem signWithLabel.Invariant
   {labels: List String} (l: SignWithLabelPred.Local labels) [SignWithLabelPred.Has l]
   (tr: ProofTrace) (prin: Participant)
@@ -268,6 +289,7 @@ theorem signWithLabel.Invariant
     exact h_knowable.2
 
 /-- Port of `bytes_invariant_verify_with_label`. -/
+public
 theorem verifyWithLabel.Invariant
   {labels: List String} (l: SignWithLabelPred.Local labels) [SignWithLabelPred.Has l]
   (tr: ProofTrace) (prin: Participant)

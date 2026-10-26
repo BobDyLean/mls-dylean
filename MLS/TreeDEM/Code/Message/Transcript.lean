@@ -1,5 +1,7 @@
-import MLS.TreeDEM.Code.NetworkTypes
-import MLS.Common.Code.Crypto.Derived
+module
+
+public import MLS.TreeDEM.Code.NetworkTypes
+public import MLS.Common.Code.Crypto.Derived
 
 /-!
 Port of `MLS.TreeDEM.Message.Transcript`.
@@ -16,6 +18,8 @@ variable {Bytes: Type} [CryptoBytes Bytes]
 Port of `compute_confirmed_transcript_hash`.
 MLS* fails when the content is not a commit (as an internal failure).
 -/
+@[expose]
+public
 def computeConfirmedTranscriptHash (txHashInput: ConfirmedTranscriptHashInput Bytes) (interimTranscriptHash: Bytes): Result Bytes :=
   match txHashInput.content.content.contentType with
   | .commit =>
@@ -25,6 +29,8 @@ def computeConfirmedTranscriptHash (txHashInput: ConfirmedTranscriptHashInput By
   | _ => Result.internalFailure "compute_confirmed_transcript_hash: should only be used on a commit message"
 
 /-- Port of `compute_interim_transcript_hash`. -/
+@[expose]
+public
 def computeInterimTranscriptHash (confirmationTag: Bytes) (confirmedTranscriptHash: Bytes): Result Bytes := do
   let confirmationTag ← mkMlsBytes confirmationTag "compute_interim_transcript_hash" "confirmation_tag"
   let serializedAuth := serializeNE InterimTranscriptHashInput.mf { confirmationTag }

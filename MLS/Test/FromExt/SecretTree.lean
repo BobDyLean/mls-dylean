@@ -1,8 +1,10 @@
-import MLS.TreeDEM.Code.Message.Framing
-import MLS.Glue.Code.NetworkBinder
-import MLS.Test.FromExt.CryptoBasics
-import MLS.Test.Types
-import MLS.Test.Utils
+module
+
+public import MLS.TreeDEM.Code.Message.Framing
+public import MLS.Glue.Code.NetworkBinder
+public import MLS.Test.FromExt.CryptoBasics
+public import MLS.Test.Types
+public import MLS.Test.Utils
 
 /-!
 Port of `MLS.Test.FromExt.SecretTree`.
@@ -20,6 +22,8 @@ section CryptoBytes
 variable [CryptoBytes ByteArray]
 
 /-- Port of `test_sender_data`. -/
+@[expose]
+public
 def testSenderData (t: SecretTreeSenderData): IO Unit := do
   let senderDataSecret ← hexStringToBytes t.senderDataSecret
   let ciphertext ← hexStringToBytes t.ciphertext
@@ -30,6 +34,8 @@ def testSenderData (t: SecretTreeSenderData): IO Unit := do
   checkEqual "sender_data_nonce" bytesToHexString (← hexStringToBytes t.nonce) senderDataNonce
 
 /-- Port of `test_leaf`. -/
+@[expose]
+public
 def testLeaf (levels: Nat) (leafInd: Nat) (encryptionSecret: String) (t: SecretTreeLeaf): IO Unit := do
   let encryptionSecret ← hexStringToBytes encryptionSecret
   let generation := t.generation.toNat
@@ -49,6 +55,8 @@ def testLeaf (levels: Nat) (leafInd: Nat) (encryptionSecret: String) (t: SecretT
     checkEqual "application_nonce" bytesToHexString (← hexStringToBytes t.applicationNonce) applicationKeyNonce.nonce
 
 /-- Port of `test_leaves_aux`. -/
+@[expose]
+public
 def testLeavesAux (levels: Nat) (leafIndex: Nat) (encryptionSecret: String): List SecretTreeLeaf → IO Unit
   | [] => pure ()
   | h::t => do
@@ -56,6 +64,8 @@ def testLeavesAux (levels: Nat) (leafIndex: Nat) (encryptionSecret: String): Lis
     testLeavesAux levels leafIndex encryptionSecret t
 
 /-- Port of `test_leaves`. -/
+@[expose]
+public
 def testLeaves (levels: Nat) (leafIndex: Nat) (encryptionSecret: String): List (List SecretTreeLeaf) → IO Unit
   | [] => pure ()
   | h::t => do
@@ -65,6 +75,8 @@ def testLeaves (levels: Nat) (leafIndex: Nat) (encryptionSecret: String): List (
 end CryptoBytes
 
 /-- Port of `test_secret_tree_one`. -/
+@[expose]
+public
 def testSecretTreeOne (t: SecretTreeTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
   | .protocolError _ =>
@@ -81,6 +93,8 @@ def testSecretTreeOne (t: SecretTreeTest): IO Bool := do
     pure true
 
 /-- Port of `test_secret_tree`. -/
+@[expose]
+public
 def testSecretTree: List SecretTreeTest → IO Nat :=
   testList "Secret Tree" testSecretTreeOne
 

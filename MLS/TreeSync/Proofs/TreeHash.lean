@@ -1,7 +1,9 @@
-import MLS.TreeSync.Code.TreeHash
-import MLS.Common.Proofs.Tree
-import MLS.Common.Proofs.Crypto.Derived
-import MLS.Common.Proofs.Crypto.HashCollision
+module
+
+public import MLS.TreeSync.Code.TreeHash
+public import MLS.Common.Proofs.Tree
+public import MLS.Common.Proofs.Crypto.Derived
+public import MLS.Common.Proofs.Crypto.HashCollision
 
 /-!
 Port of `MLS.TreeSync.TreeHash.Proofs`.
@@ -28,6 +30,8 @@ open MLS
 variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes}
 
 /-- Port of `get_tree_hash_input`. -/
+@[expose]
+public
 def getTreeHashInput {l: Nat} (t: TreeSync Bytes tkt l): Result (TreeHashInput Bytes tkt) :=
   match t.intoLeftRightView with
   | .leaf olp position => do
@@ -77,6 +81,8 @@ Given two trees that have the same hash, then either:
 
 This function computes the pair of bytes, its specification is `treeHashInj_spec`.
 -/
+@[expose]
+public
 def treeHashInj {l1 l2: Nat} (t1: TreeSync Bytes tkt l1) (t2: TreeSync Bytes tkt l2): Bytes × Bytes :=
   match getTreeHashInput t1, getTreeHashInput t2 with
   | .success hashInput1, .success hashInput2 =>
@@ -121,6 +127,7 @@ Specification of `treeHashInj` (MLS*'s postcondition of `tree_hash_inj`):
 if the trees `t1` and `t2` have equal tree hash,
 then either they are equal, or the two bytes computed by `treeHashInj` are a hash collision.
 -/
+public
 theorem treeHashInj_spec {l1 l2: Nat} (t1: TreeSync Bytes tkt l1) (t2: TreeSync Bytes tkt l2) (th: Bytes)
   (h1: treeHash t1 = .success th) (h2: treeHash t2 = .success th):
   (⟨l1, t1⟩: (l: Nat) × TreeSync Bytes tkt l) = ⟨l2, t2⟩ ∨

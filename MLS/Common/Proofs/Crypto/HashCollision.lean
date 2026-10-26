@@ -1,4 +1,6 @@
-import MLS.Common.Code.Crypto.Builtins
+module
+
+public import MLS.Common.Code.Crypto.Builtins
 
 /-!
 Hash collisions, the target of the reductions of the security proofs
@@ -14,6 +16,8 @@ namespace MLS
 variable {Bytes: Type} [CryptoBytes Bytes]
 
 /-- Port of `is_hash_collision`. -/
+@[expose]
+public
 def isHashCollision: Bytes × Bytes → Bool
   | (b1, b2) => b1 != b2 && match CryptoBytes.hashHash b1, CryptoBytes.hashHash b2 with
     | .success h1, .success h2 => h1 == h2

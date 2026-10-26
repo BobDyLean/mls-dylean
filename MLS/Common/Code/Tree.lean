@@ -1,3 +1,5 @@
+module
+
 /-!
 Port of `MLS.Tree`.
 
@@ -21,6 +23,7 @@ namespace MLS
 /-! ## Trees -/
 
 /-- Bare complete binary tree, with height `l`. -/
+public
 inductive BareTree (Leaf Node: Type): Nat → Type where
   | leaf (content: Leaf): BareTree Leaf Node 0
   | node {l: Nat} (content: Node) (left right: BareTree Leaf Node l): BareTree Leaf Node (l+1)
@@ -30,6 +33,7 @@ Complete binary tree, with height `l`: a bare tree together with its position,
 the leaf index of its leftmost leaf.
 Port of MLS*'s `tree leaf_t node_t l i`, where `i` is the position.
 -/
+public
 structure Tree (Leaf Node: Type) (l: Nat) where
   position: Nat
   bareTree: BareTree Leaf Node l
@@ -42,6 +46,8 @@ Functions on trees use the views instead.
 -/
 
 /-- Port of `left_index`: the position of the left child of a tree at position `i`. -/
+@[expose]
+public
 def leftIndex (i: Nat): Nat :=
   i
 
@@ -49,6 +55,8 @@ def leftIndex (i: Nat): Nat :=
 Port of `right_index`: the position of the right child of a tree of height `l` at position `i`.
 MLS* requires `0 < l`.
 -/
+@[expose]
+public
 def rightIndex (l i: Nat): Nat :=
   i + 2^(l-1)
 
@@ -56,34 +64,46 @@ def rightIndex (l i: Nat): Nat :=
 Port of `is_left_leaf`: whether the leaf `li` is in the left child of a tree of height `l` at position `i`.
 MLS* requires `0 < l`.
 -/
+@[expose]
+public
 def isLeftLeaf (l i li: Nat): Bool :=
   li < i + 2^(l-1)
 
 /-- Port of `node_index`: the height and position of a subtree. -/
+public
 structure NodeIndex where
   levels: Nat
   position: Nat
 deriving DecidableEq
 
 /-- Port of `nat_to_node_index`. -/
+@[expose]
+public
 def NodeIndex.ofLeafIndex (leafIndex: Nat): NodeIndex :=
   { levels := 0, position := leafIndex }
 
 variable {Leaf Node: Type}
 
+@[expose]
+public
 def Tree.nodeIndex {l: Nat} (t: Tree Leaf Node l): NodeIndex :=
   { levels := l, position := t.position }
 
 /-- Port of `leaf_index_inside_tree`. -/
+@[expose]
+public
 def Tree.containsLeafIndex {l: Nat} (t: Tree Leaf Node l) (li: Nat): Bool :=
   t.position ≤ li && li < t.position + 2^l
 
 /-! ## Left / right view -/
 
+public
 inductive LeftRightView (Leaf Node: Type): Nat → Type where
   | leaf (content: Leaf) (position: Nat): LeftRightView Leaf Node 0
   | node {l: Nat} (content: Node) (left right: Tree Leaf Node l): LeftRightView Leaf Node (l+1)
 
+@[expose]
+public
 def Tree.intoLeftRightView {l: Nat} (t: Tree Leaf Node l): LeftRightView Leaf Node l :=
   match l, t with
   | _, { position, bareTree := .leaf content } => .leaf content position
@@ -92,6 +112,8 @@ def Tree.intoLeftRightView {l: Nat} (t: Tree Leaf Node l): LeftRightView Leaf No
       { position, bareTree := left }
       { position := position + 2^l, bareTree := right }
 
+@[expose]
+public
 def LeftRightView.pack {l: Nat}: LeftRightView Leaf Node l → Tree Leaf Node l
   | .leaf content position => { position, bareTree := .leaf content }
   | .node content left right => { position := left.position, bareTree := .node content left.bareTree right.bareTree }
@@ -103,6 +125,7 @@ When dealing with a subtree and a specific leaf in this subtree,
 MLS use the term `child` for the child of the subtree containing the leaf,
 and the term `sibling` for the other child (that doesn't contain the leaf).
 -/
+public
 inductive ChildSiblingView (Leaf Node: Type): Nat → Type where
   | leaf (content: Leaf) (position: Nat): ChildSiblingView Leaf Node 0
   | node {l: Nat} (content: Node) (child sibling: Tree Leaf Node l): ChildSiblingView Leaf Node (l+1)
@@ -112,6 +135,8 @@ Port of `get_child_sibling`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the child is the left one if `li` is before the tree, and the right one if `li` is after the tree.
 -/
+@[expose]
+public
 def Tree.intoChildSiblingView {l: Nat} (t: Tree Leaf Node l) (li: Nat): ChildSiblingView Leaf Node l :=
   match t.intoLeftRightView with
   | .leaf content position => .leaf content position
@@ -121,6 +146,8 @@ def Tree.intoChildSiblingView {l: Nat} (t: Tree Leaf Node l) (li: Nat): ChildSib
     else
       .node content right left
 
+@[expose]
+public
 def ChildSiblingView.pack {l: Nat}: ChildSiblingView Leaf Node l → Tree Leaf Node l
   | .leaf content position => (LeftRightView.leaf content position).pack
   | .node content child sibling =>
@@ -131,14 +158,20 @@ def ChildSiblingView.pack {l: Nat}: ChildSiblingView Leaf Node l → Tree Leaf N
 
 /-! ## Projections of the left / right view -/
 
+@[expose]
+public
 def Tree.nodeContent {l: Nat} (t: Tree Leaf Node (l+1)): Node :=
   match t.intoLeftRightView with
   | .node content _ _ => content
 
+@[expose]
+public
 def Tree.left {l: Nat} (t: Tree Leaf Node (l+1)): Tree Leaf Node l :=
   match t.intoLeftRightView with
   | .node _ left _ => left
 
+@[expose]
+public
 def Tree.right {l: Nat} (t: Tree Leaf Node (l+1)): Tree Leaf Node l :=
   match t.intoLeftRightView with
   | .node _ _ right => right
@@ -146,15 +179,21 @@ def Tree.right {l: Nat} (t: Tree Leaf Node (l+1)): Tree Leaf Node l :=
 /-! ## Projections of the child / sibling view -/
 
 /-- MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`); otherwise, see `Tree.intoChildSiblingView`. -/
+@[expose]
+public
 def Tree.child {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat): Tree Leaf Node l :=
   match t.intoChildSiblingView li with
   | .node _ child _ => child
 
 /-- MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`); otherwise, see `Tree.intoChildSiblingView`. -/
+@[expose]
+public
 def Tree.sibling {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat): Tree Leaf Node l :=
   match t.intoChildSiblingView li with
   | .node _ _ sibling => sibling
 
+@[expose]
+public
 def Tree.leafContent (t: Tree Leaf Node 0): Leaf :=
   match t.bareTree with
   | .leaf content => content
@@ -162,6 +201,8 @@ def Tree.leafContent (t: Tree Leaf Node 0): Leaf :=
 /-! ## Tree functions -/
 
 /-- Port of `get_leaf_list`. -/
+@[expose]
+public
 def getLeafList {l: Nat} (t: Tree Leaf Node l): List Leaf :=
   match t.intoLeftRightView with
   | .leaf content _ => [content]
@@ -172,12 +213,16 @@ Port of `leaf_at`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
+@[expose]
+public
 def leafAt {l: Nat} (t: Tree Leaf Node l) (li: Nat): Leaf :=
   match t.intoChildSiblingView li with
   | .leaf content _ => content
   | .node _ child _ => leafAt child li
 
 /-- Port of `print_tree`. -/
+@[expose]
+public
 def Tree.toString (printLeaf: Leaf → String) (printNode: Node → String) {l: Nat} (t: Tree Leaf Node l): String :=
   match t.intoLeftRightView with
   | .leaf content _ => printLeaf content
@@ -185,6 +230,8 @@ def Tree.toString (printLeaf: Leaf → String) (printNode: Node → String) {l: 
     "(" ++ left.toString printLeaf printNode ++ ") " ++ printNode content ++ " (" ++ right.toString printLeaf printNode ++ ")"
 
 /-- Port of `tree_map`. -/
+@[expose]
+public
 def Tree.map {Leaf' Node': Type} (fLeaf: Leaf → Leaf') (fNode: Node → Node') {l: Nat} (t: Tree Leaf Node l):
   Tree Leaf' Node' l
 :=
@@ -200,6 +247,7 @@ Unlike MLS*, the path is not indexed by the tree index `i` and the leaf index `l
 functions recursing on a tree and a path take the leaf index as an explicit argument,
 and use it to know on which side the path goes.
 -/
+public
 inductive Path (Leaf Node: Type): (l: Nat) → Type where
   | leaf (data: Leaf): Path Leaf Node 0
   | node {l: Nat} (data: Node) (next: Path Leaf Node l): Path Leaf Node (l+1)
@@ -207,11 +255,15 @@ inductive Path (Leaf Node: Type): (l: Nat) → Type where
 namespace Path
 
 /-- Port of `get_path_leaf`. -/
+@[expose]
+public
 def getPathLeaf: {l: Nat} → Path Leaf Node l → Leaf
   | _, .leaf lp => lp
   | _, .node _ next => getPathLeaf next
 
 /-- Port of `set_path_leaf`. -/
+@[expose]
+public
 def setPathLeaf {Leaf': Type}: {l: Nat} → Path Leaf Node l → Leaf' → Path Leaf' Node l
   | _, .leaf _, lp => .leaf lp
   | _, .node content next, lp => .node content (setPathLeaf next lp)

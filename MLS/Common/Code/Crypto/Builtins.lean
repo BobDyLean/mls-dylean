@@ -1,6 +1,8 @@
-import MLS.Comparse.Bytes
-import MLS.Common.Code.Result
-import OpenSSL
+module
+
+public import MLS.Comparse.Bytes
+public import MLS.Common.Code.Result
+public import OpenSSL
 
 /-!
 Port of `MLS.Crypto.Builtins`.
@@ -30,6 +32,7 @@ open Comparse
 /-! ## Typeclass definition -/
 
 /-- All the cipher suites of RFC 9420 (MLS* only supports the first and third ones). -/
+public
 inductive AvailableCiphersuite where
   | mls_128_dhkemx25519_aes128gcm_sha256_ed25519
   | mls_128_dhkemp256_aes128gcm_sha256_p256
@@ -40,6 +43,7 @@ inductive AvailableCiphersuite where
   | mls_256_dhkemp384_aes256gcm_sha384_p384
 deriving DecidableEq, Repr
 
+public
 class CryptoBytes (Bytes: Type) extends BytesLike Bytes where
   /-- Port of `bytes_hasEq`. -/
   [decEq: DecidableEq Bytes]
@@ -96,14 +100,19 @@ Unlike MLS*, the type is not indexed by the list of the lengths of its bytes:
 taking randomness fails when there is not enough of it, and the lengths are not enforced
 (they are checked at runtime by the concrete instance).
 -/
+public
 structure Randomness (Bytes: Type) where
   rand: List Bytes
 
 /-- Port of `mk_empty_randomness`. -/
+@[expose]
+public
 def mkEmptyRandomness (Bytes: Type): Randomness Bytes :=
   { rand := [] }
 
 /-- Port of `mk_randomness`. -/
+@[expose]
+public
 def mkRandomness {Bytes: Type} (x: Bytes × Randomness Bytes): Randomness Bytes :=
   { rand := x.1 :: x.2.rand }
 
@@ -111,6 +120,8 @@ def mkRandomness {Bytes: Type} (x: Bytes × Randomness Bytes): Randomness Bytes 
 Port of `dest_randomness`.
 MLS* requires the randomness to be non-empty (`randomness bytes (head_size::tail_size)`); otherwise, this function fails.
 -/
+@[expose]
+public
 def destRandomness {Bytes: Type} (r: Randomness Bytes): Result (Bytes × Randomness Bytes) :=
   match r.rand with
   | [] => Result.internalFailure "dest_randomness: not enough randomness"
@@ -124,16 +135,20 @@ open OpenSSL
 Port of `concrete_ciphersuite`.
 The pair `(kem_dh, kem_hash)` of MLS* is represented by the HPKE KEM.
 -/
+public
 structure ConcreteCiphersuite where
   kem: HPKE.KEM
   aead: AEAD.Algorithm
   kdfHash: Hash.Algorithm
 
 /-- Port of `concrete_ciphersuite_to_hpke_ciphersuite`. -/
+@[expose]
+public
 def concreteCiphersuiteToHpkeCiphersuite (cs: ConcreteCiphersuite): HPKE.Ciphersuite :=
   { kem := cs.kem, kdf := .ofHash cs.kdfHash, aead := .ofAlgorithm cs.aead }
 
 /-- Port of `signature_functions` (copy-pasted from `CryptoBytes`, specialized to `ByteArray`). -/
+public
 structure SignatureFunctions where
   signGenKeypairMinEntropyLength: Nat
   signGenKeypair: (entropy: ByteArray) → Result (ByteArray × ByteArray)
@@ -146,6 +161,8 @@ Port of `signature_functions`.
 Generalization of `ed25519_signature_functions` to all the signature algorithms.
 Signing is deterministic (ECDSA uses RFC 6979 nonces), hence ignores its entropy.
 -/
+@[expose]
+public
 def signatureFunctions (a: Signature.Algorithm): SignatureFunctions where
   signGenKeypairMinEntropyLength := a.secretKeyLength
   signGenKeypair rand := do
@@ -168,6 +185,8 @@ def signatureFunctions (a: Signature.Algorithm): SignatureFunctions where
     Signature.verify a pk msg signature
 
 /-- Port of `available_ciphersuite_to_concrete_ciphersuite`. -/
+@[expose]
+public
 def availableCiphersuiteToConcreteCiphersuite: AvailableCiphersuite → ConcreteCiphersuite × SignatureFunctions
   | .mls_128_dhkemx25519_aes128gcm_sha256_ed25519 =>
     ({ kem := .dhkemX25519HkdfSha256, aead := .aes128Gcm, kdfHash := .sha2_256 }, signatureFunctions .ed25519)
@@ -185,7 +204,8 @@ def availableCiphersuiteToConcreteCiphersuite: AvailableCiphersuite → Concrete
     ({ kem := .dhkemP384HkdfSha384, aead := .aes256Gcm, kdfHash := .sha2_384 }, signatureFunctions .ecdsaP384Sha384)
 
 /-- Port of `mk_concrete_crypto_bytes`. -/
-@[instance_reducible]
+@[expose, instance_reducible]
+public
 def mkConcreteCryptoBytes (acs: AvailableCiphersuite): CryptoBytes ByteArray :=
   let (cs, sign) := availableCiphersuiteToConcreteCiphersuite acs
   let hpkeCs := concreteCiphersuiteToHpkeCiphersuite cs

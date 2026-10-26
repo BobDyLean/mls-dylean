@@ -1,5 +1,7 @@
-import MLS.TreeSync.Code.ParentHash
-import MLS.TreeSync.Proofs.TreeHash
+module
+
+public import MLS.TreeSync.Code.ParentHash
+public import MLS.TreeSync.Proofs.TreeHash
 
 /-!
 Port of `MLS.TreeSync.ParentHash.Proofs`.
@@ -23,6 +25,8 @@ variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes}
 Port of `get_parent_hash_input`.
 MLS* requires `parent_hash: mls_bytes bytes`; otherwise, this function fails.
 -/
+@[expose]
+public
 def getParentHashInput {l: Nat}
   (content: tkt.NodeContent) (parentHash: Bytes) (originalSibling: TreeSync Bytes tkt l)
   : Result (ParentHashInput Bytes tkt)
@@ -43,6 +47,7 @@ theorem getParentHashInput_eq_success {l: Nat}
   simp [getParentHashInput]
   grind
 
+public
 theorem computeParentHash_eq_success {l: Nat}
   (content: tkt.NodeContent) (parentHash: Bytes) (originalSibling: TreeSync Bytes tkt l) (ph: Bytes):
   computeParentHash content parentHash originalSibling = .success ph ↔
@@ -57,6 +62,8 @@ Injectivity theorem for the parent-hash computation, very similar to `tree_hash_
 
 This function computes the pair of bytes, its specification is `computeParentHashInj_spec`.
 -/
+@[expose]
+public
 def computeParentHashInj {l1 l2: Nat}
   (content1: tkt.NodeContent) (parentHash1: Bytes) (originalSibling1: TreeSync Bytes tkt l1)
   (content2: tkt.NodeContent) (parentHash2: Bytes) (originalSibling2: TreeSync Bytes tkt l2)
@@ -77,6 +84,7 @@ Specification of `computeParentHashInj` (MLS*'s postcondition of `compute_parent
 if the parent-hashes are equal, then either all their inputs are equal,
 or the two bytes computed by `computeParentHashInj` are a hash collision.
 -/
+public
 theorem computeParentHashInj_spec {l1 l2: Nat}
   (content1: tkt.NodeContent) (parentHash1: Bytes) (originalSibling1: TreeSync Bytes tkt l1)
   (content2: tkt.NodeContent) (parentHash2: Bytes) (originalSibling2: TreeSync Bytes tkt l2)

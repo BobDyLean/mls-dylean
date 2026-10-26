@@ -1,9 +1,11 @@
-import MLS.TreeDEM.Code.NetworkTypes
-import MLS.Bootstrap.Code.Welcome
-import MLS.TreeKEM.Code.KeySchedule
-import MLS.Test.FromExt.CryptoBasics
-import MLS.Test.Types
-import MLS.Test.Utils
+module
+
+public import MLS.TreeDEM.Code.NetworkTypes
+public import MLS.Bootstrap.Code.Welcome
+public import MLS.TreeKEM.Code.KeySchedule
+public import MLS.Test.FromExt.CryptoBasics
+public import MLS.Test.Types
+public import MLS.Test.Utils
 
 /-!
 Port of `MLS.Test.FromExt.Welcome`.
@@ -17,6 +19,8 @@ open MLS.Test
 open MLS.Test.FromExt.CryptoBasics
 
 /-- Port of `test_welcome_one`. -/
+@[expose]
+public
 def testWelcomeOne (t: WelcomeTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
   | .protocolError _ =>
@@ -58,6 +62,8 @@ def testWelcomeOne (t: WelcomeTest): IO Bool := do
     pure true
 
 /-- Port of `test_welcome`. -/
+@[expose]
+public
 def testWelcome: List WelcomeTest → IO Nat :=
   testList "Welcome" testWelcomeOne
 

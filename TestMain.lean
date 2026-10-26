@@ -1,5 +1,9 @@
-import MLS.Test
+module
 
+public import MLS.Test
+
+@[expose]
+public
 def main (args: List String): IO Unit :=
   match args with
   | [] => MLS.Test.main "."

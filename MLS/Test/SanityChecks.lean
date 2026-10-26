@@ -1,5 +1,7 @@
-import MLS.TreeDEM.Code.NetworkTypes
-import MLS.TreeSync.Code.Extensions
+module
+
+public import MLS.TreeDEM.Code.NetworkTypes
+public import MLS.TreeSync.Code.Extensions
 
 /-!
 Sanity checks: every message format of the NetworkTypes is non-ambiguous,

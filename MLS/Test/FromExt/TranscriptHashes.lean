@@ -1,8 +1,10 @@
-import MLS.TreeDEM.Code.Message.Transcript
-import MLS.TreeKEM.Code.KeySchedule
-import MLS.Test.FromExt.CryptoBasics
-import MLS.Test.Types
-import MLS.Test.Utils
+module
+
+public import MLS.TreeDEM.Code.Message.Transcript
+public import MLS.TreeKEM.Code.KeySchedule
+public import MLS.Test.FromExt.CryptoBasics
+public import MLS.Test.Types
+public import MLS.Test.Utils
 
 /-!
 Port of `MLS.Test.FromExt.TranscriptHashes`.
@@ -16,6 +18,8 @@ open MLS.Test
 open MLS.Test.FromExt.CryptoBasics
 
 /-- Port of `test_transcript_hashes_one`. -/
+@[expose]
+public
 def testTranscriptHashesOne (t: TranscriptHashesTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
   | .protocolError _ =>
@@ -45,6 +49,8 @@ def testTranscriptHashesOne (t: TranscriptHashesTest): IO Bool := do
       throw (IO.userError "test_transcript_hashes_one: not a commit")
 
 /-- Port of `test_transcript_hashes`. -/
+@[expose]
+public
 def testTranscriptHashes: List TranscriptHashesTest → IO Nat :=
   testList "Transcript Hashes" testTranscriptHashesOne
 

@@ -1,5 +1,7 @@
-import MLS.Common.Code.Crypto.Builtins
-import MLS.TreeSync.Code.Invariants.AuthService
+module
+
+public import MLS.Common.Code.Crypto.Builtins
+public import MLS.TreeSync.Code.Invariants.AuthService
 
 /-!
 Port of `MLS.TreeSync.API.Types`.
@@ -16,6 +18,7 @@ open Comparse
 open MLS
 
 /-- Port of `treesync_state`. -/
+public
 structure TreeSyncState (Bytes: Type) [CryptoBytes Bytes] (tkt: TreeKEMTypes Bytes) (TokenT: Type) (groupId: MlsBytes Bytes) where
   levels: Nat
   tree: TreeSync Bytes tkt levels
@@ -26,6 +29,8 @@ Port of `treesync_state_valid`.
 Unlike MLS*, it also states that the tree and the tokens have the same position
 (both are at position `0` in MLS*, by typing).
 -/
+@[expose]
+public
 def treesyncStateValid {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes} {TokenT: Type} {groupId: MlsBytes Bytes}
   (asp: ASParameters Bytes TokenT) (st: TreeSyncState Bytes tkt TokenT groupId): Prop
 :=

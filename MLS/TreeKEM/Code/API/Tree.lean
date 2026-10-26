@@ -1,5 +1,7 @@
-import MLS.TreeKEM.Code.Operations
-import MLS.TreeKEM.Code.API.Tree.Types
+module
+
+public import MLS.TreeKEM.Code.Operations
+public import MLS.TreeKEM.Code.API.Tree.Types
 
 /-!
 Port of `MLS.TreeKEM.API.Tree`.
@@ -25,6 +27,8 @@ variable {Bytes: Type} [CryptoBytes Bytes]
 /-! ## Create -/
 
 /-- Port of `create`. -/
+@[expose]
+public
 def create (decKey: Bytes) (encKey: Bytes): TreeKEMTreeState Bytes 0 :=
   {
     levels := 0
@@ -39,6 +43,8 @@ Port of `welcome`.
 MLS* requires `treekem_invariant t`, `leaf_ind < pow2 l` and `Some? (leaf_at t leaf_ind)`;
 otherwise, the returned state does not satisfy MLS*'s invariants.
 -/
+@[expose]
+public
 def welcome {l: Nat} (t: TreeKEM Bytes l) (leafDecryptionKey: Bytes) (optPathSecretAndInviterInd: Option (Bytes × Nat)) (leafInd: Nat):
   Result (TreeKEMTreeState Bytes leafInd)
 := do
@@ -64,6 +70,8 @@ def welcome {l: Nat} (t: TreeKEM Bytes l) (leafDecryptionKey: Bytes) (optPathSec
 /-! ## Add -/
 
 /-- Port of `add`. -/
+@[expose]
+public
 def add {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (kp: TreeKEMLeaf Bytes): TreeKEMTreeState Bytes leafInd × Nat :=
   match findEmptyLeaf st.tree with
   | some i =>
@@ -80,6 +88,8 @@ def add {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (kp: TreeKEMLeaf Byt
 /-! ## Update -/
 
 /-- Port of `update_myself`. -/
+@[expose]
+public
 def updateMyself {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (lp: TreeKEMLeaf Bytes) (leafDecryptionKey: Bytes):
   TreeKEMTreeState Bytes leafInd
 :=
@@ -92,6 +102,8 @@ def updateMyself {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (lp: TreeKE
 Port of `update_other`.
 MLS* requires `i < pow2 st.levels` and `i <> leaf_ind`; otherwise, see `pathBlank`.
 -/
+@[expose]
+public
 def updateOther {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (lp: TreeKEMLeaf Bytes) (i: Nat):
   TreeKEMTreeState Bytes leafInd
 :=
@@ -107,6 +119,8 @@ Port of `truncate_one`.
 MLS* requires `1 <= st.levels && is_tree_empty (TNode?.right st.tree)`; otherwise, this function returns `none`.
 MLS* then proves that `leaf_ind < pow2 (st.levels-1)` (MLS*'s `false_elim` branch); this function returns `none` otherwise.
 -/
+@[expose]
+public
 def truncateOne {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd):
   Option {res: TreeKEMTreeState Bytes leafInd // res.levels + 1 = st.levels}
 :=
@@ -119,6 +133,8 @@ def truncateOne {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd):
       none
 
 /-- Port of `fully_truncate`. -/
+@[expose]
+public
 def fullyTruncate {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd): TreeKEMTreeState Bytes leafInd :=
   match truncateOne st with
   | some ⟨st', _⟩ => fullyTruncate st'
@@ -129,6 +145,8 @@ termination_by st.levels
 Port of `remove_aux`.
 MLS* requires `i < pow2 st.levels` and `i <> leaf_ind`; otherwise, see `pathBlank`.
 -/
+@[expose]
+public
 def removeAux {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (i: Nat): TreeKEMTreeState Bytes leafInd :=
   { st with
     tree := treeRemove st.tree i
@@ -139,6 +157,8 @@ def removeAux {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (i: Nat): Tree
 Port of `remove`.
 MLS* requires `i < pow2 st.levels` and `i <> leaf_ind`; otherwise, see `pathBlank`.
 -/
+@[expose]
+public
 def remove {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (i: Nat): TreeKEMTreeState Bytes leafInd :=
   fullyTruncate (removeAux st i)
 
@@ -149,6 +169,8 @@ Port of `commit`.
 MLS* requires `li < pow2 st.levels`, `li <> leaf_ind`, `path_filtering_ok st.tree p`
 and `~(List.Tot.memP leaf_ind excluded_leaves)`; otherwise, this function may fail (see `getPathSecret`).
 -/
+@[expose]
+public
 def commit {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (li: Nat) (p: PathKEM Bytes st.levels)
   (excludedLeaves: List Nat) (groupContext: GroupContext Bytes)
   : Result (TreeKEMTreeState Bytes leafInd × Bytes)
@@ -165,6 +187,8 @@ def commit {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (li: Nat) (p: Pat
 /-! ## Create Commit -/
 
 /-- Port of `prepare_create_commit_entropy_lengths`. -/
+@[expose]
+public
 def prepareCreateCommitEntropyLengths (Bytes: Type) [CryptoBytes Bytes]: List Nat :=
   [CryptoBytes.hpkePrivateKeyLength Bytes, CryptoBytes.kdfLength Bytes]
 
@@ -174,6 +198,7 @@ The refinement `path_filtering_ok st.tree path_secrets` is the predicate `Pendin
 (in `MLS.TreeKEM.Proofs.API.Tree`); the refinement
 `forget_path_secrets path_secrets == generate_forgotten_path_secrets st.tree leaf_ind` is not ported.
 -/
+public
 structure PendingCommit {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) where
   pathSecrets: PathSecrets Bytes st.levels
   commitSecret: Bytes
@@ -183,6 +208,8 @@ Port of `prepare_create_commit`.
 MLS* requires `rand: randomness bytes (prepare_create_commit_entropy_lengths bytes)`;
 otherwise, this function fails when there is not enough randomness.
 -/
+@[expose]
+public
 def prepareCreateCommit {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (rand: Randomness Bytes)
   : Result (PendingCommit st × PrePathKEM Bytes st.levels)
 := do
@@ -196,6 +223,8 @@ def prepareCreateCommit {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (ran
   }, preUpdPath)
 
 /-- Port of `finalize_create_commit_entropy_lengths`. -/
+@[expose]
+public
 def finalizeCreateCommitEntropyLengths {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) (addedLeaves: List Nat): List Nat :=
   encryptPathSecretsEntropyLengths (unAdd st.tree addedLeaves) leafInd
 
@@ -204,6 +233,7 @@ Port of `create_commit_result`.
 The refinement `path_filtering_ok st.tree update_path` is the predicate `CreateCommitResult.Valid`
 (in `MLS.TreeKEM.Proofs.API.Tree`).
 -/
+public
 structure CreateCommitResult {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) where
   newState: TreeKEMTreeState Bytes leafInd
   updatePath: PathKEM Bytes st.levels
@@ -216,6 +246,8 @@ MLS* requires `randomness: randomness bytes (finalize_create_commit_entropy_leng
 (i.e. `finalizeCreateCommitEntropyLengths st addedLeaves`);
 otherwise, this function fails when there is not enough randomness.
 -/
+@[expose]
+public
 def finalizeCreateCommit {leafInd: Nat} {st: TreeKEMTreeState Bytes leafInd}
   (pending: PendingCommit st) (addedLeaves: List Nat) (groupContext: GroupContext Bytes)
   (randomness: Randomness Bytes)

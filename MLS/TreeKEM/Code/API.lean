@@ -1,6 +1,8 @@
-import MLS.TreeKEM.Code.API.Types
-import MLS.TreeKEM.Code.API.Tree
-import MLS.TreeKEM.Code.API.KeySchedule
+module
+
+public import MLS.TreeKEM.Code.API.Types
+public import MLS.TreeKEM.Code.API.Tree
+public import MLS.TreeKEM.Code.API.KeySchedule
 
 /-!
 Port of `MLS.TreeKEM.API`.
@@ -23,6 +25,8 @@ variable {Bytes: Type} [CryptoBytes Bytes]
 /-! ## Create -/
 
 /-- Port of `create`. -/
+@[expose]
+public
 def create (decKey: Bytes) (encKey: Bytes) (epochSecret: Bytes) (groupContext: GroupContext Bytes):
   Result (TreeKEMState Bytes 0 × Bytes)
 := do
@@ -40,6 +44,8 @@ Port of `welcome`.
 MLS* requires `treekem_invariant t`, `leaf_ind < pow2 l` and `Some? (leaf_at t leaf_ind)`;
 otherwise, see `Tree.welcome`.
 -/
+@[expose]
+public
 def welcome {l: Nat} (t: TreeKEM Bytes l) (leafDecryptionKey: Bytes) (optPathSecretAndInviterInd: Option (Bytes × Nat)) (leafInd: Nat)
   (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes × Bytes)) (groupContext: GroupContext Bytes)
   : Result (TreeKEMState Bytes leafInd × Bytes)
@@ -54,6 +60,8 @@ def welcome {l: Nat} (t: TreeKEM Bytes l) (leafDecryptionKey: Bytes) (optPathSec
 /-! ## Add -/
 
 /-- Port of `add`. -/
+@[expose]
+public
 def add {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (kp: TreeKEMLeaf Bytes): TreeKEMState Bytes leafInd × Nat :=
   let (treeState, i) := Tree.add st.treeState kp
   ({ st with treeState }, i)
@@ -61,6 +69,8 @@ def add {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (kp: TreeKEMLeaf Bytes):
 /-! ## Update -/
 
 /-- Port of `update_myself`. -/
+@[expose]
+public
 def updateMyself {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (lp: TreeKEMLeaf Bytes) (leafDecryptionKey: Bytes):
   TreeKEMState Bytes leafInd
 :=
@@ -70,6 +80,8 @@ def updateMyself {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (lp: TreeKEMLea
 Port of `update_other`.
 MLS* requires `i < pow2 st.tree_state.levels` and `i <> leaf_ind`; otherwise, see `Tree.updateOther`.
 -/
+@[expose]
+public
 def updateOther {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (lp: TreeKEMLeaf Bytes) (i: Nat): TreeKEMState Bytes leafInd :=
   { st with treeState := Tree.updateOther st.treeState lp i }
 
@@ -79,6 +91,8 @@ def updateOther {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (lp: TreeKEMLeaf
 Port of `remove`.
 MLS* requires `i < pow2 st.tree_state.levels` and `i <> leaf_ind`; otherwise, see `Tree.remove`.
 -/
+@[expose]
+public
 def remove {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (i: Nat): TreeKEMState Bytes leafInd :=
   { st with treeState := Tree.remove st.treeState i }
 
@@ -90,6 +104,7 @@ The refinements of MLS* (`commit_leaf_ind < pow2 st.levels`, `commit_leaf_ind <>
 `path_filtering_ok st.tree path` and `~(List.Tot.memP leaf_ind excluded_leaves)`) are the predicate
 `FullCommitArgs.Valid` (in `MLS.TreeKEM.Proofs.API`), see `Tree.commit`.
 -/
+public
 structure FullCommitArgs {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) where
   commitLeafInd: Nat
   path: PathKEM Bytes st.levels
@@ -97,11 +112,14 @@ structure FullCommitArgs {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd) whe
   provisionalGroupContext: GroupContext Bytes
 
 /-- Port of `pending_process_commit`. -/
+public
 structure PendingProcessCommit {leafInd: Nat} (st: TreeKEMState Bytes leafInd) where
   nextTreeState: TreeKEMTreeState Bytes leafInd
   optCommitSecret: Option Bytes
 
 /-- Port of `prepare_process_full_commit`. -/
+@[expose]
+public
 def prepareProcessFullCommit {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (args: FullCommitArgs st.treeState):
   Result (PendingProcessCommit st)
 := do
@@ -112,6 +130,8 @@ def prepareProcessFullCommit {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (ar
   }
 
 /-- Port of `prepare_process_add_only_commit`. -/
+@[expose]
+public
 def prepareProcessAddOnlyCommit {leafInd: Nat} (st: TreeKEMState Bytes leafInd): Result (PendingProcessCommit st) :=
   pure {
     nextTreeState := st.treeState
@@ -119,6 +139,8 @@ def prepareProcessAddOnlyCommit {leafInd: Nat} (st: TreeKEMState Bytes leafInd):
   }
 
 /-- Port of `finalize_process_commit`. -/
+@[expose]
+public
 def finalizeProcessCommit {leafInd: Nat} {st: TreeKEMState Bytes leafInd}
   (pend: PendingProcessCommit st) (psks: List (PreSharedKeyId Bytes × Bytes)) (newGroupContext: GroupContext Bytes)
   : Result (TreeKEMState Bytes leafInd × Bytes)
@@ -132,10 +154,13 @@ def finalizeProcessCommit {leafInd: Nat} {st: TreeKEMState Bytes leafInd}
 /-! ## Create Commit -/
 
 /-- Port of `prepare_create_commit_entropy_lengths`. -/
+@[expose]
+public
 def prepareCreateCommitEntropyLengths (Bytes: Type) [CryptoBytes Bytes]: List Nat :=
   Tree.prepareCreateCommitEntropyLengths Bytes
 
 /-- Port of `pending_create_commit`. -/
+public
 structure PendingCreateCommit {leafInd: Nat} (st: TreeKEMState Bytes leafInd) where
   pend: Tree.PendingCommit st.treeState
 
@@ -144,6 +169,8 @@ Port of `prepare_create_commit`.
 MLS* requires `rand: randomness bytes (prepare_create_commit_entropy_lengths bytes)`;
 otherwise, this function fails when there is not enough randomness.
 -/
+@[expose]
+public
 def prepareCreateCommit {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (rand: Randomness Bytes):
   Result (PendingCreateCommit st × PrePathKEM Bytes st.treeState.levels)
 := do
@@ -151,10 +178,13 @@ def prepareCreateCommit {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (rand: R
   pure ({ pend }, path)
 
 /-- Port of `continue_create_commit_entropy_lengths`. -/
+@[expose]
+public
 def continueCreateCommitEntropyLengths {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (addedLeaves: List Nat): List Nat :=
   Tree.finalizeCreateCommitEntropyLengths st.treeState addedLeaves
 
 /-- Port of `pending_create_commit_2`. -/
+public
 structure PendingCreateCommit2 (Bytes: Type) (leafInd: Nat) where
   newState: TreeKEMState Bytes leafInd
   commitSecret: Option Bytes
@@ -164,6 +194,7 @@ Port of `continue_create_commit_result`.
 The refinement `path_filtering_ok st.tree_state.tree update_path` is the predicate `ContinueCreateCommitResult.Valid`
 (in `MLS.TreeKEM.Proofs.API`).
 -/
+public
 structure ContinueCreateCommitResult {leafInd: Nat} (st: TreeKEMState Bytes leafInd) where
   updatePath: PathKEM Bytes st.treeState.levels
   addedLeavesPathSecrets: List Bytes
@@ -173,6 +204,8 @@ Port of `continue_create_commit`.
 MLS* requires `randomness: randomness bytes (continue_create_commit_entropy_lengths st added_leaves)`;
 otherwise, this function fails when there is not enough randomness.
 -/
+@[expose]
+public
 def continueCreateCommit {leafInd: Nat} {st: TreeKEMState Bytes leafInd}
   (pending: PendingCreateCommit st) (addedLeaves: List Nat) (provisionalGroupContext: GroupContext Bytes)
   (randomness: Randomness Bytes)
@@ -191,6 +224,8 @@ def continueCreateCommit {leafInd: Nat} {st: TreeKEMState Bytes leafInd}
   })
 
 /-- Port of `prepare_create_add_only_commit`. -/
+@[expose]
+public
 def prepareCreateAddOnlyCommit {leafInd: Nat} (st: TreeKEMState Bytes leafInd): Result (PendingCreateCommit2 Bytes leafInd) :=
   pure {
     newState := st
@@ -198,6 +233,7 @@ def prepareCreateAddOnlyCommit {leafInd: Nat} (st: TreeKEMState Bytes leafInd): 
   }
 
 /-- Port of `create_commit_result`. -/
+public
 structure CreateCommitResult (Bytes: Type) (leafInd: Nat) where
   newState: TreeKEMState Bytes leafInd
   encryptionSecret: Bytes
@@ -206,6 +242,8 @@ structure CreateCommitResult (Bytes: Type) (leafInd: Nat) where
   joinerSecret: Bytes
 
 /-- Port of `finalize_create_commit`. -/
+@[expose]
+public
 def finalizeCreateCommit {leafInd: Nat} (pending: PendingCreateCommit2 Bytes leafInd)
   (newGroupContext: GroupContext Bytes) (psks: List (PreSharedKeyId Bytes × Bytes))
   : Result (CreateCommitResult Bytes leafInd)
@@ -221,10 +259,14 @@ def finalizeCreateCommit {leafInd: Nat} (pending: PendingCreateCommit2 Bytes lea
 /-! ## Getters -/
 
 /-- Port of `get_epoch_keys`. -/
+@[expose]
+public
 def getEpochKeys {leafInd: Nat} (st: TreeKEMState Bytes leafInd): EpochKeys Bytes :=
   st.keyscheduleState.epochKeys
 
 /-- Port of `export`. -/
+@[expose]
+public
 def «export» {leafInd: Nat} (st: TreeKEMState Bytes leafInd) (label: String) (context: Bytes) (len: Nat): Result Bytes :=
   KeySchedule.«export» st.keyscheduleState label context len
 

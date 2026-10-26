@@ -1,5 +1,7 @@
-import MLS.TreeSync.Code.Invariants.AuthService
-import MLS.TreeSync.Proofs.Operations
+module
+
+public import MLS.TreeSync.Code.Invariants.AuthService
+public import MLS.TreeSync.Proofs.Operations
 
 /-!
 Port of `MLS.TreeSync.Invariants.AuthService.Proofs`.
@@ -51,6 +53,7 @@ theorem allCredentialsOk_succ {l: Nat} (ts: TreeSync Bytes tkt (l+1)) (ast: ASTo
   grind [allCredentialsOk_left_right]
 
 /-- Port of `intro_all_credentials_ok`. -/
+public
 theorem allCredentialsOk_intro {l: Nat} (ts: TreeSync Bytes tkt l) (ast: ASTokens TokenT l)
   (hpos: ts.position = ast.position) (h: ∀ li, ts.containsLeafIndex li → oneCredentialOk asp ts ast li):
   allCredentialsOk asp ts ast
@@ -78,6 +81,7 @@ theorem allCredentialsOk_elim {l: Nat} (ts: TreeSync Bytes tkt l) (ast: ASTokens
 /-! ## Invariant theorems -/
 
 /-- Port of `all_credentials_ok_tree_create`. -/
+public
 theorem allCredentialsOk_treeCreate (ln: LeafNode Bytes tkt) (token: TokenT)
   (h: asp.credentialOk (ln.data.signatureKey, ln.data.credential) token):
   allCredentialsOk asp (treeCreate ln: TreeSync Bytes tkt 0) (treeCreate token: ASTokens TokenT 0)
@@ -116,6 +120,7 @@ theorem allCredentialsOk_changeLeaf {l: Nat} (ts ts': TreeSync Bytes tkt l) (ast
 Port of `all_credentials_ok_tree_add`.
 MLS* requires `li: leaf_index l i` (here `hli`).
 -/
+public
 theorem allCredentialsOk_treeAdd {l: Nat} (ts: TreeSync Bytes tkt l) (ast: ASTokens TokenT l) (li: Nat)
   (ln: LeafNode Bytes tkt) (token: TokenT) (ts': TreeSync Bytes tkt l) (h: treeAdd ts li ln = .success ts')
   (hpos: ts.position = ast.position) (hli: ts.containsLeafIndex li)
@@ -131,6 +136,7 @@ theorem allCredentialsOk_treeAdd {l: Nat} (ts: TreeSync Bytes tkt l) (ast: ASTok
 Port of `all_credentials_ok_tree_update`.
 MLS* requires `li: leaf_index l i` (here `hli`).
 -/
+public
 theorem allCredentialsOk_treeUpdate {l: Nat} (ts: TreeSync Bytes tkt l) (ast: ASTokens TokenT l) (li: Nat)
   (ln: LeafNode Bytes tkt) (token: TokenT)
   (hpos: ts.position = ast.position) (hli: ts.containsLeafIndex li)
@@ -145,6 +151,7 @@ theorem allCredentialsOk_treeUpdate {l: Nat} (ts: TreeSync Bytes tkt l) (ast: AS
 Port of `all_credentials_ok_tree_remove`.
 MLS* requires `li: leaf_index l i` (here `hli`).
 -/
+public
 theorem allCredentialsOk_treeRemove {l: Nat} (ts: TreeSync Bytes tkt l) (ast: ASTokens TokenT l) (li: Nat)
   (hpos: ts.position = ast.position) (hli: ts.containsLeafIndex li) (hinv: allCredentialsOk asp ts ast):
   allCredentialsOk asp (treeRemove ts li) (asRemove ast li)
@@ -167,6 +174,7 @@ theorem allCredentialsOk_left_right_of {l: Nat} (ts: TreeSync Bytes tkt (l+1)) (
 Port of `all_credentials_ok_tree_truncate`.
 MLS* requires `is_tree_empty (TNode?.right ts)`; this hypothesis is not needed here.
 -/
+public
 theorem allCredentialsOk_treeTruncate {l: Nat} (ts: TreeSync Bytes tkt (l+1)) (ast: ASTokens TokenT (l+1))
   (hinv: allCredentialsOk asp ts ast):
   allCredentialsOk asp (treeTruncate ts) (asTruncate ast)
@@ -185,6 +193,7 @@ Port of `all_credentials_ok_tree_extend`.
 Unlike MLS*, the proof does not go through `intro_all_credentials_ok`:
 the new right subtrees are blank (`allCredentialsOk_mkBlankTreeGeneral`).
 -/
+public
 theorem allCredentialsOk_treeExtend {l: Nat} (ts: TreeSync Bytes tkt l) (ast: ASTokens TokenT l)
   (hinv: allCredentialsOk asp ts ast):
   allCredentialsOk asp (treeExtend ts) (asExtend ast)
@@ -194,10 +203,13 @@ theorem allCredentialsOk_treeExtend {l: Nat} (ts: TreeSync Bytes tkt l) (ast: AS
 /-! ## Weakening theorem -/
 
 /-- Port of `as_parameters_weaker`. -/
+@[expose]
+public
 def asParametersWeaker (asStrong asWeak: ASParameters Bytes TokenT): Prop :=
   ∀ vk cred token, asStrong.credentialOk (vk, cred) token → asWeak.credentialOk (vk, cred) token
 
 /-- Port of `all_credentials_ok_weaken`. -/
+public
 theorem allCredentialsOk_weaken {aspStrong: ASParameters Bytes TokenT} {l: Nat}
   (aspWeak: ASParameters Bytes TokenT) (ts: TreeSync Bytes tkt l) (ast: ASTokens TokenT l)
   (hweak: asParametersWeaker aspStrong aspWeak) (hinv: allCredentialsOk aspStrong ts ast):
@@ -224,6 +236,7 @@ variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes} {TokenT: Ty
 Port of `all_credentials_ok_apply_path`.
 MLS* requires `li: leaf_index l 0` (here `hli`).
 -/
+public
 theorem allCredentialsOk_applyPath {l: Nat} (ts: TreeSync Bytes tkt l) (ast: ASTokens TokenT l) (li: Nat)
   (p: PathSync Bytes tkt l) (token: TokenT) (ts': TreeSync Bytes tkt l) (h: applyPath ts li p = .success ts')
   (hpos: ts.position = ast.position) (hli: ts.containsLeafIndex li)

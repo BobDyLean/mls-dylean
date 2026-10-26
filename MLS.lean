@@ -1,75 +1,77 @@
 -- This module serves as the root of the `MLS` library.
 -- Import modules here that should be built as part of the library.
-import MLS.Basic
-import MLS.Comparse.Bytes
-import MLS.Comparse.Derived
-import MLS.Comparse.Tests
-import MLS.Common.Code.Result
-import MLS.Common.Proofs.Result
-import MLS.Common.Proofs.MiscLemmas
-import MLS.Common.Code.Crypto.Builtins
-import MLS.Common.Code.Crypto.Derived
-import MLS.Common.Proofs.Crypto.Derived
-import MLS.Common.Proofs.Crypto.HashCollision
-import MLS.Symbolic.Code.Symbolic
-import MLS.Common.Symbolic.Crypto.Derived.MlsLabel
-import MLS.Common.Symbolic.Crypto.Derived.SignWithLabel
-import MLS.Common.Symbolic.Crypto.Derived.ExpandWithLabel
-import MLS.Common.Symbolic.Crypto.Derived.EncryptWithLabel
-import MLS.Common.Code.NetworkTypes
-import MLS.Common.Code.Extensions
-import MLS.Common.Code.Tree
-import MLS.Common.Proofs.Tree
-import MLS.Common.Code.TreeCommon
-import MLS.Common.Proofs.TreeCommon
-import MLS.TreeSync.Code.NetworkTypes
-import MLS.TreeSync.Code.Types
-import MLS.TreeSync.Code.Extensions
-import MLS.TreeSync.Code.TreeHash
-import MLS.TreeSync.Code.ParentHash
-import MLS.TreeSync.Code.Operations
-import MLS.TreeSync.Code.Invariants.ValidLeaves
-import MLS.TreeSync.Code.Invariants.UnmergedLeaves
-import MLS.TreeSync.Code.Invariants.ParentHash
-import MLS.TreeSync.Code.Invariants.AuthService
-import MLS.TreeSync.Code.API.Types
-import MLS.TreeSync.Code.API
-import MLS.TreeSync.Proofs.Operations
-import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves
-import MLS.TreeSync.Proofs.Invariants.ParentHash
-import MLS.TreeSync.Proofs.Invariants.ValidLeaves
-import MLS.TreeSync.Proofs.Invariants.AuthService
-import MLS.TreeSync.Proofs.API
-import MLS.TreeSync.Proofs.API.LeafAt
-import MLS.TreeSync.Proofs.TreeHash
-import MLS.TreeSync.Proofs.ParentHash
-import MLS.TreeSync.Proofs.ParentHashGuarantees
-import MLS.TreeKEM.Code.NetworkTypes
-import MLS.TreeKEM.Code.Types
-import MLS.TreeKEM.Code.Operations
-import MLS.TreeKEM.Code.API.Tree.Types
-import MLS.TreeKEM.Code.API.Tree
-import MLS.TreeKEM.Code.PSK
-import MLS.TreeKEM.Code.KeySchedule
-import MLS.TreeKEM.Code.API.KeySchedule.Types
-import MLS.TreeKEM.Code.API.KeySchedule
-import MLS.TreeKEM.Code.API.Types
-import MLS.TreeKEM.Code.API
-import MLS.TreeKEM.Proofs.Invariants
-import MLS.TreeKEM.Proofs.API.Tree
-import MLS.TreeKEM.Proofs.API
-import MLS.Bootstrap.Code.NetworkTypes
-import MLS.Bootstrap.Code.KeyPackageRef
-import MLS.Bootstrap.Code.Welcome
-import MLS.TreeDEM.Code.NetworkTypes
-import MLS.TreeDEM.Code.Keys
-import MLS.TreeDEM.Code.Message.Framing
-import MLS.TreeDEM.Code.Message.Transcript
-import MLS.TreeDEM.Code.API.Types
-import MLS.TreeDEM.Code.API
-import MLS.Glue.Code.NetworkBinder
-import MLS.Glue.Code.TreeSyncTreeKEMBinder
-import MLS.Glue.Proofs.NetworkBinder.Properties
-import MLS.Glue.Proofs.TreeSyncTreeKEMBinder
-import MLS.Test.SanityChecks
-import MLS.Test
+module
+
+public import MLS.Basic
+public import MLS.Comparse.Bytes
+public import MLS.Comparse.Derived
+public import MLS.Comparse.Tests
+public import MLS.Common.Code.Result
+public import MLS.Common.Proofs.Result
+public import MLS.Common.Proofs.MiscLemmas
+public import MLS.Common.Code.Crypto.Builtins
+public import MLS.Common.Code.Crypto.Derived
+public import MLS.Common.Proofs.Crypto.Derived
+public import MLS.Common.Proofs.Crypto.HashCollision
+public import MLS.Symbolic.Code.Symbolic
+public import MLS.Common.Symbolic.Crypto.Derived.MlsLabel
+public import MLS.Common.Symbolic.Crypto.Derived.SignWithLabel
+public import MLS.Common.Symbolic.Crypto.Derived.ExpandWithLabel
+public import MLS.Common.Symbolic.Crypto.Derived.EncryptWithLabel
+public import MLS.Common.Code.NetworkTypes
+public import MLS.Common.Code.Extensions
+public import MLS.Common.Code.Tree
+public import MLS.Common.Proofs.Tree
+public import MLS.Common.Code.TreeCommon
+public import MLS.Common.Proofs.TreeCommon
+public import MLS.TreeSync.Code.NetworkTypes
+public import MLS.TreeSync.Code.Types
+public import MLS.TreeSync.Code.Extensions
+public import MLS.TreeSync.Code.TreeHash
+public import MLS.TreeSync.Code.ParentHash
+public import MLS.TreeSync.Code.Operations
+public import MLS.TreeSync.Code.Invariants.ValidLeaves
+public import MLS.TreeSync.Code.Invariants.UnmergedLeaves
+public import MLS.TreeSync.Code.Invariants.ParentHash
+public import MLS.TreeSync.Code.Invariants.AuthService
+public import MLS.TreeSync.Code.API.Types
+public import MLS.TreeSync.Code.API
+public import MLS.TreeSync.Proofs.Operations
+public import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves
+public import MLS.TreeSync.Proofs.Invariants.ParentHash
+public import MLS.TreeSync.Proofs.Invariants.ValidLeaves
+public import MLS.TreeSync.Proofs.Invariants.AuthService
+public import MLS.TreeSync.Proofs.API
+public import MLS.TreeSync.Proofs.API.LeafAt
+public import MLS.TreeSync.Proofs.TreeHash
+public import MLS.TreeSync.Proofs.ParentHash
+public import MLS.TreeSync.Proofs.ParentHashGuarantees
+public import MLS.TreeKEM.Code.NetworkTypes
+public import MLS.TreeKEM.Code.Types
+public import MLS.TreeKEM.Code.Operations
+public import MLS.TreeKEM.Code.API.Tree.Types
+public import MLS.TreeKEM.Code.API.Tree
+public import MLS.TreeKEM.Code.PSK
+public import MLS.TreeKEM.Code.KeySchedule
+public import MLS.TreeKEM.Code.API.KeySchedule.Types
+public import MLS.TreeKEM.Code.API.KeySchedule
+public import MLS.TreeKEM.Code.API.Types
+public import MLS.TreeKEM.Code.API
+public import MLS.TreeKEM.Proofs.Invariants
+public import MLS.TreeKEM.Proofs.API.Tree
+public import MLS.TreeKEM.Proofs.API
+public import MLS.Bootstrap.Code.NetworkTypes
+public import MLS.Bootstrap.Code.KeyPackageRef
+public import MLS.Bootstrap.Code.Welcome
+public import MLS.TreeDEM.Code.NetworkTypes
+public import MLS.TreeDEM.Code.Keys
+public import MLS.TreeDEM.Code.Message.Framing
+public import MLS.TreeDEM.Code.Message.Transcript
+public import MLS.TreeDEM.Code.API.Types
+public import MLS.TreeDEM.Code.API
+public import MLS.Glue.Code.NetworkBinder
+public import MLS.Glue.Code.TreeSyncTreeKEMBinder
+public import MLS.Glue.Proofs.NetworkBinder.Properties
+public import MLS.Glue.Proofs.TreeSyncTreeKEMBinder
+public import MLS.Test.SanityChecks
+public import MLS.Test

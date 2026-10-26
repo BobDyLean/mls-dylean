@@ -1,6 +1,8 @@
-import MLS.Glue.Code.TreeSyncTreeKEMBinder
-import MLS.TreeSync.Proofs.API
-import MLS.TreeKEM.Proofs.API.Tree
+module
+
+public import MLS.Glue.Code.TreeSyncTreeKEMBinder
+public import MLS.TreeSync.Proofs.API
+public import MLS.TreeKEM.Proofs.API.Tree
 
 /-!
 Port of `MLS.TreeSyncTreeKEMBinder.Properties` and `MLS.TreeSyncTreeKEMBinder.Proofs`.
@@ -36,6 +38,8 @@ variable {Leaf1 Node1 Leaf2 Node2: Type}
 Two paths are related when their leaves are related by `RLeaf` and their nodes by `RNode`.
 The paths may have different heights, in which case they are not related.
 -/
+@[expose]
+public
 def Rel (RLeaf: Leaf1 → Leaf2 → Prop) (RNode: Node1 → Node2 → Prop):
   {l1 l2: Nat} → Path Leaf1 Node1 l1 → Path Leaf2 Node2 l2 → Prop
   | _, _, .leaf a, .leaf b => RLeaf a b
@@ -50,7 +54,8 @@ theorem Rel.getPathLeaf {RLeaf: Leaf1 → Leaf2 → Prop} {RNode: Node1 → Node
   induction p1 generalizing l2 <;> cases p2 <;> simp_all [Rel, Path.getPathLeaf]
 
 /-- Port of `get_path_leaf_set_path_leaf`. -/
-@[simp] theorem getPathLeaf_setPathLeaf {Leaf': Type} {l: Nat} (p: Path Leaf1 Node1 l) (x: Leaf'):
+@[simp]
+theorem getPathLeaf_setPathLeaf {Leaf': Type} {l: Nat} (p: Path Leaf1 Node1 l) (x: Leaf'):
   (p.setPathLeaf x).getPathLeaf = x
 := by
   induction p <;> simp_all [Path.setPathLeaf, Path.getPathLeaf]
@@ -92,6 +97,8 @@ variable {Bytes: Type} [CryptoBytes Bytes]
 /-! ## Relations (`MLS.TreeSyncTreeKEMBinder.Properties`) -/
 
 /-- Port of `treesync_treekem_rel`. -/
+@[expose]
+public
 def treesyncTreekemRel {l: Nat} (ts: TreeSync Bytes tkt l) (tk: TreeKEM Bytes l): Prop :=
   treesyncToTreekem ts = tk
 
@@ -99,26 +106,36 @@ def treesyncTreekemRel {l: Nat} (ts: TreeSync Bytes tkt l) (tk: TreeKEM Bytes l)
 Port of `treesync_treekem_state_rel`.
 The trees have the same height (MLS*'s `st_ts.levels == st_tk.levels`): they are compared as dependent pairs.
 -/
+@[expose]
+public
 def treesyncTreekemStateRel {TokenT: Type} {groupId: MlsBytes Bytes} {leafInd: Nat}
   (stTs: TreeSyncState Bytes tkt TokenT groupId) (stTk: TreeKEMTreeState Bytes leafInd): Prop
 :=
   (⟨stTs.levels, treesyncToTreekem stTs.tree⟩: (l: Nat) × TreeKEM Bytes l) = ⟨stTk.levels, stTk.tree⟩
 
 /-- Port of `external_pathsync_pre_pathkem_rel`. -/
+@[expose]
+public
 def externalPathsyncPrePathkemRel {l1 l2: Nat} (ps: ExternalPathSync Bytes tkt l1) (pk: PrePathKEM Bytes l2): Prop :=
   Path.Rel (fun lns lnk => lns.content.val = lnk.publicKey) (fun opns opnk => opns = opnk) ps pk
 
 /-- Port of `external_pathsync_pathsync_rel`. -/
+@[expose]
+public
 def externalPathsyncPathsyncRel {tkt: TreeKEMTypes Bytes} {l1 l2: Nat}
   (eps: ExternalPathSync Bytes tkt l1) (ps: PathSync Bytes tkt l2): Prop
 :=
   Path.Rel (fun eln ln => eln.content = ln.data.content) (fun opns opnk => opns = opnk) eps ps
 
 /-- Port of `pathsync_pre_pathkem_rel`. -/
+@[expose]
+public
 def pathsyncPrePathkemRel {l1 l2: Nat} (ps: PathSync Bytes tkt l1) (pk: PrePathKEM Bytes l2): Prop :=
   Path.Rel (fun lns lnk => lns.data.content.val = lnk.publicKey) (fun opns opnk => opns = opnk) ps pk
 
 /-- Port of `pathsync_pathkem_rel`. -/
+@[expose]
+public
 def pathsyncPathkemRel {l1 l2: Nat} (ps: PathSync Bytes tkt l1) (pk: PathKEM Bytes l2): Prop :=
   Path.Rel (fun lns lnk => lns.data.content.val = lnk.publicKey)
     (fun opns opnk =>
@@ -129,20 +146,26 @@ def pathsyncPathkemRel {l1 l2: Nat} (ps: PathSync Bytes tkt l1) (pk: PathKEM Byt
     ps pk
 
 /-- Port of `external_pathsync_path_secrets_rel`. -/
+@[expose]
+public
 def externalPathsyncPathSecretsRel {l1 l2: Nat} (psync: ExternalPathSync Bytes tkt l1) (psecrets: PathSecrets Bytes l2): Prop :=
   ∃ ppk, pathSecretsToPrePathkem psecrets = .success ppk ∧ externalPathsyncPrePathkemRel psync ppk
 
 /-- Port of `pathsync_path_secrets_rel`. -/
+@[expose]
+public
 def pathsyncPathSecretsRel {l1 l2: Nat} (psync: PathSync Bytes tkt l1) (psecrets: PathSecrets Bytes l2): Prop :=
   ∃ ppk, pathSecretsToPrePathkem psecrets = .success ppk ∧ pathsyncPrePathkemRel psync ppk
 
 /-! ## Unfolding `treesyncToTreekem` -/
 
 /-- The TreeKEM leaf of a TreeSync leaf. -/
+public
 abbrev leafNodeToTreekemLeaf (ln: LeafNode Bytes tkt): TreeKEMLeaf Bytes :=
   { publicKey := ln.data.content.val }
 
-@[simp] theorem leafNodeToTreekemLeaf_eq_iff (ln: LeafNode Bytes tkt) (lnK: TreeKEMLeaf Bytes):
+@[simp]
+theorem leafNodeToTreekemLeaf_eq_iff (ln: LeafNode Bytes tkt) (lnK: TreeKEMLeaf Bytes):
   leafNodeToTreekemLeaf ln = lnK ↔ ln.data.content.val = lnK.publicKey
 := by
   cases lnK
@@ -165,39 +188,46 @@ theorem treesyncToTreekem_left_right {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   rw [treesyncToTreekem.eq_def]
   rfl
 
-@[simp] theorem treesyncToTreekem_position {l: Nat} (t: TreeSync Bytes tkt l):
+@[simp]
+theorem treesyncToTreekem_position {l: Nat} (t: TreeSync Bytes tkt l):
   (treesyncToTreekem t).position = t.position
 := by
   induction t using Tree.leftRightInduction <;> simp_all [treesyncToTreekem_zero, treesyncToTreekem_left_right]
 
 grind_pattern treesyncToTreekem_position => (treesyncToTreekem t).position
 
-@[simp] theorem leafContent_treesyncToTreekem (t: TreeSync Bytes tkt 0):
+@[simp]
+theorem leafContent_treesyncToTreekem (t: TreeSync Bytes tkt 0):
   (treesyncToTreekem t).leafContent = t.leafContent.map leafNodeToTreekemLeaf
 := by
   simp [treesyncToTreekem_zero]
 
-@[simp] theorem nodeContent_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)):
+@[simp]
+theorem nodeContent_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   (treesyncToTreekem t).nodeContent = t.nodeContent.map treesyncToTreekemNode
 := by
   simp [treesyncToTreekem_left_right]
 
-@[simp] theorem left_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)):
+@[simp]
+theorem left_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   (treesyncToTreekem t).left = treesyncToTreekem t.left
 := by
   simp [treesyncToTreekem_left_right]
 
-@[simp] theorem right_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)):
+@[simp]
+theorem right_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   (treesyncToTreekem t).right = treesyncToTreekem t.right
 := by
   simp [treesyncToTreekem_left_right]
 
-@[simp] theorem child_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat):
+@[simp]
+theorem child_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat):
   (treesyncToTreekem t).child li = treesyncToTreekem (t.child li)
 := by
   grind [treesyncToTreekem_left_right]
 
-@[simp] theorem sibling_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat):
+@[simp]
+theorem sibling_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat):
   (treesyncToTreekem t).sibling li = treesyncToTreekem (t.sibling li)
 := by
   grind [treesyncToTreekem_left_right]
@@ -215,6 +245,7 @@ theorem isTreeEmpty_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt l):
     simp [Tree.child_position, Tree.sibling_position, ihl, ihr]
 
 /-- Port of `treesync_treekem_rel_is_tree_empty`. -/
+public
 theorem treesyncTreekemRel_isTreeEmpty {l: Nat} (ts: TreeSync Bytes tkt l) (tk: TreeKEM Bytes l)
   (hrel: treesyncTreekemRel ts tk):
   isTreeEmpty ts = isTreeEmpty tk
@@ -222,6 +253,7 @@ theorem treesyncTreekemRel_isTreeEmpty {l: Nat} (ts: TreeSync Bytes tkt l) (tk: 
   rw [← hrel, isTreeEmpty_treesyncToTreekem]
 
 /-- Port of `path_filtering_ok_treesync_to_treekem`. -/
+public
 theorem pathFilteringOk_treesyncToTreekem {l: Nat} {PathLeaf PathNode: Type}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: Path PathLeaf (Option PathNode) l):
   pathFilteringOk (treesyncToTreekem t) li p = pathFilteringOk t li p
@@ -245,6 +277,7 @@ theorem getPathLeaf_pathsyncPrePathkemRel {l: Nat} (ps: PathSync Bytes tkt l) (p
   Path.Rel.getPathLeaf h
 
 /-- Port of `pathsync_pathkem_rel_update_path_to_treeX`. -/
+public
 theorem pathsyncPathkemRel_updatePathToTreeX {l: Nat} (p: SparseUpdatePath Bytes l):
   pathsyncPathkemRel (updatePathToTreesync p) (updatePathToTreekem p)
 := by
@@ -258,6 +291,7 @@ theorem pathsyncPathkemRel_updatePathToTreeX {l: Nat} (p: SparseUpdatePath Bytes
     cases onp <;> simp_all [pathsyncPathkemRel, Path.Rel, updatePathToTreesync, Path.setPathLeaf, Path.getPathLeaf] <;> trivial
 
 /-- Port of `treekem_to_treesync_lemmas`. -/
+public
 theorem treekemToTreesync_lemmas {l: Nat} (lnData: LeafNodeData Bytes tkt) (p: PrePathKEM Bytes l)
   (res: ExternalPathSync Bytes tkt l) (h: treekemToTreesync lnData p = .success res):
   (∃ content: MlsBytes Bytes, content.val = p.getPathLeaf.publicKey ∧ res.getPathLeaf = { lnData with content }) ∧
@@ -407,6 +441,7 @@ theorem pathsyncPrePathkemRel_externalPathToPathAux {l: Nat} (ln: LeafNode Bytes
   Path.Rel.setPathLeaf ln hrel hln
 
 /-- Port of `pathsync_pre_pathkem_rel_external_path_to_path`. -/
+public
 theorem pathsyncPrePathkemRel_externalPathToPath {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat)
   (ps: ExternalPathSync Bytes tkt l) (pk: PrePathKEM Bytes l) (groupId: MlsBytes Bytes) (signKey signNonce: Bytes)
   (res: PathSync Bytes tkt l) (h: externalPathToPath t li ps groupId signKey signNonce = .success res)
@@ -475,6 +510,7 @@ theorem treesyncTreekemStateRel_induction
   exact mk l tsTree tokens priv
 
 /-- Port of `create_state_rel`. -/
+public
 theorem create_stateRel {ln: LeafNode Bytes tkt} (pend: TreeSync.API.PendingCreate groupId ln) (token: TokenT)
   (leafPrivateKey leafPublicKey: Bytes) (hln: ln.data.content.val = leafPublicKey):
   treesyncTreekemStateRel (TreeSync.API.finalizeCreate pend token) (TreeKEM.API.Tree.create leafPrivateKey leafPublicKey)
@@ -482,6 +518,7 @@ theorem create_stateRel {ln: LeafNode Bytes tkt} (pend: TreeSync.API.PendingCrea
   treesyncTreekemStateRel_mk _ _ _ _ (treeCreate_treesyncTreekemRel ln _ hln)
 
 /-- Port of `welcome_state_rel`. -/
+public
 theorem welcome_stateRel {l: Nat} {ts: TreeSync Bytes tkt l} (pend: TreeSync.API.PendingWelcome groupId ts)
   (tokens: List (Option TokenT)) (tk: TreeKEM Bytes l) (leafDecryptionKey: Bytes)
   (optPathSecretAndInviterInd: Option (Bytes × Nat)) (leafInd: Nat)
@@ -504,6 +541,7 @@ theorem findEmptyLeaf_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt l):
   | node t ihl ihr => unfold findEmptyLeaf; simp [ihl, ihr]
 
 /-- Port of `find_empty_leaf_treesync_treekem_rel`, stated as an equation. -/
+public
 theorem findEmptyLeaf_treesyncTreekemRel {l: Nat} (ts: TreeSync Bytes tkt l) (tk: TreeKEM Bytes l)
   (hrel: treesyncTreekemRel ts tk):
   findEmptyLeaf ts = findEmptyLeaf tk
@@ -511,6 +549,7 @@ theorem findEmptyLeaf_treesyncTreekemRel {l: Nat} (ts: TreeSync Bytes tkt l) (tk
   rw [← hrel, findEmptyLeaf_treesyncToTreekem]
 
 /-- Port of `add_state_rel`. -/
+public
 theorem add_stateRel {st: TreeSyncState Bytes tkt TokenT groupId} {lnS: LeafNode Bytes tkt}
   (pend: TreeSync.API.PendingAdd st lnS) (token: TokenT) (stTk: TreeKEMTreeState Bytes leafInd) (lnK: TreeKEMLeaf Bytes)
   (res: TreeSyncState Bytes tkt TokenT groupId) (li: Nat) (h: TreeSync.API.finalizeAdd pend token = .success (res, li))
@@ -527,6 +566,7 @@ theorem add_stateRel {st: TreeSyncState Bytes tkt TokenT groupId} {lnS: LeafNode
     exact ⟨treesyncTreekemStateRel_mk _ _ _ _ (treeAdd_treesyncTreekemRel _ _ _ _ _ _ h1 rfl hln), trivial⟩
 
 /-- Port of `update_myself_state_rel`. -/
+public
 theorem updateMyself_stateRel {st: TreeSyncState Bytes tkt TokenT groupId} {lnS: LeafNode Bytes tkt} {li: Nat}
   (pend: TreeSync.API.PendingUpdate st lnS li) (token: TokenT)
   (stTk: TreeKEMTreeState Bytes leafInd) (lnK: TreeKEMLeaf Bytes) (leafDecryptionKey: Bytes)
@@ -541,6 +581,7 @@ theorem updateMyself_stateRel {st: TreeSyncState Bytes tkt TokenT groupId} {lnS:
 Port of `update_other_state_rel`.
 MLS* requires `i < pow2 st_tk.levels` (here `_hi`) and `i <> leaf_ind`.
 -/
+public
 theorem updateOther_stateRel {st: TreeSyncState Bytes tkt TokenT groupId} {lnS: LeafNode Bytes tkt} {li: Nat}
   (pend: TreeSync.API.PendingUpdate st lnS li) (token: TokenT)
   (stTk: TreeKEMTreeState Bytes leafInd) (lnK: TreeKEMLeaf Bytes) (i: Nat)
@@ -556,6 +597,7 @@ theorem updateOther_stateRel {st: TreeSyncState Bytes tkt TokenT groupId} {lnS: 
 Port of `fully_truncate_state_rel`.
 MLS* requires the refinements of `st_tk` (here `hst`), from which the leaf index is in the left subtree when truncating.
 -/
+public
 theorem fullyTruncate_stateRel (stTs: TreeSyncState Bytes tkt TokenT groupId) (stTk: TreeKEMTreeState Bytes leafInd)
   (hrel: treesyncTreekemStateRel stTs stTk) (hst: stTk.Valid):
   treesyncTreekemStateRel (TreeSync.API.fullyTruncateState stTs) (TreeKEM.API.Tree.fullyTruncate stTk)
@@ -591,6 +633,7 @@ theorem fullyTruncate_stateRel (stTs: TreeSyncState Bytes tkt TokenT groupId) (s
 Port of `remove_state_rel`.
 MLS* requires `i < pow2 st_tk.levels` (here `hi`), `i <> leaf_ind`, and the refinements of `st_tk` (here `hst`).
 -/
+public
 theorem remove_stateRel {st: TreeSyncState Bytes tkt TokenT groupId} {li: Nat}
   (pend: TreeSync.API.PendingRemove st li) (stTk: TreeKEMTreeState Bytes leafInd) (i: Nat)
   (hi: stTk.tree.containsLeafIndex i) (hne: i ≠ leafInd)
@@ -603,6 +646,7 @@ theorem remove_stateRel {st: TreeSyncState Bytes tkt TokenT groupId} {li: Nat}
   exact treesyncTreekemStateRel_mk _ _ _ _ (treeRemove_treesyncTreekemRel _ _ _ rfl)
 
 /-- Port of `process_commit_state_rel`. -/
+public
 theorem processCommit_stateRel {st: TreeSyncState Bytes tkt TokenT groupId} {liTs: Nat} {pTs: PathSync Bytes tkt st.levels}
   (pend: TreeSync.API.PendingCommit st liTs pTs) (token: TokenT)
   (stTk: TreeKEMTreeState Bytes leafInd) (liTk: Nat) (pTk: PathKEM Bytes stTk.levels) (excludedLeaves: List Nat)
@@ -685,6 +729,7 @@ theorem pathsyncPrePathkemRel_to_pathsyncPathkemRel {l: Nat}
     grind
 
 /-- Port of `create_commit_state_rel`. -/
+public
 theorem createCommit_stateRel {st: TreeSyncState Bytes tkt TokenT groupId} {liTs: Nat} {pTs: PathSync Bytes tkt st.levels}
   (tsPend: TreeSync.API.PendingCommit st liTs pTs) (token: TokenT)
   (stTk: TreeKEMTreeState Bytes leafInd) (tkPend: TreeKEM.API.Tree.PendingCommit stTk)
@@ -704,6 +749,7 @@ theorem createCommit_stateRel {st: TreeSyncState Bytes tkt TokenT groupId} {liTs
   exact treesyncTreekemStateRel_mk _ _ _ _ (applyPath_treesyncTreekemRel _ _ _ _ _ _ h1 rfl hpk)
 
 /-- Port of `pathsync_external_pathsync_path_secrets_rel_lemma`. -/
+public
 theorem pathsyncExternalPathsyncPathSecretsRel_lemma {l: Nat}
   (psync: PathSync Bytes tkt l) (epsync: ExternalPathSync Bytes tkt l) (ps: PathSecrets Bytes l)
   (h1: externalPathsyncPathSecretsRel epsync ps) (h2: externalPathsyncPathsyncRel epsync psync):
@@ -740,6 +786,7 @@ theorem externalPathToPath_externalPathsyncPathsyncRel {tkt: TreeKEMTypes Bytes}
   · simp [hln]
 
 /-- Port of `authenticate_external_path_external_pathsync_pathsync_rel`. -/
+public
 theorem authenticateExternalPath_externalPathsyncPathsyncRel {tkt: TreeKEMTypes Bytes} {TokenT: Type} {groupId: MlsBytes Bytes}
   (st: TreeSyncState Bytes tkt TokenT groupId) (li: Nat) (p: ExternalPathSync Bytes tkt st.levels)
   (signatureKey signatureNonce: Bytes) (res: PathSync Bytes tkt st.levels)
@@ -751,6 +798,7 @@ theorem authenticateExternalPath_externalPathsyncPathsyncRel {tkt: TreeKEMTypes 
   externalPathToPath_externalPathsyncPathsyncRel st.tree li p groupId signatureKey signatureNonce res h hsource
 
 /-- Port of `get_path_leaf_pathsync_path_secrets_rel`. -/
+public
 theorem getPathLeaf_pathsyncPathSecretsRel {l: Nat} (psync: PathSync Bytes tkt l) (ps: PathSecrets Bytes l)
   (h: pathsyncPathSecretsRel psync ps):
   ∃ sk, CryptoBytes.hpkeGenKeypair ps.getPathLeaf = .success (sk, psync.getPathLeaf.data.content.val)

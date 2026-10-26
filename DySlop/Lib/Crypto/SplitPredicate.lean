@@ -112,7 +112,6 @@ def Local.pred {C: Params} {tags: List String} (l: C.Local tags)
 :=
   SplitFunction.Params.Locals.toFun C.toSplitFunctionParams l (⟨⟩, keyUsg, data, tr)
 
-public
 theorem decode_eq_some
   [BytesWellFormed] [GetUsage] [GetLabel]
   (keyUsg: C.KeyUsage) (data: C.Data) (tr: ProofTrace) (tag: String)

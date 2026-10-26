@@ -332,7 +332,6 @@ def DySlop.Pke.extractSk (pk: Bytes): Option Bytes :=
     some sk
   | none => none
 
-public
 theorem DySlop.Pke.pk_extractSk (b: Bytes):
   match extractSk b with
   | none => True
@@ -344,7 +343,6 @@ theorem DySlop.Pke.pk_extractSk (b: Bytes):
 variable [ExecTraceTypes] [ProofTraceTypes]
 
 /-- Port of `extract_sk_preserves_well_formedness`. -/
-public
 theorem DySlop.Pke.extractSk.preserves_WellFormed
   [BytesInvariants] [BytesInvariants.Has DySlop.Pke.Pk.invariants]
 : ExtractPreservesWellFormed extractSk

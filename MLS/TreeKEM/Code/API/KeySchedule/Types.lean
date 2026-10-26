@@ -1,3 +1,5 @@
+module
+
 /-!
 Port of `MLS.TreeKEM.API.KeySchedule.Types`.
 -/
@@ -10,6 +12,7 @@ All the keys that are not forward-secret within an epoch.
 In particular, encryption_secret is not in this set of keys:
 it is returned by the commit function
 -/
+public
 structure EpochKeys (Bytes: Type) where
   senderDataSecret: Bytes
   exporterSecret: Bytes
@@ -20,6 +23,7 @@ structure EpochKeys (Bytes: Type) where
   confirmationTag: Bytes
 
 /-- Port of `treekem_keyschedule_state`. -/
+public
 structure TreeKEMKeyscheduleState (Bytes: Type) where
   epochKeys: EpochKeys Bytes
   initSecret: Bytes

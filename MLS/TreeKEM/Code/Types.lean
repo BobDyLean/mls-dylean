@@ -1,6 +1,8 @@
-import MLS.Common.Code.Tree
-import MLS.Common.Code.Crypto.Builtins
-import MLS.TreeKEM.Code.NetworkTypes
+module
+
+public import MLS.Common.Code.Tree
+public import MLS.Common.Code.Crypto.Builtins
+public import MLS.TreeKEM.Code.NetworkTypes
 
 /-!
 Port of `MLS.TreeKEM.Types`.
@@ -17,31 +19,38 @@ open Comparse
 open MLS
 
 /-- Port of `treekem_leaf`. -/
+public
 structure TreeKEMLeaf (Bytes: Type) where
   publicKey: Bytes
 
 /-- Port of `treekem_node`. -/
+public
 structure TreeKEMNode (Bytes: Type) where
   publicKey: Bytes
   unmergedLeaves: List Nat
 
 /-- Port of `treekem`. -/
+public
 abbrev TreeKEM (Bytes: Type) :=
   Tree (Option (TreeKEMLeaf Bytes)) (Option (TreeKEMNode Bytes))
 
 /-- Port of `treekem_priv`. -/
+public
 abbrev TreeKEMPriv (Bytes: Type) :=
   Path Bytes (Option Bytes)
 
 /-- Port of `pre_pathkem`. -/
+public
 abbrev PrePathKEM (Bytes: Type) [BytesLike Bytes] :=
   Path (TreeKEMLeaf Bytes) (Option (HpkePublicKey Bytes))
 
 /-- Port of `pathkem`. -/
+public
 abbrev PathKEM (Bytes: Type) [BytesLike Bytes] :=
   Path (TreeKEMLeaf Bytes) (Option (UpdatePathNode Bytes))
 
 /-- Port of `path_secrets`. -/
+public
 abbrev PathSecrets (Bytes: Type) :=
   Path Bytes (Option Bytes)
 

@@ -1,4 +1,6 @@
-import MLS.TreeKEM.Code.Types
+module
+
+public import MLS.TreeKEM.Code.Types
 
 /-!
 Port of `MLS.TreeKEM.API.Tree.Types`.
@@ -12,6 +14,7 @@ Port-specific differences:
 namespace MLS.TreeKEM
 
 /-- Port of `treekem_tree_state`. -/
+public
 structure TreeKEMTreeState (Bytes: Type) (leafInd: Nat) where
   levels: Nat
   tree: TreeKEM Bytes levels

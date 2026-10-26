@@ -1,5 +1,7 @@
-import MLS.TreeSync.Code.Invariants.UnmergedLeaves
-import MLS.TreeSync.Proofs.Operations
+module
+
+public import MLS.TreeSync.Code.Invariants.UnmergedLeaves
+public import MLS.TreeSync.Proofs.Operations
 
 /-!
 Port of `MLS.TreeSync.Invariants.UnmergedLeaves.Proofs`.
@@ -21,12 +23,15 @@ section BytesLike
 
 variable {Bytes: Type} [BytesLike Bytes] {tkt: TreeKEMTypes Bytes}
 
-@[simp] theorem unmergedLeavesOk_zero (t: TreeSync Bytes tkt 0): unmergedLeavesOk t := by
+@[simp]
+theorem unmergedLeavesOk_zero (t: TreeSync Bytes tkt 0): unmergedLeavesOk t := by
   simp [unmergedLeavesOk.eq_def]
 
-@[simp] theorem unmergedLeafConsistent_zero (t: TreeSync Bytes tkt 0) (x: UInt32): unmergedLeafConsistent t x := by
+@[simp]
+theorem unmergedLeafConsistent_zero (t: TreeSync Bytes tkt 0) (x: UInt32): unmergedLeafConsistent t x := by
   simp [unmergedLeafConsistent.eq_def]
 
+public
 theorem unmergedLeavesOk_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat):
   unmergedLeavesOk t = (
     (match t.nodeContent with
@@ -49,6 +54,7 @@ theorem unmergedLeafConsistent_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: 
   grind [unmergedLeafConsistent.eq_def]
 
 /-- Port of `unmerged_leaves_ok_tree_create`. -/
+public
 theorem unmergedLeavesOk_treeCreate (ln: LeafNode Bytes tkt):
   unmergedLeavesOk (treeCreate ln: TreeSync Bytes tkt 0)
 := by
@@ -64,6 +70,7 @@ theorem unmergedLeavesOk_treeChangePath {l: Nat} (t: TreeSync Bytes tkt l) (li: 
   | node t ih => grind [treeChangePath.eq_def, unmergedLeavesOk_succ _ li]
 
 /-- Port of `unmerged_leaves_ok_tree_update`. -/
+public
 theorem unmergedLeavesOk_treeUpdate {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (ln: LeafNode Bytes tkt)
   (h: unmergedLeavesOk t):
   unmergedLeavesOk (treeUpdate t li ln)
@@ -71,6 +78,7 @@ theorem unmergedLeavesOk_treeUpdate {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat)
   unmergedLeavesOk_treeChangePath t li (some ln) h
 
 /-- Port of `unmerged_leaves_ok_tree_remove`. -/
+public
 theorem unmergedLeavesOk_treeRemove {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (h: unmergedLeavesOk t):
   unmergedLeavesOk (treeRemove t li)
 :=
@@ -88,12 +96,14 @@ theorem unmergedLeavesOk_mkBlankTree (l p: Nat):
     simp_all [mkBlankTree]
 
 /-- Port of `unmerged_leaves_ok_tree_extend`. -/
+public
 theorem unmergedLeavesOk_treeExtend {l: Nat} (t: TreeSync Bytes tkt l) (h: unmergedLeavesOk t):
   unmergedLeavesOk (treeExtend t)
 := by
   grind [treeExtend, unmergedLeavesOk.eq_def, unmergedLeavesOk_mkBlankTree, mkBlankTree]
 
 /-- Port of `unmerged_leaves_ok_tree_truncate`. -/
+public
 theorem unmergedLeavesOk_treeTruncate {l: Nat} (t: TreeSync Bytes tkt (l+1)) (h: unmergedLeavesOk t):
   unmergedLeavesOk (treeTruncate t)
 := by
@@ -136,6 +146,7 @@ theorem unmergedLeafConsistent_treeAdd_other {l: Nat} (t: TreeSync Bytes tkt l) 
     grind [unmergedLeafConsistent_succ _ li, Tree.containsLeafIndex]
 
 /-- Port of `unmerged_leaves_ok_tree_add`. -/
+public
 theorem unmergedLeavesOk_treeAdd {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (lp: LeafNode Bytes tkt)
   (t': TreeSync Bytes tkt l) (h: treeAdd t li lp = .success t') (hli: t.containsLeafIndex li) (hok: unmergedLeavesOk t):
   unmergedLeavesOk t'
@@ -158,6 +169,7 @@ section CryptoBytes
 variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes}
 
 /-- Port of `unmerged_leaves_ok_apply_path_aux`. -/
+public
 theorem unmergedLeavesOk_applyPathAux {l: Nat}
   (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l) (parentParentHash: Bytes)
   (t': TreeSync Bytes tkt l) (h: applyPathAux t li p parentParentHash = .success t') (hok: unmergedLeavesOk t):
@@ -172,6 +184,7 @@ theorem unmergedLeavesOk_applyPathAux {l: Nat}
     cases newOptContent <;> simp_all [applyPathAux_position _ _ _ _ _ h1, unmergedLeavesSorted]
 
 /-- Port of `unmerged_leaves_ok_apply_path`. -/
+public
 theorem unmergedLeavesOk_applyPath {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat) (p: PathSync Bytes tkt l)
   (t': TreeSync Bytes tkt l) (h: applyPath t li p = .success t') (hok: unmergedLeavesOk t):
   unmergedLeavesOk t'
