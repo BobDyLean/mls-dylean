@@ -1,6 +1,7 @@
 module
 
 public import MLS.Symbolic.Code.Symbolic
+public import MLS.Common.Proofs.Crypto.Derived
 import all DY.EquationalTheory.Literal
 
 /-!
@@ -10,6 +11,10 @@ symbolic bytes are terms, so their constructors are injective and have disjoint 
 Port-specific differences:
 - DyLean's bytes functor is abstract: bytes built by different constructors are distinguished
   by their usages or labels under the bytes invariants (e.g. `literalToBytes_ne_kdfExtract`).
+
+It also contains the weakenings of the well-formedness of messages (Comparse's `wf_weaken_lemma`)
+used by the invariants of states (`wf_publishable_later`, `wf_knowableBy_of_publishable`),
+proved on the serialized message (`pred_serializeNE_iff`), as DyLean does.
 -/
 
 namespace MLS
@@ -64,5 +69,35 @@ theorem literalToBytes_ne_kdfExtract (lit: ByteArray) (salt ikm: Bytes):
     Usage.nothing, Usage.kdfExpandKey] at this
 
 end Disjointness
+
+section WellFormed
+
+open Comparse
+
+variable [HasSymbolicInvariants]
+
+/-- Publishable messages stay publishable when the trace grows (MLS* uses `wf_weaken_lemma`). -/
+public
+theorem wf_publishable_later {α: Type} (mf: NonExtensibleMessageFormat Bytes α) (tr1 tr2: ProofTrace) (x: α)
+  : tr1 ≤ tr2 →
+    mf.wf (Bytes.Publishable · tr1) x →
+    mf.wf (Bytes.Publishable · tr2) x
+:= by
+  rw [← pred_serializeNE_iff, ← pred_serializeNE_iff]
+  grind
+
+grind_pattern wf_publishable_later => tr1 ≤ tr2, mf.wf (Bytes.Publishable · tr1) x
+grind_pattern [grind_later] wf_publishable_later => tr1 ≤ tr2, mf.wf (Bytes.Publishable · tr1) x
+
+/-- Publishable messages are knowable by any label (MLS* uses `wf_weaken_lemma`). -/
+public
+theorem wf_knowableBy_of_publishable {α: Type} (mf: NonExtensibleMessageFormat Bytes α) (l: Label) (tr: ProofTrace) (x: α)
+  : mf.wf (Bytes.Publishable · tr) x →
+    mf.wf (Bytes.KnowableBy l · tr) x
+:= by
+  rw [← pred_serializeNE_iff, ← pred_serializeNE_iff]
+  grind [canFlowTrans]
+
+end WellFormed
 
 end MLS

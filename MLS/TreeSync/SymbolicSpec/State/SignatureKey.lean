@@ -14,7 +14,7 @@ Port-specific differences:
   are ghost arguments of the proofs in DyLean (`Random.genRand`).
 - The labels (`signature_key_label`, …) and the predicates (`is_signature_key_sk`, `is_signature_key_vk`)
   are in `MLS.TreeSync.SymbolicProofs.State.SignatureKey`;
-  the state invariant (`treesync_signature_key_state_pred`) and the proofs are not ported yet.
+  so are the state invariant (`treesync_signature_key_state_pred`) and the proofs.
 -/
 
 namespace MLS.TreeSync

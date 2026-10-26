@@ -22,7 +22,7 @@ Port-specific differences:
   (see `MLS.TreeSync.API.Types`).
 - `tokens_type` and `ps_tokens_type` (which work around an F* bug) are not ported,
   and neither is `ps_dy_as_tokens` (it is `ASTokens.mf DyAsToken.mf`).
-- The invariants (`treesync_public_state_pred`, …) and the proofs are not ported yet.
+- The invariants (`treesync_public_state_pred`, …) and the proofs are in `MLS.TreeSync.SymbolicProofs.State.Tree`.
 -/
 
 namespace MLS.TreeSync

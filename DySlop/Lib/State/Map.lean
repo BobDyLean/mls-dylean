@@ -14,13 +14,20 @@
   - `find_value` fails when the key is not found (`Traceful` already supports failure).
   - DY* requires keys to have a decidable equality (`eqtype`);
     here, keys are compared by their serialization, which is equivalent since their format is non-ambiguous.
-  - The invariants (`map_predicate`, `map_session_invariant`) and their lemmas are not ported yet.
+  - As DyLean's state invariants (`PersistentLocalState.CompromisableLocalStateInv`), the map predicate
+    is a class, `MapPred K V` (one per map type), which gives the invariant of maps (`MapPred.instInv`,
+    DY*'s `map_session_invariant`); DY*'s `has_map_session_invariant mpred` is the instance `MapPred K V`.
+  - The map predicate has no session identifier, and the knowability of keys and values
+    (`pred_knowable`) is stated for the label of any map containing them
+    (in DyLean, the label of a state is the compromise of this very state).
+  - `find_value_same_trace` is not ported (DyLean's Hoare triples do not state that the trace is unchanged).
 -/
 
 module
 
 public import DY.Comparse
 public import DY.Actions.PersistentLocalState
+import DY.Meta.Step
 
 open DY DY.Comparse
 
@@ -128,6 +135,55 @@ instance Map.ps: ParseableSerializeable (Map K V) := .make <|
 
 end Formats
 
+/-! ## Map invariants -/
+
+section Invariants
+
+open PersistentLocalState
+
+variable [ExecTraceTypes] [ProofTraceTypes]
+variable [BytesFunctor] [BytesInvariants] [BytesLength]
+variable [BytesFunctor.Has Literal.SubF] [BytesLength.Has Literal.SubF.length] [BytesInvariants.Has Literal.invariants]
+variable [BytesFunctor.Has Concat.SubF] [BytesLength.Has Concat.SubF.length] [BytesInvariants.Has Concat.invariants]
+
+/--
+  Port of `map_predicate`: the predicate relating a key and its associated value, in the maps of type `Map K V`.
+  The key and the value must be knowable by the label of any map of the principal containing them.
+-/
+public
+class MapPred (K V: Type) [MapTypes K V] [ExecTraceTypes.Has (Compromise.ExecEntryT (Map K V))] where
+  pred: ProofTrace → Participant → K → V → Prop
+  pred_later: ∀ tr1 tr2 prin key value, tr1 ≤ tr2 → pred tr1 prin key value → pred tr2 prin key value
+  pred_knowable: ∀ tr prin key value (m: Map K V), { key, value } ∈ m.keyValues → pred tr prin key value →
+    (MapTypes.mfKey (V := V)).wf (Bytes.KnowableBy (label prin m) · tr) key ∧
+    (MapTypes.mfValue (K := K)).wf (Bytes.KnowableBy (label prin m) · tr) value
+
+grind_pattern MapPred.pred_later => tr1 ≤ tr2, MapPred.pred tr1 prin key value
+grind_pattern [grind_later] MapPred.pred_later => tr1 ≤ tr2, MapPred.pred tr1 prin key value
+
+variable {K V: Type} [MapTypes K V] [ExecTraceTypes.Has (Compromise.ExecEntryT (Map K V))] [MapPred K V]
+
+/-- Port of `map_invariant` (with `map_elem_invariant`). -/
+@[expose]
+public
+def MapPred.Invariant (tr: ProofTrace) (prin: Participant) (m: Map K V): Prop :=
+  ∀ x ∈ m.keyValues, MapPred.pred tr prin x.key x.value
+
+/-- Port of `map_session_invariant`: the invariant of the maps of type `Map K V`. -/
+public
+instance MapPred.instInv: CompromisableLocalStateInv (Map K V) where
+  invariant prin m tr := MapPred.Invariant tr prin m
+  invariant_later prin m tr1 tr2 := by
+    grind [MapPred.Invariant]
+  invariant_implies_KnowableBy prin m tr h := by
+    simp only [IsWellFormed, ParseableSerializeable.mf, MapElem.mf]
+    simp only [Comparse.ExtensibleMessageFormat.isomorphic.wf_eq, Comparse.ExtensibleMessageFormat.list.wf_eq,
+      Comparse.NonExtensibleMessageFormat.isomorphic.wf_eq, Comparse.NonExtensibleMessageFormat.prod.wf_eq, MapElem.g, Map.g]
+    intro ⟨key, value⟩ hmem
+    exact MapPred.pred_knowable tr prin key value m hmem (h _ hmem)
+
+end Invariants
+
 /-! ## Map API -/
 
 section API
@@ -182,5 +238,100 @@ def findValue (prin: Participant) (handle: Nat) (key: K): Traceful V := do
   | none => failure
 
 end API
+
+/-! ## Map API proofs -/
+
+section FindValueAux
+
+variable [BytesFunctor] [BytesLength]
+variable [BytesFunctor.Has Literal.SubF] [BytesLength.Has Literal.SubF.length]
+variable [BytesFunctor.Has Concat.SubF] [BytesLength.Has Concat.SubF.length]
+variable {K V: Type} [MapTypes K V]
+
+/-- Port of the postcondition of `find_value_aux`. -/
+theorem mem_of_findValueAux (key: K) (l: List (MapElem K V)) (value: V):
+  findValueAux key l = some value → { key, value } ∈ l
+:= by
+  have hinj: Function.Injective (MapTypes.mfKey (K := K) (V := V)).toExtensible.serialize := by
+    intro x y h
+    have := congrArg (MapTypes.mfKey (K := K) (V := V)).toExtensible.parse h
+    simp only [Comparse.ExtensibleMessageFormat.IsNonAmbiguous.parse_serialize_inv] at this
+    grind
+  induction l with
+  | nil => simp [findValueAux]
+  | cons h t ih =>
+    obtain ⟨hkey, hvalue⟩ := h
+    simp only [findValueAux]
+    split
+    · have := hinj ‹_›
+      grind
+    · grind
+
+end FindValueAux
+
+section Proofs
+
+open PersistentLocalState
+
+variable [ExecTraceTypes] [ProofTraceTypes] [TraceInvariant]
+variable [BytesFunctor] [BytesInvariants] [BytesLength]
+variable [BytesFunctor.Has Literal.SubF] [BytesLength.Has Literal.SubF.length]
+variable [BytesFunctor.Has Concat.SubF] [BytesLength.Has Concat.SubF.length]
+variable [BytesInvariants.Has Literal.invariants] [BytesInvariants.Has Concat.invariants]
+variable {K V: Type} [MapTypes K V] [ExecTraceTypes.Has (Compromise.ExecEntryT (Map K V))] [MapPred K V]
+variable [ExecTraceTypes.Has (State.ExecEntryT (Map K V))]
+variable [ProofTraceTypes.Has (State.ProofEntryT (Map K V))] [TraceInvariant.Has (State.ProofEntryT (Map K V))]
+
+/-- Port of `initialize_map_invariant`. -/
+@[instance]
+public
+theorem initializeMap.proof (prin: Participant):
+  HoareTriple
+    (initializeMap K V prin)
+    (fun _ => True)
+    (fun _ _ => True)
+:= by
+  unfold initializeMap
+  step by
+    simp [LocalStateInv.invariant, MapPred.Invariant]
+  trivial
+
+/-- Port of `add_key_value_invariant`. -/
+@[instance]
+public
+theorem addKeyValue.proof (prin: Participant) (handle: Nat) (key: K) (value: V):
+  HoareTriple
+    (addKeyValue prin handle key value)
+    (fun tr => MapPred.pred tr prin key value)
+    (fun _ _ => True)
+:= by
+  unfold addKeyValue
+  step
+  step_intro
+  step by
+    simp only [LocalStateInv.invariant] at *
+    grind [MapPred.Invariant]
+  trivial
+
+/-- Port of `find_value_invariant`. -/
+@[instance]
+public
+theorem findValue.proof (prin: Participant) (handle: Nat) (key: K):
+  HoareTriple
+    (findValue prin handle key: Traceful V)
+    (fun _ => True)
+    (fun value tr => MapPred.pred tr prin key value)
+:= by
+  unfold findValue
+  step
+  split
+  · step
+    have := mem_of_findValueAux key _ _ ‹_›
+    simp only [LocalStateInv.invariant] at *
+    grind [MapPred.Invariant]
+  · simp only [WP.wp, Traceful.run_failure]
+    exists tr
+
+end Proofs
 
 end DySlop.Map

@@ -63,6 +63,10 @@ public import MLS.TreeSync.Proofs.TreeHash
 public import MLS.TreeSync.Proofs.ParentHash
 public import MLS.TreeSync.Proofs.ParentHashGuarantees
 public import MLS.TreeSync.SymbolicProofs.State.SignatureKey
+public import MLS.TreeSync.SymbolicProofs.State.Tree
+public import MLS.TreeSync.SymbolicProofs.State.AuthServiceCache
+public import MLS.TreeSync.SymbolicProofs.State.GroupManager
+public import MLS.TreeSync.SymbolicProofs.State.KeyPackageManager
 public import MLS.TreeSync.SymbolicProofs.AuthService
 public import MLS.TreeSync.SymbolicProofs.IsWellFormed
 public import MLS.TreeSync.SymbolicProofs.LeafNodeSignature

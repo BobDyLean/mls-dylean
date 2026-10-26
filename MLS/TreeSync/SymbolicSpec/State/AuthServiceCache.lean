@@ -11,7 +11,7 @@ a map from (signature verification key, credential) to the tokens of the Authent
 
 Port-specific differences:
 - The map is a DyLean local state (see `DySlop.Map`): its handle changes when it is updated.
-- The invariants (`as_cache_pred`, …) are not ported yet.
+- The invariants (`as_cache_pred`, …) are in `MLS.TreeSync.SymbolicProofs.State.AuthServiceCache`.
 -/
 
 namespace MLS.TreeSync

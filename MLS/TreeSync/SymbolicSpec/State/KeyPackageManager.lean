@@ -11,7 +11,7 @@ a map from key packages to the handle of the corresponding private state.
 Port-specific differences:
 - The map is a DyLean local state (see `DySlop.Map`): its handle changes when it is updated.
 - States are identified by handles (`Nat`) instead of session identifiers (`state_id`).
-- The invariants (`key_package_manager_pred`, …) are not ported yet.
+- The invariants (`key_package_manager_pred`, …) are in `MLS.TreeSync.SymbolicProofs.State.KeyPackageManager`.
 -/
 
 namespace MLS.TreeSync

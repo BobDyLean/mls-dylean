@@ -13,7 +13,7 @@ Port-specific differences:
 - States are identified by handles (`Nat`) instead of session identifiers (`state_id`).
   As DyLean's states are immutable, the handle of the public state changes when it is updated:
   the group manager must then be updated too.
-- The invariants (`group_manager_pred`, …) are not ported yet.
+- The invariants (`group_manager_pred`, …) are in `MLS.TreeSync.SymbolicProofs.State.GroupManager`.
 -/
 
 namespace MLS.TreeSync

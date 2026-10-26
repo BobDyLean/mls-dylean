@@ -642,6 +642,30 @@ def IsSignatureKey (usg: Usage) (l: Label) (b: Bytes) (tr: ProofTrace): Prop :=
 
 end KeyPredicates
 
+section HoareTriples
+
+variable [ExecTraceTypes] [ProofTraceTypes]
+variable [BytesFunctor] [BytesFunctor.Has SubF]
+variable [SignPred]
+variable [BytesInvariants] [BytesInvariants.Has invariants]
+
+/-- Hoare triple of `vk` (as DyLean's). -/
+public
+instance
+  (sk: Bytes)
+  : HoareTriplePure
+    (vk sk)
+    (fun tr => sk.Invariant tr)
+    (fun res tr =>
+      res.Invariant tr ∧
+      res.label tr = Label.pub
+    )
+where
+  pf := by
+    grind [vk.Invariant, vk.label]
+
+end HoareTriples
+
 section AttackerKnowledgeTheorem
 
 variable [ExecTraceTypes] [ProofTraceTypes] [TraceInvariant]
