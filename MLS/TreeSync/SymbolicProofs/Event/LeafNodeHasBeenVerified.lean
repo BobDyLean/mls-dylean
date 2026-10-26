@@ -12,8 +12,7 @@ the invariant of the event logged when a principal verifies a leaf node.
 
 Port-specific differences:
 - DY*'s `has_event_pred` is DySlop's `ProtocolEvent.EventInv.Has` (see `DySlop.Lib.Event`).
-- The proofs of the traceful functions (`log_leaf_node_verification_event_proof`, …)
-  and `intro_i_have_verified_every_leaf_node` are not ported yet.
+- The proofs of the traceful functions (`log_leaf_node_verification_event_proof`, …) are not ported yet.
 -/
 
 namespace MLS.TreeSync
@@ -84,6 +83,25 @@ theorem IHaveVerifiedLeafNode_of_leafAt {l: Nat} (tr: ExecTrace) (me: Participan
     grind [leafAt.eq_def]
   | node t ih =>
     rw [IHaveVerifiedEveryLeafNode_succ _ _ _ _ li] at h
+    grind [leafAt.eq_def]
+
+/--
+Port of `intro_i_have_verified_every_leaf_node`.
+MLS*'s `li: leaf_index l i` is the hypothesis `t.containsLeafIndex li`; MLS*'s `match leaf_at t li` is `leafAt t li = some ln`.
+-/
+public
+theorem IHaveVerifiedEveryLeafNode_intro {l: Nat} (tr: ExecTrace) (me: Participant) (t: TreeSync Bytes tkt l)
+  (groupId: MlsBytes Bytes)
+  (h: ∀ li ln, t.containsLeafIndex li → leafAt t li = some ln → IHaveVerifiedLeafNode tr me ln groupId li):
+  IHaveVerifiedEveryLeafNode tr me t groupId
+:= by
+  induction t using Tree.leftRightInduction with
+  | leaf t =>
+    rw [IHaveVerifiedEveryLeafNode_zero]
+    simp only [leafAt.eq_def, Tree.intoChildSiblingView_zero] at h
+    grind [Option.mem_def]
+  | node t ihl ihr =>
+    rw [IHaveVerifiedEveryLeafNode_succ _ _ _ _ t.position]
     grind [leafAt.eq_def]
 
 /-- Port of `i_have_verified_every_leaf_node_later`. -/

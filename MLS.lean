@@ -67,6 +67,7 @@ public import MLS.TreeSync.SymbolicProofs.AuthService
 public import MLS.TreeSync.SymbolicProofs.IsWellFormed
 public import MLS.TreeSync.SymbolicProofs.LeafNodeSignature
 public import MLS.TreeSync.SymbolicProofs.Event.LeafNodeHasBeenVerified
+public import MLS.TreeSync.SymbolicProofs.Event.LeafNodeHasBeenVerified.Invariant
 public import MLS.TreeSync.SymbolicProofs.API
 public import MLS.TreeKEM.Code.NetworkTypes
 public import MLS.TreeKEM.Code.Types
