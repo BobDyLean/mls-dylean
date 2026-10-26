@@ -1,6 +1,6 @@
 module
 
-public import MLS.Common.Code.NetworkTypes
+public import MLS.Common.Code.Crypto.Derived
 public import DY.Actions.PersistentLocalState
 
 /-!
@@ -33,9 +33,8 @@ def credentialToPrincipal (cred: Credential Bytes): Option Participant :=
 public
 def principalToCredential (p: Participant): Option (Credential Bytes) :=
   let pBytes: Bytes := NonExtensibleMessageFormat.slowString.toExtensible.serialize p
-  if h: mlsNatPred (BytesLike.length pBytes) then
-    some (.basic ⟨pBytes, h⟩)
-  else
-    none
+  match mkMlsBytes pBytes "principal_to_credential" "p_bytes" with
+  | .success identity => some (.basic identity)
+  | _ => none
 
 end MLS.TreeSync

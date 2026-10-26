@@ -212,10 +212,8 @@ public
 def createSignatureKeypair (p: Participant): Traceful (Nat × SignaturePublicKey Bytes) := do
   let privateSi ← mkSignatureKey p
   let verificationKey ← getSignatureKeyVk p privateSi
-  if h: mlsNatPred (BytesLike.length verificationKey) then
-    pure (privateSi, ⟨verificationKey, h⟩)
-  else
-    failure
+  let verificationKey ← extractResult (mkMlsBytes verificationKey "create_signature_keypair" "verification_key")
+  pure (privateSi, verificationKey)
 
 /-! ## Sign stuff -/
 

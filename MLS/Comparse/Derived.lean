@@ -11,6 +11,8 @@ Message formats of Comparse (F*) that are not (yet) available in DyLean's Compar
 - `NonExtensibleMessageFormat.empty`: the format of `Empty`, which never parses.
   It is used to build tagged unions where some tags are invalid.
 - `NonExtensibleMessageFormat.lengthPrefix`: port of `length_prefix_ps_whole`.
+- `NonExtensibleMessageFormat.slowList`: lists prefixed by their length (in `slowNat`),
+  the non-extensible format of lists used by the symbolic states (port of Comparse's `ps_list`).
 - `NonExtensibleMessageFormat.quicNat`: port of `ps_quic_nat`,
   the variable-length integer encoding of QUIC (RFC 9000, Section 16).
 - `ExtensibleMessageFormat.list.serialize_nil`, `serialize_cons`: equations of DyLean's `list`,
@@ -476,5 +478,92 @@ theorem NonExtensibleMessageFormat.quicNat.wf_eq (pred: Bytes → Prop) [BytesCo
   (quicNat: NonExtensibleMessageFormat Bytes QuicNat).wf pred x = True
 := by
   simp [quicNat, quicNat.firstByte]
+
+/-! ## Length-prefixed lists -/
+
+namespace NonExtensibleMessageFormat.slowList
+
+@[expose]
+public
+def lenF (n: Nat): {_n: Nat // True} := ⟨n, trivial⟩
+
+@[expose]
+public
+def lenG (n: {_n: Nat // True}): Nat := n.val
+
+public
+instance: LeftInverse lenG lenF := ⟨by intro _; rfl⟩
+public
+instance: RightInverse lenG lenF := ⟨by intro _; rfl⟩
+
+/-- The length of the list, in unary (`slowNat`). -/
+@[expose]
+public
+def lenMf: NonExtensibleMessageFormat Bytes {_n: Nat // True} :=
+  isomorphic slowNat lenF lenG
+deriving IsNonAmbiguous, HasUniqueRepresentation, ParseConsumes
+
+variable {a: Type} {mf: NonExtensibleMessageFormat Bytes a} [mf.ParseConsumes]
+
+@[expose]
+public
+def f (x: {l: List a // (fun _ => True) (BytesLike.length ((ExtensibleMessageFormat.list mf).serialize l))}): List a :=
+  x.val
+
+@[expose]
+public
+def g (l: List a): {l: List a // (fun _ => True) (BytesLike.length ((ExtensibleMessageFormat.list mf).serialize l))} :=
+  ⟨l, trivial⟩
+
+public
+instance: LeftInverse (g (mf := mf)) (f (mf := mf)) := ⟨by intro _; rfl⟩
+public
+instance: RightInverse (g (mf := mf)) (f (mf := mf)) := ⟨by intro _; rfl⟩
+
+end NonExtensibleMessageFormat.slowList
+
+/--
+Lists prefixed by their length (in bytes, encoded with `slowNat`),
+the non-extensible format of lists used by the symbolic states (port of Comparse's `ps_list`).
+-/
+@[expose]
+public
+def NonExtensibleMessageFormat.slowList {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes]:
+  NonExtensibleMessageFormat Bytes (List a)
+:=
+  isomorphic (lengthPrefix (fun _ => True) slowList.lenMf (.list mf)) (slowList.f (mf := mf)) (slowList.g (mf := mf))
+
+namespace NonExtensibleMessageFormat.slowList
+
+public
+instance {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes] [mf.IsNonAmbiguous]:
+  (slowList mf).IsNonAmbiguous
+:= by
+  dsimp only [slowList]
+  infer_instance
+
+public
+instance {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes] [mf.HasUniqueRepresentation]:
+  (slowList mf).HasUniqueRepresentation
+:= by
+  dsimp only [slowList]
+  infer_instance
+
+public
+instance {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes]:
+  (slowList mf).ParseConsumes
+:= by
+  dsimp only [slowList]
+  infer_instance
+
+@[simp]
+public
+theorem wf_eq {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes]
+  (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: List a):
+  (slowList mf).wf pred x = ∀ y ∈ x, mf.wf pred y
+:= by
+  simp [slowList, g, lenMf]
+
+end NonExtensibleMessageFormat.slowList
 
 end Comparse

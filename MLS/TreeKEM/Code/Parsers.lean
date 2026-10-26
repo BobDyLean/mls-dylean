@@ -4,10 +4,12 @@ public import MLS.Symbolic.Code.Parsers
 public import MLS.TreeKEM.Code.Types
 
 /-!
-Port of `MLS.TreeKEM.Parsers` (the parts needed by the ported proofs).
+Port of `MLS.TreeKEM.Parsers`.
 
 Port-specific differences:
-- Only `ps_treekem_leaf` is ported.
+- `ps_hpke_private_key` is not ported: HPKE private keys are plain `Bytes` (their length is not in their type),
+  serialized with `slowBytes`.
+- The formats of trees and paths are `abbrev`s, so that the well-formedness lemmas of `Tree.mf` and `Path.mf` apply to them.
 -/
 
 namespace MLS.TreeKEM
@@ -49,5 +51,48 @@ theorem TreeKEMLeaf.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (
   (TreeKEMLeaf.mf (Bytes := Bytes)).wf pred x = pred x.publicKey
 := by
   simp [TreeKEMLeaf.mf, TreeKEMLeaf.g]
+
+namespace TreeKEMNode
+
+@[expose]
+public
+def f: Bytes × List Nat → TreeKEMNode Bytes :=
+  fun (publicKey, unmergedLeaves) => { publicKey, unmergedLeaves }
+
+@[expose]
+public
+def g: TreeKEMNode Bytes → Bytes × List Nat :=
+  fun { publicKey, unmergedLeaves } => (publicKey, unmergedLeaves)
+
+public
+instance: LeftInverse (g (Bytes := Bytes)) f := ⟨by intro _; rfl⟩
+public
+instance: RightInverse (g (Bytes := Bytes)) f := ⟨by intro _; rfl⟩
+
+end TreeKEMNode
+
+/-- Port of `ps_treekem_node`. -/
+@[expose]
+public
+def TreeKEMNode.mf: NonExtensibleMessageFormat Bytes (TreeKEMNode Bytes) :=
+  .isomorphic (.prod .slowBytes (.slowList .slowNat)) TreeKEMNode.f TreeKEMNode.g
+deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+public
+theorem TreeKEMNode.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: TreeKEMNode Bytes):
+  (TreeKEMNode.mf (Bytes := Bytes)).wf pred x = pred x.publicKey
+:= by
+  simp [TreeKEMNode.mf, TreeKEMNode.g]
+
+/-- Port of `ps_treekem`. -/
+public
+abbrev TreeKEM.mf (l: Nat): NonExtensibleMessageFormat Bytes (TreeKEM Bytes l) :=
+  Tree.mf (MlsOption.mf TreeKEMLeaf.mf) (MlsOption.mf TreeKEMNode.mf) l
+
+/-- Port of `ps_treekem_priv`. -/
+public
+abbrev TreeKEMPriv.mf (l: Nat): NonExtensibleMessageFormat Bytes (TreeKEMPriv Bytes l) :=
+  Path.mf .slowBytes (MlsOption.mf .slowBytes) l
 
 end MLS.TreeKEM
