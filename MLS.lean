@@ -22,6 +22,7 @@ public import MLS.Common.SymbolicProofs.Crypto.Derived.MlsLabel
 public import MLS.Common.SymbolicProofs.Crypto.Derived.SignWithLabel
 public import MLS.Common.SymbolicProofs.Crypto.Derived.ExpandWithLabel
 public import MLS.Common.SymbolicProofs.Crypto.Derived.EncryptWithLabel
+public import MLS.Common.SymbolicProofs.Crypto.Derived.RefHash
 public import MLS.Common.Code.NetworkTypes
 public import MLS.Common.Code.Extensions
 public import MLS.Common.Code.Tree
@@ -101,6 +102,9 @@ public import MLS.Bootstrap.SymbolicSpec.State.KeyPackageStore
 public import MLS.Bootstrap.SymbolicSpec.KeyPackage
 public import MLS.Bootstrap.SymbolicProofs.State.InitKey
 public import MLS.Bootstrap.SymbolicProofs.KeyPackage
+public import MLS.Bootstrap.SymbolicProofs.KeyPackageRef
+public import MLS.Bootstrap.SymbolicProofs.Welcome
+public import MLS.Bootstrap.SymbolicProofs.GroupInfo
 public import MLS.TreeKEM.SymbolicSpec.State.NodeKey
 public import MLS.TreeKEM.SymbolicProofs.State.NodeKey
 public import MLS.TreeKEM.SymbolicProofs.Tree.Labels

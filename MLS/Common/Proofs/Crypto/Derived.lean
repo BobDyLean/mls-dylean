@@ -82,6 +82,15 @@ it would choose the instance hypothesis `mf.IsNonAmbiguous` as the pattern, whic
 -/
 grind_pattern serializeNE_injective => serializeNE mf
 
+/-- Parsing a serialized message gives it back. -/
+@[simp, grind =]
+public
+theorem parse_serializeNE {Bytes: Type} [BytesLike Bytes] {α: Type} (mf: NonExtensibleMessageFormat Bytes α) [mf.IsNonAmbiguous]
+  (x: α):
+  mf.toExtensible.parse (serializeNE mf x) = some x
+:=
+  ExtensibleMessageFormat.IsNonAmbiguous.parse_serialize_inv mf.toExtensible x
+
 /-- `serialize_wf_lemma` (and its converse) for `serializeNE`. -/
 public
 theorem pred_serializeNE_iff {Bytes: Type} [BytesLike Bytes] {α: Type} (mf: NonExtensibleMessageFormat Bytes α)

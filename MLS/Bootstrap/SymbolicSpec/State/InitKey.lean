@@ -11,8 +11,10 @@ Port-specific differences:
 - States are identified by handles instead of session identifiers.
 - The usage and label of the init key (the arguments of MLS*'s `my_mk_rand`)
   are ghost arguments of the proofs in DyLean (`Random.genRand`).
-- The label is in `MLS.Bootstrap.SymbolicProofs.State.InitKey`;
-  the usages, invariants and proofs are not ported yet.
+- The label and the usages are in `MLS.Bootstrap.SymbolicProofs.State.InitKey`;
+  the state invariant and the proofs of the traceful functions are not ported yet.
+- `InitKeyUsageT` (MLS*'s `init_key_usage_t`) has no `ParseableSerializeable` instance:
+  its usage data is serialized with `serializeNE InitKeyUsageT.mf`.
 -/
 
 namespace MLS.Bootstrap
@@ -64,6 +66,42 @@ theorem BootstrapInitKeyState.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePr
 public
 instance BootstrapInitKeyState.ps: ParseableSerializeableNE BootstrapInitKeyState :=
   .make BootstrapInitKeyState.mf
+
+/-- Port of `init_key_usage_t`. -/
+public
+structure InitKeyUsageT [BytesFunctor] where
+  me: Participant
+  leafPublicKey: Bytes
+
+namespace InitKeyUsageT
+
+public
+def f: Participant × Bytes → InitKeyUsageT :=
+  fun (me, leafPublicKey) => { me, leafPublicKey }
+
+public
+def g: InitKeyUsageT → Participant × Bytes :=
+  fun { me, leafPublicKey } => (me, leafPublicKey)
+
+public
+instance: LeftInverse g f := ⟨by intro _; rfl⟩
+public
+instance: RightInverse g f := ⟨by intro _; rfl⟩
+
+end InitKeyUsageT
+
+/-- Port of `ps_init_key_usage_t`. -/
+public
+def InitKeyUsageT.mf: NonExtensibleMessageFormat Bytes InitKeyUsageT :=
+  .isomorphic (.prod .slowString .slowBytes) InitKeyUsageT.f InitKeyUsageT.g
+deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+public
+theorem InitKeyUsageT.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: InitKeyUsageT):
+  InitKeyUsageT.mf.wf pred x = pred x.leafPublicKey
+:= by
+  simp [InitKeyUsageT.mf, InitKeyUsageT.g]
 
 variable [ExecTraceTypes] [ExecTraceTypes.Has Random.ExecEntryT]
 variable [ExecTraceTypes.Has (PersistentLocalState.State.ExecEntryT BootstrapInitKeyState)]
