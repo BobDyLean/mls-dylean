@@ -76,6 +76,7 @@ theorem treekemInvariant_left_right {l: Nat} (t: TreeKEM Bytes (l+1)):
   rw [treekemInvariant.eq_def]
   rfl
 
+public
 theorem treekemInvariant_succ {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat):
   treekemInvariant t ↔
     (∀ pn ∈ t.nodeContent, ∀ x ∈ pn.unmergedLeaves, unmergedLeafExists t x) ∧
@@ -383,6 +384,7 @@ section CryptoBytes
 
 variable [CryptoBytes Bytes]
 
+public
 theorem generatePathSecrets_succ {l: Nat} (t: TreeKEM Bytes (l+1)) (leafSk pathSecret0: Bytes) (li: Nat)
   (p: PathSecrets Bytes (l+1)) (commitSecret: Bytes)
   (h: generatePathSecrets t leafSk pathSecret0 li = .success (p, commitSecret)):

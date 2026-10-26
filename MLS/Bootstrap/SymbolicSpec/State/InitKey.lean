@@ -11,7 +11,8 @@ Port-specific differences:
 - States are identified by handles instead of session identifiers.
 - The usage and label of the init key (the arguments of MLS*'s `my_mk_rand`)
   are ghost arguments of the proofs in DyLean (`Random.genRand`).
-- The labels, usages, invariants and proofs are not ported yet.
+- The label is in `MLS.Bootstrap.SymbolicProofs.State.InitKey`;
+  the usages, invariants and proofs are not ported yet.
 -/
 
 namespace MLS.Bootstrap

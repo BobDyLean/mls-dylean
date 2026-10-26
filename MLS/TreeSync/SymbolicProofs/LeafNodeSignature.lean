@@ -212,12 +212,14 @@ theorem lastTreeEquivalent (tl1 tl2: TreeSyncList Bytes tkt) (li: Nat)
     · obtain ⟨x1, x2, h1, h2, h3⟩ := ih tail2 h.2 (by simp)
       grind
 
+public
 theorem TreeParentHashLinkedP.isSubtreeOf {x y: OneTreeSync Bytes tkt} (h: TreeParentHashLinkedP x y):
   x.2.IsSubtreeOf y.2
 := by
   obtain ⟨_, _⟩ := x
   obtain ⟨_ | _, _⟩ := y <;> simp_all [TreeParentHashLinkedP, ParentHashLinkedP]
 
+public
 theorem TreeParentHashLinkedP.nodeHasParentHash {x y: OneTreeSync Bytes tkt} (h: TreeParentHashLinkedP x y):
   nodeHasParentHash x.2
 := by
@@ -225,6 +227,7 @@ theorem TreeParentHashLinkedP.nodeHasParentHash {x y: OneTreeSync Bytes tkt} (h:
   obtain ⟨_ | _, _⟩ := y <;> grind [TreeParentHashLinkedP, ParentHashLinkedP, parentHashLinked, nodeHasParentHash_of_parentHashCorrect]
 
 /-- Port of `tree_list_head_subtree_tail`. -/
+public
 theorem treeListIsParentHashLinkedP_head_isSubtreeOf_last (tl: TreeSyncList Bytes tkt) (x y: OneTreeSync Bytes tkt)
   (h: TreeListIsParentHashLinkedP tl) (hx: tl.head? = some x) (hy: tl.getLast? = some y):
   x.2.IsSubtreeOf y.2
@@ -240,6 +243,7 @@ theorem treeListIsParentHashLinkedP_head_isSubtreeOf_last (tl: TreeSyncList Byte
       exact h.1.isSubtreeOf.trans (ih b h.2 rfl (by simpa using hy))
 
 /-- The first tree of a parent-hash linked list ending with a tree with a parent hash has a parent hash. -/
+public
 theorem treeListIsParentHashLinkedP_head_nodeHasParentHash (tl: TreeSyncList Bytes tkt) (x y: OneTreeSync Bytes tkt)
   (h: TreeListIsParentHashLinkedP tl) (hx: tl.head? = some x) (hy: tl.getLast? = some y) (hph: nodeHasParentHash y.2):
   nodeHasParentHash x.2
@@ -309,6 +313,7 @@ theorem canonicalize_leaf (ln: LeafNode Bytes tkt) (li: Nat):
 /-! ## Proof of verification, for a state -/
 
 /-- Port of `valid_leaves_invariant_subtree`. -/
+public
 theorem validLeavesInvariant_of_isSubtreeOf (groupId: MlsBytes Bytes) {ld lp: Nat}
   (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt lp)
   (hinv: validLeavesInvariant groupId p) (hsub: d.IsSubtreeOf p):
@@ -317,6 +322,7 @@ theorem validLeavesInvariant_of_isSubtreeOf (groupId: MlsBytes Bytes) {ld lp: Na
   induction hsub <;> grind [validLeavesInvariant_succ]
 
 /-- Port of `is_well_formed_treesync_subtree`. -/
+public
 theorem wf_of_isSubtreeOf (pred: Bytes → Prop) [BytesCompatiblePred pred] {ld lp: Nat}
   (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt lp)
   (hwf: (TreeSync.mf tkt lp).wf pred p) (hsub: d.IsSubtreeOf p):
@@ -330,6 +336,7 @@ theorem wf_of_isSubtreeOf (pred: Bytes → Prop) [BytesCompatiblePred pred] {ld 
 Port of `all_credentials_ok_subtree`.
 The positions of the trees and of the tokens are related by hypotheses (MLS* shares the index `i`).
 -/
+public
 theorem allCredentialsOk_of_isSubtreeOf {TokenT: Type} {asp: ASParameters Bytes TokenT} {ld lp: Nat}
   (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt lp) (astD: ASTokens TokenT ld) (astP: ASTokens TokenT lp)
   (h: allCredentialsOk asp p astP) (hsub: d.IsSubtreeOf p) (hsubAst: astD.IsSubtreeOf astP)

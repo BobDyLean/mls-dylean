@@ -164,6 +164,22 @@ abbrev ExpandWithLabelUsage.Local.getLabel {labels: List String} (l: ExpandWithL
 :=
   Params.Locals.apply ExpandWithLabelUsage.getLabelParams l label (prkUsage, prkLabel, context, length) prkLabel
 
+public
+theorem ExpandWithLabelUsage.Local.getUsage_single {label: String} (lusg: ExpandWithLabelUsage)
+  (prkUsage: Usage) (context: Bytes) (length: Nat)
+  : ExpandWithLabelUsage.Local.getUsage (Locals.single (tag := label) lusg) label prkUsage context length =
+    lusg.getUsage prkUsage context length
+:=
+  Params.Locals.apply_single ExpandWithLabelUsage.getUsageParams lusg _ _
+
+public
+theorem ExpandWithLabelUsage.Local.getLabel_single {label: String} (lusg: ExpandWithLabelUsage)
+  (prkUsage: Usage) (prkLabel: Label) (context: Bytes) (length: Nat)
+  : ExpandWithLabelUsage.Local.getLabel (Locals.single (tag := label) lusg) label prkUsage prkLabel context length =
+    lusg.getLabel prkUsage prkLabel context length
+:=
+  Params.Locals.apply_single ExpandWithLabelUsage.getLabelParams lusg _ _
+
 /-- Port of `mk_kdf_expand_mls_usage`: the KDF.Expand usage defined by local ExpandWithLabel usages. -/
 @[expose, instance_reducible]
 public

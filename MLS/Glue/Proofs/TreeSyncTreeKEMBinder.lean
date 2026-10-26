@@ -172,6 +172,7 @@ theorem leafNodeToTreekemLeaf_eq_iff (ln: LeafNode Bytes tkt) (lnK: TreeKEMLeaf 
   simp
 
 /-- `treesyncToTreekem` on a leaf. -/
+public
 theorem treesyncToTreekem_zero (t: TreeSync Bytes tkt 0):
   treesyncToTreekem t = (LeftRightView.leaf (t.leafContent.map leafNodeToTreekemLeaf) t.position).pack
 := by
@@ -180,6 +181,7 @@ theorem treesyncToTreekem_zero (t: TreeSync Bytes tkt 0):
   cases c <;> rfl
 
 /-- `treesyncToTreekem` on a node. -/
+public
 theorem treesyncToTreekem_left_right {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   treesyncToTreekem t =
     (LeftRightView.node (t.nodeContent.map treesyncToTreekemNode) (treesyncToTreekem t.left) (treesyncToTreekem t.right)).pack
@@ -189,6 +191,7 @@ theorem treesyncToTreekem_left_right {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   rfl
 
 @[simp]
+public
 theorem treesyncToTreekem_position {l: Nat} (t: TreeSync Bytes tkt l):
   (treesyncToTreekem t).position = t.position
 := by
@@ -197,36 +200,42 @@ theorem treesyncToTreekem_position {l: Nat} (t: TreeSync Bytes tkt l):
 grind_pattern treesyncToTreekem_position => (treesyncToTreekem t).position
 
 @[simp]
+public
 theorem leafContent_treesyncToTreekem (t: TreeSync Bytes tkt 0):
   (treesyncToTreekem t).leafContent = t.leafContent.map leafNodeToTreekemLeaf
 := by
   simp [treesyncToTreekem_zero]
 
 @[simp]
+public
 theorem nodeContent_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   (treesyncToTreekem t).nodeContent = t.nodeContent.map treesyncToTreekemNode
 := by
   simp [treesyncToTreekem_left_right]
 
 @[simp]
+public
 theorem left_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   (treesyncToTreekem t).left = treesyncToTreekem t.left
 := by
   simp [treesyncToTreekem_left_right]
 
 @[simp]
+public
 theorem right_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)):
   (treesyncToTreekem t).right = treesyncToTreekem t.right
 := by
   simp [treesyncToTreekem_left_right]
 
 @[simp]
+public
 theorem child_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat):
   (treesyncToTreekem t).child li = treesyncToTreekem (t.child li)
 := by
   grind [treesyncToTreekem_left_right]
 
 @[simp]
+public
 theorem sibling_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat):
   (treesyncToTreekem t).sibling li = treesyncToTreekem (t.sibling li)
 := by
@@ -235,6 +244,7 @@ theorem sibling_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Na
 /-! ## Paths and trees -/
 
 /-- Port of `is_tree_empty_treesync_to_treekem`. -/
+public
 theorem isTreeEmpty_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt l):
   isTreeEmpty (treesyncToTreekem t) = isTreeEmpty t
 := by
@@ -455,6 +465,7 @@ theorem pathsyncPrePathkemRel_externalPathToPath {l: Nat} (t: TreeSync Bytes tkt
   rw [hln, ← getPathLeaf_externalPathsyncPrePathkemRel ps pk hrel]
 
 /-- Port of `leaf_at_treesync_to_treekem`, stated as an equation. -/
+public
 theorem leafAt_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat):
   leafAt (treesyncToTreekem t) li = (leafAt t li).map leafNodeToTreekemLeaf
 := by
@@ -666,6 +677,7 @@ theorem processCommit_stateRel {st: TreeSyncState Bytes tkt TokenT groupId} {liT
   exact treesyncTreekemStateRel_mk _ _ _ _ (applyPath_treesyncTreekemRel _ _ _ _ _ _ h1 rfl hp)
 
 /-- The leaf of `pathSecretsToPrePathkem p` is the public key generated from the leaf of `p`. -/
+public
 theorem pathSecretsToPrePathkem_getPathLeaf {l: Nat} (p: PathSecrets Bytes l) (ppk: PrePathKEM Bytes l)
   (h: pathSecretsToPrePathkem p = .success ppk):
   ∃ sk, CryptoBytes.hpkeGenKeypair p.getPathLeaf = .success (sk, ppk.getPathLeaf.publicKey)
@@ -679,6 +691,7 @@ theorem pathSecretsToPrePathkem_getPathLeaf {l: Nat} (p: PathSecrets Bytes l) (p
       grind [Path.getPathLeaf]
 
 /-- One step of `pathSecretsToPrePathkem` on a node. -/
+public
 theorem pathSecretsToPrePathkem_node {l: Nat} (opn: Option Bytes) (pNext: PathSecrets Bytes l) (ppk: PrePathKEM Bytes (l+1))
   (h: pathSecretsToPrePathkem (.node opn pNext) = .success ppk):
   ∃ oppk ppkNext, ppk = .node oppk ppkNext ∧ pathSecretsToPrePathkem pNext = .success ppkNext ∧

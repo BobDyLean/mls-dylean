@@ -95,4 +95,9 @@ public
 abbrev TreeKEMPriv.mf (l: Nat): NonExtensibleMessageFormat Bytes (TreeKEMPriv Bytes l) :=
   Path.mf .slowBytes (MlsOption.mf .slowBytes) l
 
+/-- The format of `pathkem` (MLS*'s `ps_path ps_treekem_leaf (ps_option ps_update_path_node_nt)`). -/
+public
+abbrev PathKEM.mf (l: Nat): NonExtensibleMessageFormat Bytes (PathKEM Bytes l) :=
+  Path.mf TreeKEMLeaf.mf (MlsOption.mf UpdatePathNode.mf) l
+
 end MLS.TreeKEM

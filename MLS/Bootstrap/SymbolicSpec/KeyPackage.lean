@@ -11,8 +11,8 @@ Port-specific differences:
 - DyLean's events do not record the principal who triggered them (unlike DY*'s `trigger_event prin`):
   the principal is the field `prin` of the event.
 - The event has no tag nor format (MLS*'s `event` instance).
-- Only the specification is ported for now: the predicates (`key_package_sign_pred`,
-  `key_package_has_been_verified_pred`, the labels, …) and the lemmas are not ported yet.
+- The labels are in `MLS.Bootstrap.SymbolicProofs.KeyPackage`; the predicates (`key_package_sign_pred`,
+  `key_package_has_been_verified_pred`, …) and the lemmas are not ported yet.
 -/
 
 namespace MLS.Bootstrap

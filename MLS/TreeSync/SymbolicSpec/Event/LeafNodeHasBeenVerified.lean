@@ -13,8 +13,8 @@ Port-specific differences:
   the principal is the field `prin` of the event.
 - The event has no tag nor format (MLS*'s `event` instance):
   DyLean has one trace entry type per event type (`ProtocolEvent.ExecEntryT (LeafNodeHasBeenVerified tkt)`).
-- Only the specification is ported for now: the event predicate (`leaf_node_has_been_verified_pred`, …)
-  and the lemmas are not ported yet.
+- The event predicate (`leaf_node_has_been_verified_pred`) and the lemmas are in
+  `MLS.TreeSync.SymbolicProofs.Event.LeafNodeHasBeenVerified`.
 -/
 
 namespace MLS.TreeSync

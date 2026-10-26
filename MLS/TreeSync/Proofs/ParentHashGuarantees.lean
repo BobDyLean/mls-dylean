@@ -198,6 +198,7 @@ def isCanonicalized {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat): Bool :=
   isUnmergedLeavesCanonicalized t && isLeafSignatureCanonicalized t li
 
 @[simp]
+public
 theorem canonicalizeLeafSignature_position {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat):
   (canonicalizeLeafSignature t li).position = t.position
 := by
@@ -205,12 +206,14 @@ theorem canonicalizeLeafSignature_position {l: Nat} (t: TreeSync Bytes tkt l) (l
 
 grind_pattern canonicalizeLeafSignature_position => (canonicalizeLeafSignature t li).position
 
+public
 theorem leafContent_canonicalizeLeafSignature (t: TreeSync Bytes tkt 0) (li: Nat):
   (canonicalizeLeafSignature t li).leafContent = t.leafContent.map fun ln => { ln with signature := MlsBytes.empty }
 := by
   grind [canonicalizeLeafSignature.eq_def]
 
 /-- `canonicalizeLeafSignature` of a node, through the child / sibling view for `li`. -/
+public
 theorem canonicalizeLeafSignature_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat):
   (canonicalizeLeafSignature t li).nodeContent = t.nodeContent ∧
   (canonicalizeLeafSignature t li).child li = canonicalizeLeafSignature (t.child li) li ∧
@@ -218,11 +221,13 @@ theorem canonicalizeLeafSignature_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (l
 := by
   grind [canonicalizeLeafSignature.eq_def]
 
+public
 theorem unmergedLeavesOf_zero (t: TreeSync Bytes tkt 0): unmergedLeavesOf t = [] := by
   obtain ⟨_, ⟨_⟩⟩ := t
   rfl
 
 /-- Port of `canonicalize_unmerged_leaves_idempotent`. -/
+public
 theorem canonicalizeUnmergedLeaves_eq_self {l: Nat} (t: TreeSync Bytes tkt l) (h: isUnmergedLeavesCanonicalized t):
   canonicalizeUnmergedLeaves t = t
 := by
@@ -273,6 +278,7 @@ theorem nodeNotBlank_of_nodeHasParentHash {l: Nat} (t: TreeSync Bytes tkt l) (h:
 Port of `get_parent_hash_of_canonicalize`.
 MLS* also proves `node_not_blank (canonicalize t li)`, which follows (`nodeNotBlank_of_nodeHasParentHash`).
 -/
+public
 theorem getParentHashOf_canonicalize {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat):
   getParentHashOf (canonicalize t li) = getParentHashOf t
 := by
@@ -370,6 +376,7 @@ theorem mem_resolution_ofLeafIndex_iff {l: Nat} (t: TreeSync Bytes tkt l) (x: Na
 Port of `last_update_unmerged_leaves_eq`.
 MLS* requires `node_not_blank p`, which is not needed.
 -/
+public
 theorem memUl_unmergedLeavesOf_iff {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes tkt (lp+1)) (x: Nat)
   (hph: nodeHasParentHash d) (hsub: d.IsSubtreeOf p) (hl: ld ≤ lp) (hlu: lastUpdateCorrect d p)
   (hok: unmergedLeavesOk p):
@@ -461,6 +468,7 @@ theorem isTreeEmpty_unAdd {l: Nat} (t: TreeSync Bytes tkt l) (leaves: List UInt3
       grind [Tree.nodeIndex]
 
 /-- Port of `un_add_myself` and `un_add_myself_aux`. -/
+public
 theorem filter_unAddUnmergedLeaf_self (l: List UInt32): l.filter (fun x => unAddUnmergedLeaf l x.toNat) = [] := by
   grind [List.filter_eq_nil_iff, unAddUnmergedLeaf, memUl_iff]
 
@@ -539,6 +547,7 @@ theorem canonicalize_position {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat):
 grind_pattern canonicalize_position => (canonicalize t li).position
 
 /-- The canonicalization of a node, through the child / sibling view for `li`. -/
+public
 theorem canonicalize_succ {l: Nat} (t: TreeSync Bytes tkt (l+1)) (li: Nat):
   (canonicalize t li).nodeContent.map (fun c => (c.content, c.parentHash)) =
     t.nodeContent.map (fun c => (c.content, c.parentHash)) ∧

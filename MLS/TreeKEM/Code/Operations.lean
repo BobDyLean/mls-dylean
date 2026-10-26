@@ -311,6 +311,7 @@ def pathApplyPath {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (pPriv: TreeKEMPriv By
     else
       -- The node was filtered, transfer the path secret up in the tree
       pure (.node none newPPrivNext, pathSecret)
+termination_by l
 
 /--
 Port of `generate_path_secrets`.

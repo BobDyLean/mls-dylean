@@ -12,3 +12,5 @@ public import DySlop.Lib.Crypto.MAC.Split
 public import DySlop.Lib.Crypto.KdfExpand.Split
 public import DySlop.Lib.HPKE
 public import DySlop.Lib.State.Map
+public import DySlop.Lib.Label
+public import DySlop.Lib.Event
