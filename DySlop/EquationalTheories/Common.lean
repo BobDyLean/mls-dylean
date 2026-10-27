@@ -252,4 +252,22 @@ def Bytes.IsSecret [BytesInvariants] (l: Label) (b: Bytes) (tr: ProofTrace): Pro
 
 end Predicates
 
+section Later
+
+variable [ExecTraceTypes] [ProofTraceTypes] [BytesFunctor] [BytesInvariants] [BytesInvariantsProofs]
+
+/-- Bytes knowable by a label stay knowable by it when the trace grows (DY* uses SMT patterns, as DyLean's `Bytes.Publishable_later_fast`). -/
+public
+theorem Bytes.KnowableBy_later (l: Label) (b: Bytes) (tr1 tr2: ProofTrace)
+  : tr1 ≤ tr2 →
+    b.KnowableBy l tr1 →
+    b.KnowableBy l tr2
+:= by
+  grind
+
+grind_pattern Bytes.KnowableBy_later => tr1 ≤ tr2, b.KnowableBy l tr1
+grind_pattern [grind_later] Bytes.KnowableBy_later => tr1 ≤ tr2, b.KnowableBy l tr1
+
+end Later
+
 end DY

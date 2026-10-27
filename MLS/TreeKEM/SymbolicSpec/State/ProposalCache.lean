@@ -11,7 +11,7 @@ Port of `MLS.TreeKEM.Symbolic.State.ProposalCache`: a map from proposal referenc
 Port-specific differences:
 - The map is a DyLean local state (see `DySlop.Map`): its handle changes when it is updated,
   hence `rememberProposal` returns the new handle of the map.
-- The invariants (`proposal_cache_pred`, …) and the proofs are not ported yet.
+- The invariants (`proposal_cache_pred`, …) and the proofs are in `MLS.TreeKEM.SymbolicProofs.State.ProposalCache`.
 -/
 
 namespace MLS.TreeKEM

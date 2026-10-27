@@ -11,7 +11,7 @@ Port-specific differences:
   (`PersistentLocalState.CompromisableState.ExecEntryT OnePskState`): it has no tag.
 - States are identified by handles instead of session identifiers.
 - The label (`psk_label`) is in `MLS.TreeKEM.SymbolicProofs.State.OnePSKStore`;
-  the invariants and proofs are not ported yet.
+  so are the invariants and proofs.
 -/
 
 namespace MLS.TreeKEM

@@ -20,7 +20,7 @@ Port-specific differences:
   (MLS*'s `match … with | Success res -> … | _ -> True`).
 - Lemmas about the TreeKEM state that need the refinements of `treekem_tree_state`
   (e.g. `fully_truncate_state_rel`) take `stTk.Valid` as an hypothesis.
-- `is_well_formed_treesync_to_treekem` (about Comparse's `is_well_formed`, used by the symbolic proofs) is not ported.
+- `is_well_formed_treesync_to_treekem` is `treesyncToTreekem_wf` (on `mf.wf`).
 -/
 
 namespace MLS
@@ -197,6 +197,23 @@ theorem treesyncToTreekem_position {l: Nat} (t: TreeSync Bytes tkt l):
   (treesyncToTreekem t).position = t.position
 := by
   induction t using Tree.leftRightInduction <;> simp_all [treesyncToTreekem_zero, treesyncToTreekem_left_right]
+
+/-- Port of `is_well_formed_treesync_to_treekem`. -/
+public
+theorem treesyncToTreekem_wf {l: Nat} (pred: Bytes → Prop) [BytesCompatiblePred pred] (t: TreeSync Bytes tkt l)
+  (h: (TreeSync.mf tkt l).wf pred t):
+  (TreeKEM.mf l).wf pred (treesyncToTreekem t)
+:= by
+  induction t using Tree.leftRightInduction with
+  | leaf t =>
+    rw [Tree.mf.wf_zero] at h
+    rw [treesyncToTreekem_zero, Tree.mf.wf_pack_leaf]
+    cases hc: t.leafContent <;> simp_all [MlsOption.mf.wf_eq, LeafNode.mf.wf_eq, LeafNodeData.mf.wf_eq, TreeKEMLeaf.mf.wf_eq]
+  | node t ihl ihr =>
+    rw [Tree.mf.wf_succ] at h
+    rw [treesyncToTreekem_left_right, Tree.mf.wf_pack_node]
+    cases hc: t.nodeContent <;>
+      simp_all [MlsOption.mf.wf_eq, ParentNode.mf.wf_eq, TreeKEMNode.mf.wf_eq, treesyncToTreekemNode]
 
 grind_pattern treesyncToTreekem_position => (treesyncToTreekem t).position
 
@@ -479,6 +496,7 @@ theorem leafAt_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat):
   | node t ih => rw [leafAt.eq_def, leafAt.eq_def]; simp [ih]
 
 /-- Port of `treesync_to_treekem_invariant`. -/
+public
 theorem treesyncToTreekem_invariant {l: Nat} (t: TreeSync Bytes tkt l) (h: unmergedLeavesOk t):
   treekemInvariant (treesyncToTreekem t)
 := by
@@ -526,6 +544,17 @@ theorem treesyncTreekemStateRel_induction
   obtain ⟨rfl, hrel'⟩ := Sigma.mk.inj hrel
   subst hrel'
   exact mk l tsTree tokens priv
+
+/-- Related states have trees at the same position. -/
+public
+theorem treesyncTreekemStateRel_position (stTs: TreeSyncState Bytes tkt TokenT groupId)
+  (stTk: TreeKEMTreeState Bytes leafInd) (hrel: treesyncTreekemStateRel stTs stTk):
+  stTk.tree.position = stTs.tree.position
+:= by
+  induction stTs, stTk, hrel using treesyncTreekemStateRel_induction
+  simp
+
+grind_pattern treesyncTreekemStateRel_position => treesyncTreekemStateRel stTs stTk, stTk.tree.position
 
 /-- Port of `create_state_rel`. -/
 public

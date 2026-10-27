@@ -12,7 +12,7 @@ Port-specific differences:
 - The map is a DyLean local state (see `DySlop.Map`): its handle changes when it is updated,
   hence `rememberUpdateLeafSk` returns the new handle of the map.
 - States are identified by handles (`Nat`) instead of session identifiers (`state_id`).
-- The invariants (`update_cache_pred`, …) and the proofs are not ported yet.
+- The invariants (`update_cache_pred`, …) and the proofs are in `MLS.TreeKEM.SymbolicProofs.State.UpdateCache`.
 -/
 
 namespace MLS.TreeKEM

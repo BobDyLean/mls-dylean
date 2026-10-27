@@ -538,16 +538,6 @@ theorem secretJoinerToWelcome_eq_success (joinerSecret: Bytes) (psks: List (PreS
 := by
   simpa [secretJoinerToWelcome, secretJoinerToWelcomeInternal, deriveSecret] using h
 
-public
-theorem secretJoinerToEpoch_eq_success (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes × Bytes))
-  (groupContext: GroupContext Bytes) (epochSecret: Bytes)
-  (h: secretJoinerToEpoch joinerSecret psks groupContext = .success epochSecret):
-  ∃ pskSecret, computePskSecret psks = .success pskSecret ∧
-    expandWithLabel (DySlop.KdfExtract.kdfExtract joinerSecret pskSecret) "epoch" (serializeNE GroupContext.mf groupContext)
-      (CryptoBytes.kdfLength Bytes) = .success epochSecret
-:= by
-  simpa [secretJoinerToEpoch, secretJoinerToEpochInternal] using h
-
 theorem usageGroupContext_kdfExpandKey (tag: String) (groupContext: GroupContext Bytes):
   usageGroupContext (Usage.kdfExpandKey tag (serializeNE GroupContext.mf groupContext)) = some groupContext
 := by

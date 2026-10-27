@@ -13,7 +13,7 @@ Port-specific differences:
   by their usages or labels under the bytes invariants (e.g. `literalToBytes_ne_kdfExtract`).
 
 It also contains the weakenings of the well-formedness of messages (Comparse's `wf_weaken_lemma`)
-used by the invariants of states (`wf_publishable_later`, `wf_knowableBy_of_publishable`),
+used by the invariants of states (`wf_publishable_later`, `wf_knowableBy_of_publishable`, `wf_knowableBy_canFlow`),
 proved on the serialized message (`pred_serializeNE_iff`), as DyLean does.
 -/
 
@@ -94,6 +94,16 @@ public
 theorem wf_knowableBy_of_publishable {α: Type} (mf: NonExtensibleMessageFormat Bytes α) (l: Label) (tr: ProofTrace) (x: α)
   : mf.wf (Bytes.Publishable · tr) x →
     mf.wf (Bytes.KnowableBy l · tr) x
+:= by
+  rw [← pred_serializeNE_iff, ← pred_serializeNE_iff]
+  grind [canFlowTrans]
+
+/-- Messages knowable by a label are knowable by the labels it flows to (MLS* uses `is_well_formed_prefix_weaken`). -/
+public
+theorem wf_knowableBy_canFlow {α: Type} (mf: NonExtensibleMessageFormat Bytes α) (l1 l2: Label) (tr: ProofTrace) (x: α)
+  : l1.canFlow l2 tr.erase →
+    mf.wf (Bytes.KnowableBy l1 · tr) x →
+    mf.wf (Bytes.KnowableBy l2 · tr) x
 := by
   rw [← pred_serializeNE_iff, ← pred_serializeNE_iff]
   grind [canFlowTrans]

@@ -14,7 +14,7 @@ Port-specific differences:
 - States are identified by handles instead of session identifiers.
 - Group contexts have no decidable equality: `getEpochSecret` compares their serializations.
 - The usages and labels (`mk_epoch_secret_usage`, `mk_group_secret_label`, …) are in
-  `MLS.TreeKEM.SymbolicProofs.State.EpochSecrets`; the invariants and proofs are not ported yet.
+  `MLS.TreeKEM.SymbolicProofs.State.EpochSecrets`, with the invariants and proofs.
 -/
 
 namespace MLS.TreeKEM

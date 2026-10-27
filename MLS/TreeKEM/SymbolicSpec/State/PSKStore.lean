@@ -12,7 +12,7 @@ Port-specific differences:
   hence `rememberPsk` returns the new handle of the map.
 - States are identified by handles (`Nat`) instead of session identifiers (`state_id`).
 - Pre-shared key identifiers have no decidable equality: `retrievePsks` compares their serializations.
-- The invariants (`psk_store_pred`, …) and the proofs are not ported yet.
+- The invariants (`psk_store_pred`, …) and the proofs are in `MLS.TreeKEM.SymbolicProofs.State.PSKStore`.
 -/
 
 namespace MLS.TreeKEM

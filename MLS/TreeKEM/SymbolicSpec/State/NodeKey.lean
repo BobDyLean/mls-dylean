@@ -15,7 +15,7 @@ Port-specific differences:
 - The usage and label of the leaf key (the arguments of MLS*'s `my_mk_rand`)
   are ghost arguments of the proofs in DyLean (`Random.genRand`).
 - The labels, usages and predicates are in `MLS.TreeKEM.SymbolicProofs.State.NodeKey`;
-  the state invariant and the proofs are not ported yet.
+  so are the state invariant and the proofs.
 -/
 
 namespace MLS.TreeKEM

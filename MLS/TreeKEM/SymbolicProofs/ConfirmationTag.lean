@@ -1,7 +1,9 @@
 module
 
 public import MLS.TreeKEM.Code.API.KeySchedule
-public import MLS.TreeKEM.SymbolicProofs.KeySchedule
+public import MLS.TreeKEM.SymbolicProofs.PSK
+public import MLS.Common.SymbolicProofs.Crypto.Derived.ExpandWithLabel
+public import MLS.Symbolic.SymbolicProofs.MiscLemmas
 
 /-!
 Port of `MLS.TreeKEM.Symbolic.ConfirmationTag`: on symbolic bytes, the confirmation tag of a key schedule state
@@ -10,8 +12,9 @@ determines this state (and the secrets it is computed from).
 Port-specific differences:
 - MLS*'s `Success st == …` is `… = .success st`.
 - The injectivity lemmas use the bytes invariants, as `MLS.TreeKEM.computePskSecret_inj`.
-- This module imports `MLS.TreeKEM.SymbolicProofs.KeySchedule` for the lemmas on the code of the key schedule
-  (`secretJoinerToEpoch_eq_success`).
+- As in MLS*, this module does not depend on the symbolic proofs of the key schedule
+  (`MLS.TreeKEM.SymbolicProofs.KeySchedule` imports it, through `MLS.TreeKEM.SymbolicProofs.State.EpochSecrets`):
+  the lemma on the code of the key schedule it needs (`secretJoinerToEpoch_eq_success`) is here.
 -/
 
 namespace MLS.TreeKEM
@@ -112,6 +115,22 @@ theorem TreekemKeyscheduleStateAuthStrongExists.weak (st: TreeKEMKeyscheduleStat
 end CryptoBytes
 
 /-! ## Injectivity -/
+
+section Code
+
+variable [HasSymbolicBytes]
+
+public
+theorem secretJoinerToEpoch_eq_success (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes × Bytes))
+  (groupContext: GroupContext Bytes) (epochSecret: Bytes)
+  (h: secretJoinerToEpoch joinerSecret psks groupContext = .success epochSecret):
+  ∃ pskSecret, computePskSecret psks = .success pskSecret ∧
+    expandWithLabel (DySlop.KdfExtract.kdfExtract joinerSecret pskSecret) "epoch" (serializeNE GroupContext.mf groupContext)
+      (CryptoBytes.kdfLength Bytes) = .success epochSecret
+:= by
+  simpa [secretJoinerToEpoch, secretJoinerToEpochInternal] using h
+
+end Code
 
 section Injectivity
 

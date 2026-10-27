@@ -20,7 +20,8 @@ Port-specific differences:
   and not the TreeSync and TreeKEM invariants, nor the relation between the TreeSync and TreeKEM trees
   (MLS* checks them for its refinement types, see `MLS.TreeSync.SymbolicSpec.State.Tree`):
   they follow from the state invariant.
-- The invariants (`treesync_treekem_state_pred`, `treesync_treekem_state_invariant`, …) and the proofs are not ported yet.
+- The invariants (`treesync_treekem_state_pred`, `treesync_treekem_state_invariant`, …) and the proofs are in
+  `MLS.TreeKEM.SymbolicProofs.State.API`.
 -/
 
 namespace MLS.TreeKEM

@@ -1,6 +1,7 @@
 module
 
 public import MLS.TreeKEM.SymbolicProofs.ConfirmationTag
+public import MLS.TreeKEM.SymbolicProofs.KeySchedule
 
 /-!
 Port of `MLS.TreeKEM.Symbolic.API.KeySchedule`: the invariants of the key schedule states,
