@@ -15,7 +15,7 @@ Port-specific differences:
 - The event has no tag nor format (MLS*'s `event` instance):
   the formats used only by it (`ps_psks`, `all_keyschedule_keys`, `ps_treekem_keyschedule_state`) are not ported.
 - Trees are compared as dependent pairs (see `MLS.TreeSync.OneTreeSync`).
-- Only the specification is ported for now: the event predicate (`i_am_in_group_pred`, …) is not ported yet.
+- The event predicate (`i_am_in_group_pred`) and `has_i_am_in_group_invariant` are in `MLS.TreeKEM.SymbolicProofs.EpochEvent`.
 -/
 
 namespace MLS.TreeKEM
