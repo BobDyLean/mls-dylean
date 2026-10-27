@@ -219,9 +219,11 @@ theorem SignWithLabelPred.Has.signPred_eq
 
 end SplitPredicate
 
-section Proofs
+section LaterProofs
 
-variable [HasSymbolicInvariants]
+-- Not `[HasSymbolicInvariants]`: the top level uses these lemmas to build its `BytesInvariantsProofs`.
+variable [HasSymbolicBytes] [ExecTraceTypes] [ProofTraceTypes] [BytesInvariants]
+variable [BytesInvariants.Has DY.Literal.invariants] [BytesInvariants.Has DY.Concat.invariants]
 
 /-- Port of `mk_global_mls_sign_pred_later`. -/
 public
@@ -253,6 +255,12 @@ theorem SignWithLabelPred.LocalProof.toSignPred
     SignPred.LocalProof (SignWithLabelPred.toSignPred l)
 := fun h =>
   SignPred.LocalProof.single (SignWithLabelPred.ofLocal_later l h)
+
+end LaterProofs
+
+section Proofs
+
+variable [HasSymbolicInvariants]
 
 /-- Port of `bytes_invariant_sign_with_label`. -/
 public

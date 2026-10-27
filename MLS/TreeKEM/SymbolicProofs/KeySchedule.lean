@@ -403,6 +403,16 @@ public
 def expandUsageEpochInit: ExpandWithLabelUsage.Local ["init"] :=
   .single (mkEpochExpandwithlabelUsage .initSecret)
 
+/-- Port of `expand_usage_confirmation_tag`. -/
+@[expose]
+public
+def expandUsageConfirmationTag: KdfExpandUsage.Local ["MLS.TreeKEM.ConfirmationKey"] :=
+  .single {
+    getUsage _ _ := Usage.nothing
+    getLabel _ _ _ := Label.pub
+    getLabel_lemma tr _ prkLabel _ _ := Label.pubCanFlow prkLabel tr
+  }
+
 end Usages
 
 section MacPredicate

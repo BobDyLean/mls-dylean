@@ -151,6 +151,7 @@ public import MLS.TreeKEM.SymbolicSpec.Reachability
 public import MLS.TreeKEM.SymbolicSpec.SanityChecks
 public import MLS.TreeKEM.SymbolicSpecProofs.API.Tree
 public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.AllInvariants
+public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.ProtocolInvariants
 public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.GenerateKeyPackage
 public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.GenerateUpdateProposal
 public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.CreateGroup

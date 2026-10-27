@@ -250,9 +250,11 @@ theorem EncryptWithLabelPred.Has.hpkePred_eq
 
 end SplitPredicate
 
-section Proofs
+section LaterProofs
 
-variable [HasSymbolicInvariants]
+-- Not `[HasSymbolicInvariants]`: the top level uses these lemmas to build its `BytesInvariantsProofs`.
+variable [HasSymbolicBytes] [ExecTraceTypes] [ProofTraceTypes] [BytesInvariants]
+variable [BytesInvariants.Has DY.Literal.invariants] [BytesInvariants.Has DY.Concat.invariants]
 
 /-- Port of `mk_global_hpke_mls_pred_later`. -/
 public
@@ -284,6 +286,12 @@ theorem EncryptWithLabelPred.LocalProof.toHpkePred
     HpkePred.LocalProof (EncryptWithLabelPred.toHpkePred tag l)
 := fun h =>
   HpkePred.LocalProof.single (EncryptWithLabelPred.ofLocal_later l h)
+
+end LaterProofs
+
+section Proofs
+
+variable [HasSymbolicInvariants]
 
 /-- Port of `bytes_invariant_encrypt_with_label`. -/
 public

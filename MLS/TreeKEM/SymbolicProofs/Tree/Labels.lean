@@ -969,6 +969,7 @@ variable [HasSymbolicInvariants] [TraceInvariant] [HasTreeSyncExecTrace tkt] [Ha
 variable [HasTreesyncTreekemLinkInvariants]
 
 /-- The principal of a verified leaf node exists (the AS validated its credential, by the event predicate). -/
+public
 theorem exists_credentialToPrincipal (tr: ProofTrace) (me: Participant)
   (ln: LeafNode Bytes tkt) (groupId: MlsBytes Bytes) (li: Nat)
   (hev: IHaveVerifiedLeafNode tr.erase me ln groupId li) (hinv: tr.Invariant):
