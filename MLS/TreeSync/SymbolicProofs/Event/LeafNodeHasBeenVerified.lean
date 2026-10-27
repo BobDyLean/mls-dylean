@@ -4,7 +4,12 @@ public import MLS.TreeSync.SymbolicSpec.Event.LeafNodeHasBeenVerified
 public import MLS.TreeSync.SymbolicProofs.AuthService
 public import MLS.Symbolic.Code.Parsers
 public import MLS.TreeSync.Code.Parsers
+public import MLS.TreeSync.Proofs.Invariants.ValidLeaves
+public import MLS.TreeSync.Proofs.Invariants.AuthService
+public import MLS.Symbolic.SymbolicProofs.MiscLemmas
+public import DySlop.Lib.Event
 import all MLS.TreeSync.SymbolicSpec.Event.LeafNodeHasBeenVerified
+import DY.Meta.Step
 
 /-!
 Port of the predicate and lemmas of `MLS.TreeSync.Symbolic.Event.LeafNodeHasBeenVerified`:
@@ -12,7 +17,10 @@ the invariant of the event logged when a principal verifies a leaf node.
 
 Port-specific differences:
 - DY*'s `has_event_pred` is DySlop's `ProtocolEvent.EventInv.Has` (see `DySlop.Lib.Event`).
-- The proofs of the traceful functions (`log_leaf_node_verification_event_proof`, …) are not ported yet.
+- The proofs of the traceful functions (`log_leaf_node_verification_event_proof`, …) are DyLean Hoare triples (instances),
+  assuming the event invariant (`ProtocolEvent.EventInv.Has leafNodeHasBeenVerifiedPred`) and the proof trace entries of the event.
+  The AS tokens (MLS*'s arguments `token` / `tokens`) are existentially quantified in the preconditions,
+  as in the event predicate; the tokens of a tree have the same position as the tree (MLS*'s shared index `i`).
 -/
 
 namespace MLS.TreeSync
@@ -122,6 +130,105 @@ theorem IHaveVerifiedEveryLeafNode_le {l: Nat} (tr1 tr2: ExecTrace) (me: Partici
 grind_pattern IHaveVerifiedEveryLeafNode_le => tr1 ≤ tr2, IHaveVerifiedEveryLeafNode tr1 me t groupId
 grind_pattern [grind_later] IHaveVerifiedEveryLeafNode_le => tr1 ≤ tr2, IHaveVerifiedEveryLeafNode tr1 me t groupId
 
+theorem logLeafNodeVerificationEvents_zero (me: Participant) (t: TreeSync Bytes tkt 0) (groupId: MlsBytes Bytes):
+  logLeafNodeVerificationEvents me t groupId = (
+    match t.leafContent with
+    | none => pure ()
+    | some ln => logLeafNodeVerificationEvent me ln groupId t.position)
+:= by
+  obtain ⟨_, ⟨c⟩⟩ := t
+  rw [logLeafNodeVerificationEvents.eq_def]
+  cases c <;> rfl
+
+theorem logLeafNodeVerificationEvents_left_right {l: Nat} (me: Participant) (t: TreeSync Bytes tkt (l+1))
+  (groupId: MlsBytes Bytes):
+  logLeafNodeVerificationEvents me t groupId = (do
+    logLeafNodeVerificationEvents me t.left groupId
+    logLeafNodeVerificationEvents me t.right groupId)
+:= by
+  obtain ⟨_, ⟨⟩⟩ := t
+  rw [logLeafNodeVerificationEvents.eq_def]
+  rfl
+
 end Lemmas
+
+section Proofs
+
+variable [HasSymbolicInvariants] [TraceInvariant] {tkt: TreeKEMTypes Bytes}
+variable [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT TreeSyncSignatureKeyState)]
+variable [ExecTraceTypes.Has (ProtocolEvent.ExecEntryT (LeafNodeHasBeenVerified tkt))]
+variable [ProofTraceTypes.Has (ProtocolEvent.ProofEntryT (LeafNodeHasBeenVerified tkt))]
+variable [ProtocolEvent.EventInv (LeafNodeHasBeenVerified tkt)]
+variable [TraceInvariant.Has (ProtocolEvent.ProofEntryT (LeafNodeHasBeenVerified tkt))]
+variable [ProtocolEvent.EventInv.Has (leafNodeHasBeenVerifiedPred (tkt := tkt))]
+
+/-- Port of `log_leaf_node_verification_event_proof`. -/
+@[instance]
+public
+theorem logLeafNodeVerificationEvent.proof (me: Participant)
+  (leafNode: LeafNode Bytes tkt) (groupId: MlsBytes Bytes) (leafIndex: Nat):
+  HoareTriple
+    (logLeafNodeVerificationEvent me leafNode groupId leafIndex)
+    (fun tr =>
+      groupId.val.Invariant tr ∧
+      (LeafNode.mf tkt).wf (Bytes.Invariant · tr) leafNode ∧
+      (∃ token, (dyAsp tr).credentialOk (leafNodeToAsInput leafNode) token) ∧
+      leafIsValid leafNode groupId leafIndex
+    )
+    (fun _ tr => IHaveVerifiedLeafNode tr.erase me leafNode groupId leafIndex)
+:= by
+  unfold logLeafNodeVerificationEvent
+  step by
+    rw [ProtocolEvent.EventInv.Has.invariant_eq (pred := leafNodeHasBeenVerifiedPred)]
+    simp only [leafNodeHasBeenVerifiedPred]
+    grind
+  grind [IHaveVerifiedLeafNode]
+
+/-- Port of `log_leaf_node_verification_events_proof`. -/
+@[instance]
+public
+theorem logLeafNodeVerificationEvents.proof {l: Nat} (me: Participant)
+  (t: TreeSync Bytes tkt l) (groupId: MlsBytes Bytes):
+  HoareTriple
+    (logLeafNodeVerificationEvents me t groupId)
+    (fun tr =>
+      groupId.val.Invariant tr ∧
+      (TreeSync.mf tkt l).wf (Bytes.Invariant · tr) t ∧
+      (∃ tokens: ASTokens DyAsToken l, t.position = tokens.position ∧ allCredentialsOk (dyAsp tr) t tokens) ∧
+      validLeavesInvariant groupId t
+    )
+    (fun _ tr => IHaveVerifiedEveryLeafNode tr.erase me t groupId)
+:= by
+  induction t using Tree.leftRightInduction with
+  | leaf t =>
+    rw [logLeafNodeVerificationEvents_zero]
+    split
+    · step
+      grind [IHaveVerifiedEveryLeafNode_zero]
+    · step by
+        obtain ⟨hgid, hwf, ⟨tokens, hpos, hcred⟩, hvalid⟩ := ‹_ ∧ _›
+        have := allCredentialsOk_elim t tokens t.position hpos hcred
+        rw [Tree.mf.wf_zero] at hwf
+        simp only [oneCredentialOk] at this
+        grind [MlsOption.mf.wf_eq, leafAt.eq_def, validLeavesInvariant_zero]
+      grind [IHaveVerifiedEveryLeafNode_zero]
+  | node t ihl ihr =>
+    rw [logLeafNodeVerificationEvents_left_right]
+    step by
+      obtain ⟨hgid, hwf, ⟨tokens, hpos, hcred⟩, hvalid⟩ := ‹_ ∧ _›
+      rw [Tree.mf.wf_succ] at hwf
+      rw [allCredentialsOk_succ _ _ t.position hpos] at hcred
+      rw [validLeavesInvariant_succ _ _ t.position] at hvalid
+      refine ⟨hgid, ?_, ⟨tokens.left, ?_⟩, ?_⟩ <;> grind
+    step by
+      obtain ⟨hgid, hwf, ⟨tokens, hpos, hcred⟩, hvalid⟩ := ‹_ ∧ _›
+      rw [Tree.mf.wf_succ] at hwf
+      rw [allCredentialsOk_succ _ _ t.position hpos] at hcred
+      rw [validLeavesInvariant_succ _ _ t.position] at hvalid
+      refine ⟨hgid, ?_, ⟨tokens.right, ?_⟩, ?_⟩ <;> grind
+    rw [IHaveVerifiedEveryLeafNode_succ _ _ _ _ t.position]
+    grind
+
+end Proofs
 
 end MLS.TreeSync

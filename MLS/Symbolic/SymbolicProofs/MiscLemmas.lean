@@ -13,7 +13,7 @@ Port-specific differences:
   by their usages or labels under the bytes invariants (e.g. `literalToBytes_ne_kdfExtract`).
 
 It also contains the weakenings of the well-formedness of messages (Comparse's `wf_weaken_lemma`)
-used by the invariants of states (`wf_publishable_later`, `wf_knowableBy_of_publishable`, `wf_knowableBy_canFlow`),
+used by the invariants of states (`wf_publishable_later`, `wf_invariant_later`, `wf_knowableBy_of_publishable`, `wf_knowableBy_canFlow`),
 proved on the serialized message (`pred_serializeNE_iff`), as DyLean does.
 -/
 
@@ -88,6 +88,19 @@ theorem wf_publishable_later {α: Type} (mf: NonExtensibleMessageFormat Bytes α
 
 grind_pattern wf_publishable_later => tr1 ≤ tr2, mf.wf (Bytes.Publishable · tr1) x
 grind_pattern [grind_later] wf_publishable_later => tr1 ≤ tr2, mf.wf (Bytes.Publishable · tr1) x
+
+/-- Messages satisfying the bytes invariant still do when the trace grows (MLS* uses `wf_weaken_lemma`). -/
+public
+theorem wf_invariant_later {α: Type} (mf: NonExtensibleMessageFormat Bytes α) (tr1 tr2: ProofTrace) (x: α)
+  : tr1 ≤ tr2 →
+    mf.wf (Bytes.Invariant · tr1) x →
+    mf.wf (Bytes.Invariant · tr2) x
+:= by
+  rw [← pred_serializeNE_iff, ← pred_serializeNE_iff]
+  grind
+
+grind_pattern wf_invariant_later => tr1 ≤ tr2, mf.wf (Bytes.Invariant · tr1) x
+grind_pattern [grind_later] wf_invariant_later => tr1 ≤ tr2, mf.wf (Bytes.Invariant · tr1) x
 
 /-- Publishable messages are knowable by any label (MLS* uses `wf_weaken_lemma`). -/
 public
