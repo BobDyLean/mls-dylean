@@ -22,9 +22,9 @@ Port-specific differences:
   (after their MLS* result, if any).
 - The public state is retrieved with `PersistentLocalState.getLocalState` (instead of MLS*'s `get_public_treesync_state`),
   without checking the TreeSync invariants (see `MLS.TreeSync.SymbolicSpec.State.Tree`).
-- Only the specification is ported for now, with the preconditions `tree_event_pre` and `external_path_has_event_pre`
-  (in `MLS.TreeSync.SymbolicProofs.API`): the invariants (`has_treesync_invariants`, …) and the proofs (`*_proof`)
-  are not ported yet.
+- The invariants (`has_treesync_invariants`, …) and the proofs (`*_proof`) are in `MLS.TreeSync.SymbolicProofs.API`
+  (only the proofs used by TreeKEM are ported for now: `create_proof`, `welcome_proof`, …, `authenticate_path_proof`
+  are not).
 -/
 
 namespace MLS.TreeSync

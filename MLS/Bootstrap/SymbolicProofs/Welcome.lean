@@ -300,6 +300,26 @@ def KpSecretsGood {a: Type} (tr: ProofTrace) (me: Participant)
   (kpRefToKpSecrets: Bytes → Option a): Prop :=
   ∀ kpRef, ∀ kpSecrets ∈ kpRefToKpSecrets kpRef, OneKpSecretsGood tr me kpSecretsToHpkeSk kpSecretsToKeyPackage kpSecrets
 
+/-- `KpSecretsGood` is preserved when the trace grows (MLS* uses an SMT pattern). -/
+public
+theorem KpSecretsGood_later {a: Type} (tr1 tr2: ProofTrace) (me: Participant)
+  (kpSecretsToHpkeSk: a → Result Bytes) (kpSecretsToKeyPackage: a → KeyPackage Bytes TreeKEM.tkt)
+  (kpRefToKpSecrets: Bytes → Option a)
+  : tr1 ≤ tr2 →
+    KpSecretsGood tr1 me kpSecretsToHpkeSk kpSecretsToKeyPackage kpRefToKpSecrets →
+    KpSecretsGood tr2 me kpSecretsToHpkeSk kpSecretsToKeyPackage kpRefToKpSecrets
+:= by
+  intro hle h kpRef kpSecrets hmem
+  have := h kpRef kpSecrets hmem
+  grind
+
+grind_pattern KpSecretsGood_later =>
+  tr1 ≤ tr2,
+  KpSecretsGood tr1 me kpSecretsToHpkeSk kpSecretsToKeyPackage kpRefToKpSecrets
+grind_pattern [grind_later] KpSecretsGood_later =>
+  tr1 ≤ tr2,
+  KpSecretsGood tr1 me kpSecretsToHpkeSk kpSecretsToKeyPackage kpRefToKpSecrets
+
 end KpSecrets
 
 section DecryptGroupSecrets
@@ -308,7 +328,11 @@ variable [HasSymbolicInvariants] [HasTreeKEMExecTrace]
 variable [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT TreeSyncSignatureKeyState)]
 variable [HasBootstrapCryptoInvariants]
 
-/-- Port of `decrypt_group_secrets_proof`. -/
+/--
+Port of `decrypt_group_secrets_proof`.
+The postcondition also states that the key package is mine (from `kp_secrets_good`), which MLS*'s callers
+get from the definition of `decrypt_group_secrets`.
+-/
 public
 theorem decryptGroupSecrets_proof {a: Type} (tr: ProofTrace) (me: Participant) (welcome: Welcome Bytes)
   (kpRefToKpSecrets: Bytes → Option a) (kpSecretsToHpkeSk: a → Result Bytes)
@@ -320,8 +344,9 @@ theorem decryptGroupSecrets_proof {a: Type} (tr: ProofTrace) (me: Participant) (
   GroupSecrets.mf.wf (Bytes.Invariant · tr) groupSecrets ∧
   PskIdsGood tr groupSecrets.psks.val ∧
   kpRefToKpSecrets myKpRef.val = some myKpSecrets ∧
-  ∀ pathSecret ∈ groupSecrets.pathSecret,
-    DecodedPathSecretGood me (kpSecretsToKeyPackage myKpSecrets).tbs.leafNode.data.content.val pathSecret.pathSecret.val tr
+  (∀ pathSecret ∈ groupSecrets.pathSecret,
+    DecodedPathSecretGood me (kpSecretsToKeyPackage myKpSecrets).tbs.leafNode.data.content.val pathSecret.pathSecret.val tr) ∧
+  credentialToPrincipal (kpSecretsToKeyPackage myKpSecrets).tbs.leafNode.data.credential = some me
 := by
   simp only [decryptGroupSecrets, Result.bind_eq_success, Result.fromOption_eq_success, Result.pure_eq_success] at h
   obtain ⟨⟨kpRef, kpSecrets, ct⟩, hfind, hpkeSk, hsk, gs, hdec, ⟨rfl, rfl, rfl⟩⟩ := h
@@ -329,7 +354,7 @@ theorem decryptGroupSecrets_proof {a: Type} (tr: ProofTrace) (me: Participant) (
   rw [Welcome.mf.wf_eq] at hwelcome
   have hct := hwelcome.1 _ hmem
   rw [EncryptedGroupSecrets.mf.wf_eq, HpkeCiphertext.mf.wf_eq] at hct
-  obtain ⟨hskInv, hskUsg, -⟩ := hkp _ _ hkpRef hpkeSk hsk
+  obtain ⟨hskInv, hskUsg, hcred⟩ := hkp _ _ hkpRef hpkeSk hsk
   have := decryptGroupSecrets'_proof tr me _ _ _ _ _ hdec hskInv hskUsg hct.2.1 hct.2.2 hwelcome.2
   grind
 

@@ -43,6 +43,7 @@ theorem leafAt_treeChangePath {l: Nat} (t: Tree Leaf Node l) (li: Nat) (leafCont
 := by
   induction t, hli, hli' using Tree.commonPathInduction li li' <;> unfold leafAt treeChangePath <;> simp_all
 
+public
 theorem treeChangePath_succ {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat) (leafContent: Leaf) (nodeContent: Node):
   treeChangePath t li leafContent nodeContent =
     (ChildSiblingView.node nodeContent (treeChangePath (t.child li) li leafContent nodeContent) (t.sibling li)).pack
@@ -172,6 +173,7 @@ theorem findEmptyLeaf_treeExtend {l: Nat} (t: Tree (Option Leaf) (Option Node) l
 
 /-! ## Leaf list -/
 
+public
 theorem length_getLeafList {Leaf Node: Type} {l: Nat} (t: Tree Leaf Node l):
   (getLeafList t).length = 2^l
 := by

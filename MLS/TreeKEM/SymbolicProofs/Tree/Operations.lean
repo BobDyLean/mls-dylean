@@ -229,6 +229,7 @@ theorem generatePathSecrets_zero (t: TreeKEM Bytes 0) (leafSk pathSecret0: Bytes
   grind
 
 /-- The public key generated from a leaf private key. -/
+public
 theorem hpkeGenKeypair_eq_success (sk sk' pk: Bytes) (h: CryptoBytes.hpkeGenKeypair sk = .success (sk', pk)):
   sk' = sk ∧ pk = hpkePk sk
 := by
@@ -1059,6 +1060,28 @@ theorem mem_treeResolution_unAddP {l: Nat} (t: TreeKEM Bytes l) (pred: Nat → B
     · rw [this.2.2, Option.map_eq_none_iff] at hkp
       grind
 
+/-- The resolution of an empty tree is empty. -/
+theorem treeResolution_of_isTreeEmpty {l: Nat} (t: TreeKEM Bytes l) (h: isTreeEmpty t):
+  treeResolution t = []
+:= by
+  rw [List.eq_nil_iff_forall_not_mem]
+  intro pk hpk
+  induction t using Tree.leftRightInduction with
+  | leaf t =>
+    rw [mem_treeResolution_zero] at hpk
+    rw [isTreeEmpty_zero] at h
+    grind
+  | node t ihl ihr =>
+    rw [mem_treeResolution_succ] at hpk
+    rw [isTreeEmpty_succ _ t.position] at h
+    simp only [Tree.child_position, Tree.sibling_position, Bool.and_eq_true] at h
+    grind
+
+theorem multiEncryptWithLabelEntropyLengths_length [CryptoBytes Bytes] (pks: List Bytes):
+  (multiEncryptWithLabelEntropyLengths pks).length = pks.length
+:= by
+  induction pks <;> simp_all [multiEncryptWithLabelEntropyLengths]
+
 end Resolution
 
 section NodeKeyGoodWeak
@@ -1194,6 +1217,17 @@ public
 def PathkemGood {l: Nat} (p: PathKEM Bytes l) (tr: ProofTrace): Prop :=
   (PathKEM.mf l).wf (Bytes.Publishable · tr) p
 
+omit [HasTreeSyncExecTrace tkt] [HasTreeKEMExecTrace] in
+/-- `pathkem_good` stays true when the trace grows (MLS* uses SMT patterns). -/
+public
+theorem PathkemGood_later {l: Nat} (tr1 tr2: ProofTrace) (p: PathKEM Bytes l)
+  : tr1 ≤ tr2 → PathkemGood p tr1 → PathkemGood p tr2
+:= by
+  grind [PathkemGood]
+
+grind_pattern PathkemGood_later => tr1 ≤ tr2, PathkemGood p tr1
+grind_pattern [grind_later] PathkemGood_later => tr1 ≤ tr2, PathkemGood p tr1
+
 /--
 Port of `encrypt_path_secrets_entropy_ghost_data`.
 The TreeKEM tree `tk` is the (un-added) tree given to `encryptPathSecrets` (MLS*'s `un_addP tk pre`),
@@ -1210,6 +1244,46 @@ def encryptPathSecretsEntropyGhostData: {l: Nat} → TreeSync Bytes tkt l → Tr
       multiEncryptWithLabelEntropyGhostData (treeResolution (tk.sibling li)) (nodeSkLabel (ts.sibling li) groupId)
     else []) ++
     encryptPathSecretsEntropyGhostData (ts.child li) (tk.child li) li pNext groupId
+
+/--
+The ghost data of the randomness of `encrypt_path_secrets` has the length of `encryptPathSecretsEntropyLengths`
+when the path secrets are filtered (MLS*'s indexed randomness only counts the nodes with a path secret).
+-/
+public
+theorem encryptPathSecretsEntropyGhostData_length {l: Nat} (ts: TreeSync Bytes tkt l) (tk: TreeKEM Bytes l) (li: Nat)
+  (p: PathSecrets Bytes l) (groupId: MlsBytes Bytes) (pred: Nat → Bool) (hfilter: pathFilteringOk tk li p):
+  (encryptPathSecretsEntropyGhostData ts (unAddP tk pred) li p groupId).length =
+    (encryptPathSecretsEntropyLengths (unAddP tk pred) li).length
+:= by
+  induction tk using Tree.childInduction li with
+  | leaf tk =>
+    cases p
+    rw [encryptPathSecretsEntropyLengths.eq_def]
+    simp [encryptPathSecretsEntropyGhostData, Tree.intoChildSiblingView_zero]
+  | node tk ih =>
+    cases p with | node opn pNext =>
+    obtain ⟨hchild, hsibling, -⟩ := unAddP_succ tk li pred
+    rw [pathFilteringOk_succ, Bool.and_eq_true] at hfilter
+    rw [encryptPathSecretsEntropyLengths.eq_def]
+    simp only [encryptPathSecretsEntropyGhostData, Tree.intoChildSiblingView_eq, List.length_append, hchild, hsibling,
+      ih _ _ hfilter.2, multiEncryptWithLabelEntropyGhostData]
+    cases opn
+    · have := treeResolution_of_isTreeEmpty _ (by simpa using hfilter.1)
+      have hsub := fun pk => mem_treeResolution_unAddP (tk.sibling li) pred pk
+      rw [this] at hsub
+      simp [List.eq_nil_iff_forall_not_mem.mpr (fun pk h => by simpa using hsub pk h), multiEncryptWithLabelEntropyLengths]
+    · simp [multiEncryptWithLabelEntropyLengths_length]
+
+/-- `encryptPathSecretsEntropyGhostData_length`, with the casts of `create_commit_proof` (MLS*'s `st_ts.levels == st_tk.levels`). -/
+public
+theorem encryptPathSecretsEntropyGhostData_length_cast {l1 l2: Nat} (ts: TreeSync Bytes tkt l1) (tk: TreeKEM Bytes l2)
+  (li: Nat) (p: PathSecrets Bytes l2) (groupId: MlsBytes Bytes) (pred: Nat → Bool) (hl: l1 = l2)
+  (hfilter: pathFilteringOk tk li p):
+  (encryptPathSecretsEntropyGhostData ts (hl ▸ unAddP tk pred) li (hl ▸ p) groupId).length =
+    (encryptPathSecretsEntropyLengths (unAddP tk pred) li).length
+:= by
+  subst hl
+  exact encryptPathSecretsEntropyGhostData_length ts tk li p groupId pred hfilter
 
 /-- Port of `path_secret_good_for_joiner`. MLS*'s `match leaf_at tree leaf_ind` is an `Option.map`. -/
 @[expose]
@@ -1230,6 +1304,29 @@ def PathSecretsGoodForJoiners (tr: ProofTrace) {l: Nat} (tree: TreeSync Bytes tk
   | hLi :: tLi, hPs :: tPs =>
     PathSecretGoodForJoiner tr tree groupId hLi hPs ∧ PathSecretsGoodForJoiners tr tree groupId tLi tPs
   | _, _ => False
+
+/-- `path_secrets_good_for_joiners` stays true when the trace grows (MLS* uses SMT patterns). -/
+public
+theorem PathSecretsGoodForJoiners_later {l: Nat} (tr1 tr2: ProofTrace) (tree: TreeSync Bytes tkt l)
+  (groupId: MlsBytes Bytes) (leaves: List Nat) (pathSecrets: List Bytes)
+  : tr1 ≤ tr2 →
+    PathSecretsGoodForJoiners tr1 tree groupId leaves pathSecrets →
+    PathSecretsGoodForJoiners tr2 tree groupId leaves pathSecrets
+:= by
+  intro hle
+  induction leaves generalizing pathSecrets with
+  | nil => cases pathSecrets <;> simp [PathSecretsGoodForJoiners]
+  | cons hLi tLi ih =>
+    cases pathSecrets with
+    | nil => simp [PathSecretsGoodForJoiners]
+    | cons hPs tPs =>
+      simp only [PathSecretsGoodForJoiners, PathSecretGoodForJoiner]
+      grind
+
+grind_pattern PathSecretsGoodForJoiners_later => tr1 ≤ tr2, PathSecretsGoodForJoiners tr1 tree groupId leaves pathSecrets
+grind_pattern [grind_later] PathSecretsGoodForJoiners_later =>
+  tr1 ≤ tr2,
+  PathSecretsGoodForJoiners tr1 tree groupId leaves pathSecrets
 
 /-- A path secret flows to the label of the sibling of its node, which does not contain the committer. -/
 theorem PathSecretIsCorrect.canFlow_sibling (committer: Participant) (committerLeafPk: Bytes) (isAtRoot: Bool)
@@ -1426,6 +1523,20 @@ def DecodedPathSecretGood (me: Participant) (myLeafPk pathSecret: Bytes) (tr: Pr
   pathSecret.Invariant tr ∧
   (pathSecret.label tr).canFlow (nodeKeyLabel me myLeafPk) tr.erase ∧
   ∃ data, pathSecret.HasUsage (Usage.kdfExpandKey "MLS.PathSecret" data) tr
+
+/-- `decoded_path_secret_good` stays true when the trace grows (MLS* uses SMT patterns). -/
+public
+theorem DecodedPathSecretGood_later (tr1 tr2: ProofTrace) (me: Participant) (myLeafPk pathSecret: Bytes)
+  : tr1 ≤ tr2 →
+    DecodedPathSecretGood me myLeafPk pathSecret tr1 →
+    DecodedPathSecretGood me myLeafPk pathSecret tr2
+:= by
+  grind [DecodedPathSecretGood]
+
+grind_pattern DecodedPathSecretGood_later => tr1 ≤ tr2, DecodedPathSecretGood me myLeafPk pathSecret tr1
+grind_pattern [grind_later] DecodedPathSecretGood_later =>
+  tr1 ≤ tr2,
+  DecodedPathSecretGood me myLeafPk pathSecret tr1
 
 /-- Port of `pathkem_good_weak`. -/
 @[expose]

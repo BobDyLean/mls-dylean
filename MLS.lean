@@ -75,6 +75,7 @@ public import MLS.TreeSync.SymbolicProofs.LeafNodeSignature
 public import MLS.TreeSync.SymbolicProofs.Event.LeafNodeHasBeenVerified
 public import MLS.TreeSync.SymbolicProofs.Event.LeafNodeHasBeenVerified.Invariant
 public import MLS.TreeSync.SymbolicProofs.API
+public import MLS.TreeSync.SymbolicProofs.API.IsWellFormedInvariant
 public import MLS.TreeKEM.Code.NetworkTypes
 public import MLS.TreeKEM.Code.Types
 public import MLS.TreeKEM.Code.Parsers
@@ -147,3 +148,12 @@ public import MLS.TreeKEM.SymbolicSpec.Traceful.ProcessCommit
 public import MLS.TreeKEM.SymbolicSpec.Traceful.GenerateCommitWelcome
 public import MLS.TreeKEM.SymbolicSpec.Traceful.ProcessWelcome
 public import MLS.TreeKEM.SymbolicSpec.SanityChecks
+public import MLS.TreeKEM.SymbolicSpecProofs.API.Tree
+public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.AllInvariants
+public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.GenerateKeyPackage
+public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.GenerateUpdateProposal
+public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.CreateGroup
+public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.ProcessCommit
+public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.ProcessProposal
+public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.GenerateCommitWelcome
+public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.ProcessWelcome

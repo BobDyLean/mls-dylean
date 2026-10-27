@@ -124,6 +124,18 @@ theorem IsInitKeySk_later (tr1 tr2: ProofTrace) (prin: Participant) (leafPk init
 grind_pattern IsInitKeySk_later => tr1 ≤ tr2, IsInitKeySk tr1 prin leafPk initSk
 grind_pattern [grind_later] IsInitKeySk_later => tr1 ≤ tr2, IsInitKeySk tr1 prin leafPk initSk
 
+/-- Init public keys stay init public keys when the trace grows (MLS* uses an SMT pattern). -/
+public
+theorem IsInitKeyPk_later (tr1 tr2: ProofTrace) (prin: Participant) (leafPk initPk: Bytes)
+  : tr1 ≤ tr2 →
+    IsInitKeyPk tr1 prin leafPk initPk →
+    IsInitKeyPk tr2 prin leafPk initPk
+:= by
+  grind [IsInitKeyPk]
+
+grind_pattern IsInitKeyPk_later => tr1 ≤ tr2, IsInitKeyPk tr1 prin leafPk initPk
+grind_pattern [grind_later] IsInitKeyPk_later => tr1 ≤ tr2, IsInitKeyPk tr1 prin leafPk initPk
+
 /-- Init keys satisfy the bytes invariant (for the preconditions found by `step`, as in DyLean's examples). -/
 public
 theorem IsInitKeySk_imp_Invariant (tr: ProofTrace) (prin: Participant) (leafPk initSk: Bytes)
@@ -208,19 +220,24 @@ theorem getInitKeySk.proof (prin: Participant) (sid: Nat) (leafPk: Bytes):
   step
   simp_all only [LocalStateInv.invariant]
 
-/-- Port of `get_init_key_pk_invariant`. -/
+/--
+Port of `get_init_key_pk_invariant`.
+It also states that the init public key is publishable
+(in DY*, this follows from `bytes_invariant` and the label of public keys).
+-/
 @[instance]
 public
 theorem getInitKeyPk.proof (prin: Participant) (sid: Nat) (leafPk: Bytes):
   HoareTriple
     (getInitKeyPk prin sid leafPk)
     (fun _ => True)
-    (fun initPk tr => IsInitKeyPk tr prin leafPk initPk)
+    (fun initPk tr => IsInitKeyPk tr prin leafPk initPk ∧ initPk.Publishable tr)
 := by
   unfold getInitKeyPk
   step
   step
-  grind [IsInitKeySk, IsInitKeyPk, hpkePk.Invariant, hpkeSkLabel_hpkePk, HpkeSkHasUsage_hpkePk]
+  grind [IsInitKeySk, IsInitKeyPk, hpkePk.Invariant, hpkeSkLabel_hpkePk, HpkeSkHasUsage_hpkePk, hpkePk.label,
+    Bytes.Publishable]
 
 end Proofs
 

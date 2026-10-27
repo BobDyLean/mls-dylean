@@ -119,6 +119,7 @@ def computeConfirmedTranscriptHashInj (txHashInput1: ConfirmedTranscriptHashInpu
   (BytesLike.concat interimTranscriptHash1 (serializeNE ConfirmedTranscriptHashInput.mf txHashInput1),
     BytesLike.concat interimTranscriptHash2 (serializeNE ConfirmedTranscriptHashInput.mf txHashInput2))
 
+public
 theorem computeConfirmedTranscriptHash_eq_success (txHashInput: ConfirmedTranscriptHashInput Bytes)
   (interimTranscriptHash res: Bytes):
   computeConfirmedTranscriptHash txHashInput interimTranscriptHash = .success res ↔

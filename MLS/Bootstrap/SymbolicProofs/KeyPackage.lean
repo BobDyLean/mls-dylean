@@ -73,6 +73,7 @@ theorem keyPackageSignPredProof [BytesInvariants] [BytesInvariants.Has DySlop.Ke
     split at h <;> grind [Bytes.kemSkLabel_later, Bytes.KemSkHasUsage_later]
 
 /-- The key package signature predicate of `prin`, on a serialized `KeyPackageTBS`. -/
+public
 theorem keyPackageTbsPred_serializeNE [BytesWellFormed] [GetUsage] [GetLabel]
   (prin: Participant) (kpTbs: KeyPackageTBS Bytes TreeKEM.tkt) (tr: ProofTrace):
   KeyPackageTbsPred (mkMlsSigkeyUsage prin) (serializeNE (KeyPackageTBS.mf TreeKEM.tkt) kpTbs) tr ↔
@@ -133,6 +134,18 @@ section Verified
 variable [HasSymbolicBytes] [ExecTraceTypes]
 variable [ExecTraceTypes.Has (ProtocolEvent.ExecEntryT KeyPackageHasBeenVerified)]
 
+/-- Verified key packages stay verified when the trace grows (MLS* uses an SMT pattern). -/
+public
+theorem IHaveVerifiedKeyPackage_le (tr1 tr2: ExecTrace) (me: Participant) (keyPackage: KeyPackage Bytes TreeKEM.tkt)
+  : tr1 ≤ tr2 →
+    IHaveVerifiedKeyPackage tr1 me keyPackage →
+    IHaveVerifiedKeyPackage tr2 me keyPackage
+:= by
+  grind [IHaveVerifiedKeyPackage]
+
+grind_pattern IHaveVerifiedKeyPackage_le => tr1 ≤ tr2, IHaveVerifiedKeyPackage tr1 me keyPackage
+grind_pattern [grind_later] IHaveVerifiedKeyPackage_le => tr1 ≤ tr2, IHaveVerifiedKeyPackage tr1 me keyPackage
+
 /-- Port of `i_have_verified_every_key_package_later`. -/
 public
 theorem IHaveVerifiedEveryKeyPackage_le (tr1 tr2: ExecTrace) (me: Participant)
@@ -188,6 +201,7 @@ def keyPackageToInitLabel (kp: KeyPackage Bytes TreeKEM.tkt): Label :=
 omit [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT TreeSyncSignatureKeyState)]
   [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT BootstrapInitKeyState)] in
 /-- The label of the verification of a key package is corrupt when some principal has verified it. -/
+public
 theorem keyPackageHasBeenVerifiedLabel_isCorrupt (keyPackage: KeyPackage Bytes TreeKEM.tkt) (tr: ExecTrace):
   (keyPackageHasBeenVerifiedLabel keyPackage).isCorrupt tr ↔
     ∃ prin, tr.EventLogged ({ prin, keyPackage }: KeyPackageHasBeenVerified)

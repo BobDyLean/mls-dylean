@@ -96,6 +96,24 @@ def TreesyncTreekemStateAllInvariants (tr: ProofTrace) (me: Participant) (st: Tr
   TreesyncTreekemStateCoarseInvariant tr me st ∧
   TreesyncTreekemStateVeryCoarseInvariant tr me st
 
+/-- `treesync_treekem_state_invariant_aux` stays true when the trace grows (MLS* uses SMT patterns). -/
+public
+theorem TreesyncTreekemStateInvariantAux_later {leafIndex: Nat} (tr1 tr2: ProofTrace) (me: Participant)
+  (groupContext: GroupContext Bytes) (treesync: TreeSyncState Bytes tkt DyAsToken groupContext.groupId)
+  (treekem: TreeKEMTreeState Bytes leafIndex)
+  : tr1 ≤ tr2 →
+    TreesyncTreekemStateInvariantAux tr1 me groupContext treesync treekem →
+    TreesyncTreekemStateInvariantAux tr2 me groupContext treesync treekem
+:= by
+  grind [TreesyncTreekemStateInvariantAux, treesyncStateValid]
+
+grind_pattern TreesyncTreekemStateInvariantAux_later =>
+  tr1 ≤ tr2,
+  TreesyncTreekemStateInvariantAux tr1 me groupContext treesync treekem
+grind_pattern [grind_later] TreesyncTreekemStateInvariantAux_later =>
+  tr1 ≤ tr2,
+  TreesyncTreekemStateInvariantAux tr1 me groupContext treesync treekem
+
 /-- Port of `treesync_treekem_state_invariant_later`. -/
 public
 theorem TreesyncTreekemStateInvariant_later (tr1 tr2: ProofTrace) (me: Participant) (st: TreeSyncTreeKEMState)

@@ -53,6 +53,17 @@ public
 class EventInv.Has {EventT: Type} [EventInv EventT] (pred: ProofTrace → EventT → Prop): Prop where
   invariant_eq: ∀ tr ev, EventInv.invariant tr ev = pred tr ev
 
+/--
+The invariant of the events of type `EventT` is `pred`, as a function
+(to rewrite the preconditions stated with `EventInv.invariant`, e.g. those of the functions triggering events).
+-/
+public
+theorem EventInv.Has.invariant_eq_fun {EventT: Type} [EventInv EventT] (pred: ProofTrace → EventT → Prop) [h: EventInv.Has pred]:
+  (EventInv.invariant: ProofTrace → EventT → Prop) = pred
+:= by
+  funext tr ev
+  exact h.invariant_eq tr ev
+
 variable [TraceInvariant] {EventT: Type} [EventInv EventT]
 variable [ExecTraceTypes.Has (ExecEntryT EventT)] [ProofTraceTypes.Has (ProofEntryT EventT)] [TraceInvariant.Has (ProofEntryT EventT)]
 

@@ -53,6 +53,79 @@ theorem LeafNodeTBS.eq_of_keyPackage {Bytes: Type} [BytesLike Bytes] {tkt: TreeK
   subst h
   rfl
 
+/-! ## Monotonicity of the events -/
+
+section Events
+
+variable [HasSymbolicBytes] [ExecTraceTypes] {tkt: TreeKEMTypes Bytes}
+
+section LeafNode
+
+variable [ExecTraceTypes.Has (ProtocolEvent.ExecEntryT (LeafNodeSignedEvent tkt))]
+
+/-- Leaf node events stay logged when the trace grows (MLS* uses SMT patterns). -/
+public
+theorem LeafNodeHasEvent_le (prin: Participant) (tr1 tr2: ExecTrace) (lnTbs: LeafNodeTBS Bytes tkt)
+  : tr1 ≤ tr2 →
+    LeafNodeHasEvent prin tr1 lnTbs →
+    LeafNodeHasEvent prin tr2 lnTbs
+:= by
+  grind [LeafNodeHasEvent]
+
+grind_pattern LeafNodeHasEvent_le => tr1 ≤ tr2, LeafNodeHasEvent prin tr1 lnTbs
+grind_pattern [grind_later] LeafNodeHasEvent_le => tr1 ≤ tr2, LeafNodeHasEvent prin tr1 lnTbs
+
+end LeafNode
+
+section Tree
+
+variable [ExecTraceTypes.Has (ProtocolEvent.ExecEntryT (GroupHasTreeEvent tkt))]
+
+/-- Tree events stay logged when the trace grows (MLS* uses SMT patterns). -/
+public
+theorem TreeHasEvent_le (prin: Participant) (tr1 tr2: ExecTrace)
+  (groupId: MlsBytes Bytes) (authentifierLeafIndex: Nat) (t: OneTreeSync Bytes tkt)
+  : tr1 ≤ tr2 →
+    TreeHasEvent prin tr1 groupId authentifierLeafIndex t →
+    TreeHasEvent prin tr2 groupId authentifierLeafIndex t
+:= by
+  grind [TreeHasEvent]
+
+grind_pattern TreeHasEvent_le => tr1 ≤ tr2, TreeHasEvent prin tr1 groupId authentifierLeafIndex t
+grind_pattern [grind_later] TreeHasEvent_le => tr1 ≤ tr2, TreeHasEvent prin tr1 groupId authentifierLeafIndex t
+
+/-- Tree list events stay logged when the trace grows (MLS* uses SMT patterns). -/
+public
+theorem TreeListHasEvent_le (prin: Participant) (tr1 tr2: ExecTrace)
+  (groupId: MlsBytes Bytes) (authentifierLeafIndex: Nat) (tl: TreeSyncList Bytes tkt)
+  : tr1 ≤ tr2 →
+    TreeListHasEvent prin tr1 groupId authentifierLeafIndex tl →
+    TreeListHasEvent prin tr2 groupId authentifierLeafIndex tl
+:= by
+  grind [TreeListHasEvent]
+
+grind_pattern TreeListHasEvent_le => tr1 ≤ tr2, TreeListHasEvent prin tr1 groupId authentifierLeafIndex tl
+grind_pattern [grind_later] TreeListHasEvent_le => tr1 ≤ tr2, TreeListHasEvent prin tr1 groupId authentifierLeafIndex tl
+
+variable [ExecTraceTypes.Has (ProtocolEvent.ExecEntryT (LeafNodeSignedEvent tkt))]
+
+/-- Port of `external_path_has_event_later`. -/
+public
+theorem ExternalPathHasEvent_le {l: Nat} (prin: Participant) (tr1 tr2: ExecTrace)
+  (t: TreeSync Bytes tkt l) (li: Nat) (p: ExternalPathSync Bytes tkt l) (groupId: MlsBytes Bytes)
+  : tr1 ≤ tr2 →
+    ExternalPathHasEvent prin tr1 t li p groupId →
+    ExternalPathHasEvent prin tr2 t li p groupId
+:= by
+  grind [ExternalPathHasEvent]
+
+grind_pattern ExternalPathHasEvent_le => tr1 ≤ tr2, ExternalPathHasEvent prin tr1 t li p groupId
+grind_pattern [grind_later] ExternalPathHasEvent_le => tr1 ≤ tr2, ExternalPathHasEvent prin tr1 t li p groupId
+
+end Tree
+
+end Events
+
 /-! ## Predicates -/
 
 section Predicates

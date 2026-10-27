@@ -112,6 +112,19 @@ theorem IHaveVerifiedEveryLeafNode_intro {l: Nat} (tr: ExecTrace) (me: Participa
     rw [IHaveVerifiedEveryLeafNode_succ _ _ _ _ t.position]
     grind [leafAt.eq_def]
 
+/-- Verified leaf nodes stay verified when the trace grows (MLS* uses an SMT pattern). -/
+public
+theorem IHaveVerifiedLeafNode_le (tr1 tr2: ExecTrace) (me: Participant) (ln: LeafNode Bytes tkt)
+  (groupId: MlsBytes Bytes) (leafIndex: Nat)
+  : tr1 ≤ tr2 →
+    IHaveVerifiedLeafNode tr1 me ln groupId leafIndex →
+    IHaveVerifiedLeafNode tr2 me ln groupId leafIndex
+:= by
+  grind [IHaveVerifiedLeafNode]
+
+grind_pattern IHaveVerifiedLeafNode_le => tr1 ≤ tr2, IHaveVerifiedLeafNode tr1 me ln groupId leafIndex
+grind_pattern [grind_later] IHaveVerifiedLeafNode_le => tr1 ≤ tr2, IHaveVerifiedLeafNode tr1 me ln groupId leafIndex
+
 /-- Port of `i_have_verified_every_leaf_node_later`. -/
 public
 theorem IHaveVerifiedEveryLeafNode_le {l: Nat} (tr1 tr2: ExecTrace) (me: Participant) (t: TreeSync Bytes tkt l)

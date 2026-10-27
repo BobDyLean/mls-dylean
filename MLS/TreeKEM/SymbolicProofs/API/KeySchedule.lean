@@ -40,6 +40,23 @@ def TreekemKeyscheduleStateGood (tr: ProofTrace) (st: TreeKEMKeyscheduleState By
   IsEpochSecret tr .initSecret groupContext st.initSecret ∧
   st.epochKeys.confirmationTag.Publishable tr
 
+omit [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT TreeSyncSignatureKeyState)] in
+/-- `treekem_keyschedule_state_good` stays true when the trace grows (MLS* uses SMT patterns). -/
+public
+theorem TreekemKeyscheduleStateGood_later (tr1 tr2: ProofTrace) (st: TreeKEMKeyscheduleState Bytes)
+  (groupContext: GroupContext Bytes):
+  tr1 ≤ tr2 →
+  TreekemKeyscheduleStateGood tr1 st groupContext →
+  TreekemKeyscheduleStateGood tr2 st groupContext
+:= by
+  unfold TreekemKeyscheduleStateGood
+  grind
+
+grind_pattern TreekemKeyscheduleStateGood_later => tr1 ≤ tr2, TreekemKeyscheduleStateGood tr1 st groupContext
+grind_pattern [grind_later] TreekemKeyscheduleStateGood_later =>
+  tr1 ≤ tr2,
+  TreekemKeyscheduleStateGood tr1 st groupContext
+
 /--
 Port of `treekem_keyschedule_state_label_good_aux`.
 The last conjunct is useful to store the resumption PSK in the PSK store
@@ -164,7 +181,11 @@ theorem createFromEpochSecret_proof (tr: ProofTrace) (epochSecret: Bytes) (group
     simp only [TreekemKeyscheduleStateGood, TreekemKeyscheduleStateLabelGoodAux, IsEpochSecret, mkEpochSecretLabel] at * <;>
     grind [Label.canFlow]
 
-/-- Port of `create_from_joiner_secret_proof`. -/
+/--
+Port of `create_from_joiner_secret_proof`.
+It also gives the label of the resumption PSK (the last conjunct of `treekem_keyschedule_state_label_good_aux`),
+used to store it in the PSK store when joining a group (see `MLS.TreeKEM.SymbolicSpec.Traceful.ProcessWelcome`).
+-/
 public
 theorem createFromJoinerSecret_proof (tr: ProofTrace) (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes × Bytes))
   (groupContext: GroupContext Bytes) (st: TreeKEMKeyscheduleState Bytes) (encryptionSecret: Bytes)
@@ -172,14 +193,15 @@ theorem createFromJoinerSecret_proof (tr: ProofTrace) (joinerSecret: Bytes) (psk
   (hjoiner: joinerSecret.Invariant tr) (hpsks: PsksBytesInvariant tr psks)
   (hgc: GroupContext.mf.wf (Bytes.Publishable · tr) groupContext):
   TreekemKeyscheduleStateGood tr st groupContext ∧
-  TreekemKeyscheduleStateAuthStrong st joinerSecret psks groupContext
+  TreekemKeyscheduleStateAuthStrong st joinerSecret psks groupContext ∧
+  (st.epochKeys.resumptionPsk.label tr).canFlow (mkEpochSecretLabel .resumptionPsk groupContext) tr.erase
 := by
   simp only [createFromJoinerSecret, Result.bind_eq_success] at h
   obtain ⟨epochSecret, h1, h2⟩ := h
   obtain ⟨hinv, husg, -⟩ := secretJoinerToEpoch_proof tr joinerSecret psks groupContext epochSecret h1 hjoiner hpsks
     (GroupContext.wf_invariant_of_publishable tr groupContext hgc)
-  obtain ⟨hgood, -, -⟩ := createFromEpochSecret_proof tr epochSecret groupContext st encryptionSecret h2 hinv hgc husg
-  refine ⟨hgood, ?_⟩
+  obtain ⟨hgood, hlabel, -⟩ := createFromEpochSecret_proof tr epochSecret groupContext st encryptionSecret h2 hinv hgc husg
+  refine ⟨hgood, ?_, hlabel.2.2.2.2.2.2.2⟩
   simp [TreekemKeyscheduleStateAuthStrong, h1, h2]
 
 /-- Port of `commit_proof`. `joiners` is the de-hash of the confirmed transcript hash. -/

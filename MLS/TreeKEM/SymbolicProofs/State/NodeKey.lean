@@ -112,6 +112,18 @@ theorem IsNodeSkForLeafPk_later (tr1 tr2: ProofTrace) (prin: Participant) (leafP
 grind_pattern IsNodeSkForLeafPk_later => tr1 ≤ tr2, IsNodeSkForLeafPk tr1 prin leafPk nodeSk
 grind_pattern [grind_later] IsNodeSkForLeafPk_later => tr1 ≤ tr2, IsNodeSkForLeafPk tr1 prin leafPk nodeSk
 
+/-- Node public keys stay node public keys when the trace grows. -/
+public
+theorem IsNodePkForLeafPk_later (tr1 tr2: ProofTrace) (prin: Participant) (leafPk nodePk: Bytes)
+  : tr1 ≤ tr2 →
+    IsNodePkForLeafPk tr1 prin leafPk nodePk →
+    IsNodePkForLeafPk tr2 prin leafPk nodePk
+:= by
+  grind [IsNodePkForLeafPk]
+
+grind_pattern IsNodePkForLeafPk_later => tr1 ≤ tr2, IsNodePkForLeafPk tr1 prin leafPk nodePk
+grind_pattern [grind_later] IsNodePkForLeafPk_later => tr1 ≤ tr2, IsNodePkForLeafPk tr1 prin leafPk nodePk
+
 /-- Port of `treekem_priv_state_pred`. -/
 @[expose]
 public

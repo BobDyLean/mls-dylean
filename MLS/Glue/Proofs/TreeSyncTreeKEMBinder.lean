@@ -556,6 +556,17 @@ theorem treesyncTreekemStateRel_position (stTs: TreeSyncState Bytes tkt TokenT g
 
 grind_pattern treesyncTreekemStateRel_position => treesyncTreekemStateRel stTs stTk, stTk.tree.position
 
+/-- Related states have trees of the same height. -/
+public
+theorem treesyncTreekemStateRel_levels (stTs: TreeSyncState Bytes tkt TokenT groupId)
+  (stTk: TreeKEMTreeState Bytes leafInd) (hrel: treesyncTreekemStateRel stTs stTk):
+  stTk.levels = stTs.levels
+:= by
+  induction stTs, stTk, hrel using treesyncTreekemStateRel_induction
+  simp
+
+grind_pattern treesyncTreekemStateRel_levels => treesyncTreekemStateRel stTs stTk, stTk.levels
+
 /-- Port of `create_state_rel`. -/
 public
 theorem create_stateRel {ln: LeafNode Bytes tkt} (pend: TreeSync.API.PendingCreate groupId ln) (token: TokenT)

@@ -73,6 +73,7 @@ def PendingCreate.Valid {ln: LeafNode Bytes tkt} (pend: PendingCreate groupId ln
 public
 def PendingWelcome.Valid {l: Nat} {t: TreeSync Bytes tkt l} (pend: PendingWelcome groupId t): Prop :=
   (unmergedLeavesOk t ∧ parentHashInvariant t ∧ validLeavesInvariant groupId t) ∧
+  pend.asInputs.length = 2^l ∧
   ∀ li, t.containsLeafIndex li → pend.asInputs[li - t.position]? = some ((leafAt t li).map leafNodeToAsInput)
 
 /-- MLS*'s refinements of `pending_add`: `pending_add_proof` and `as_input: as_input_for ln`. -/
@@ -143,7 +144,7 @@ theorem prepareWelcome_valid {l: Nat} (t: TreeSync Bytes tkt l) (pend: PendingWe
   unfold prepareWelcome at h
   repeat (split at h; · simp [Result.error] at h)
   cases h
-  refine ⟨by simp_all, ?_⟩
+  refine ⟨by simp_all, by simp [length_getLeafList], ?_⟩
   intro li hli
   have := index_getLeafList t (li - t.position) (by grind [Tree.containsLeafIndex])
   grind [Tree.containsLeafIndex]
@@ -333,17 +334,26 @@ theorem finalizeCreate_valid {asp: ASParameters Bytes TokenT} {ln: LeafNode Byte
   grind [treesyncStateValid, finalizeCreate, PendingCreate.Valid, allCredentialsOk_treeCreate, leafNodeToAsInput, treeCreate]
 
 /--
+The precondition of MLS*'s `finalize_welcome_valid`: each token is valid for the AS input of its leaf
+(the tokens of blank leaves are `none`).
+-/
+@[expose]
+public
+def TokensForAsInputs (asp: ASParameters Bytes TokenT) (asInputs: List (Option (ASInput Bytes)))
+  (tokens: List (Option TokenT)): Prop :=
+  ∀ li < tokens.length, match asInputs[li]?, tokens[li]? with
+    | some (some asInp), some (some token) => asp.credentialOk asInp token
+    | some none, some none => True
+    | _, _ => False
+
+/--
 Port of `finalize_welcome_valid`.
 MLS* requires `List.Tot.length tokens == pow2 l` (here `hlen`).
 -/
 public
 theorem finalizeWelcome_valid {asp: ASParameters Bytes TokenT} {l: Nat} {t: TreeSync Bytes tkt l}
   (pend: PendingWelcome groupId t) (tokens: List (Option TokenT))
-  (hpend: pend.Valid) (hlen: tokens.length = 2^l)
-  (h: ∀ li: Nat, match pend.asInputs[li]?, tokens[li]? with
-    | some (some asInp), some (some token) => asp.credentialOk asInp token
-    | some none, some none => True
-    | _, _ => False):
+  (hpend: pend.Valid) (hlen: tokens.length = 2^l) (h: TokensForAsInputs asp pend.asInputs tokens):
   treesyncStateValid asp (finalizeWelcome pend tokens)
 := by
   refine ⟨by simp [finalizeWelcome], ?_⟩
@@ -351,10 +361,13 @@ theorem finalizeWelcome_valid {asp: ASParameters Bytes TokenT} {l: Nat} {t: Tree
   · simp [finalizeWelcome]
   · intro li hli
     have hli': t.containsLeafIndex li := hli
-    have h1 := hpend.2 li hli'
+    have h1 := hpend.2.2 li hli'
     have h2 := leafAt_tokensFromList l t.position tokens li hlen (by grind [Tree.containsLeafIndex])
+    have h3 := h (li - t.position) (by grind [Tree.containsLeafIndex])
+    rw [h1, ← h2] at h3
     simp only [finalizeWelcome, oneCredentialOk]
-    grind [cases Option]
+    revert h3
+    cases leafAt t li <;> cases leafAt (tokensFromList l t.position tokens) li <;> simp [Option.map]
 
 /-- Port of `finalize_add_valid`. -/
 public

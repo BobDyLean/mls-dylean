@@ -3,6 +3,7 @@ module
 public import MLS.Symbolic.Code.Symbolic
 public import MLS.Common.Proofs.Crypto.Derived
 import all DY.EquationalTheory.Literal
+import all DY.EquationalTheory.Hash
 
 /-!
 Lemmas on symbolic bytes that DY* proves by normalization (DY*'s `normalize_term_spec`):
@@ -51,6 +52,15 @@ theorem macCompute_inj (key1 msg1 key2 msg2: Bytes):
 := by
   simp only [DySlop.Mac.macCompute]
   grind
+
+/-- The symbolic hash has length `hashOutputLength` (MLS*'s `hash_output_length_lemma`). -/
+public
+theorem hashHash_length (buf h: Bytes) (hh: CryptoBytes.hashHash buf = .success h):
+  Comparse.BytesLike.length h = CryptoBytes.hashOutputLength Bytes
+:= by
+  simp only [CryptoBytes.hashHash, Result.pure_eq_success] at hh
+  subst hh
+  simp [Comparse.BytesLike.length, DY.Hash.length_hash, DY.Hash.hashLength, CryptoBytes.hashOutputLength]
 
 end Injectivity
 
@@ -110,6 +120,15 @@ theorem wf_knowableBy_of_publishable {α: Type} (mf: NonExtensibleMessageFormat 
 := by
   rw [← pred_serializeNE_iff, ← pred_serializeNE_iff]
   grind [canFlowTrans]
+
+/-- Publishable messages satisfy the bytes invariant (MLS* uses `wf_weaken_lemma`). -/
+public
+theorem wf_invariant_of_publishable {α: Type} (mf: NonExtensibleMessageFormat Bytes α) (tr: ProofTrace) (x: α)
+  : mf.wf (Bytes.Publishable · tr) x →
+    mf.wf (Bytes.Invariant · tr) x
+:= by
+  rw [← pred_serializeNE_iff, ← pred_serializeNE_iff]
+  grind
 
 /-- Messages knowable by a label are knowable by the labels it flows to (MLS* uses `is_well_formed_prefix_weaken`). -/
 public

@@ -611,6 +611,23 @@ def PrepareCreateCommitRandGood (tr: ProofTrace) (me: Participant) (randPrepare:
     (pathSecret0.label tr).equivalent ((nodeKeyLabel me (hpkePk leafSk)).join pathUsages.headLabel) tr.erase ∧
     pathSecret0.HasUsage (PathSecretUsage.toUsage pathUsages.tail) tr
 
+/-- `prepare_create_commit_rand_good` stays true when the trace grows (MLS* uses SMT patterns). -/
+public
+theorem PrepareCreateCommitRandGood_later (tr1 tr2: ProofTrace) (me: Participant) (randPrepare: Randomness Bytes)
+  (pathUsages: PathSecretUsage)
+  : tr1 ≤ tr2 →
+    PrepareCreateCommitRandGood tr1 me randPrepare pathUsages →
+    PrepareCreateCommitRandGood tr2 me randPrepare pathUsages
+:= by
+  intro hle h leafSk rand1 h1 pathSecret0 rand2 h2
+  have := h leafSk rand1 h1 pathSecret0 rand2 h2
+  grind
+
+grind_pattern PrepareCreateCommitRandGood_later => tr1 ≤ tr2, PrepareCreateCommitRandGood tr1 me randPrepare pathUsages
+grind_pattern [grind_later] PrepareCreateCommitRandGood_later =>
+  tr1 ≤ tr2,
+  PrepareCreateCommitRandGood tr1 me randPrepare pathUsages
+
 /--
 Port of `pending_commit_good`.
 MLS*'s conjunct `st_ts.levels == st_tk.levels` is the equality `h`, used to cast the path secrets.
@@ -625,6 +642,20 @@ def PendingCommitGood {groupId: MlsBytes Bytes} {leafInd: Nat} (tr: ProofTrace) 
     (tkPend.commitSecret.label tr).equivalent
       ((nodeKeyLabel me (hpkePk tkPend.pathSecrets.getPathLeaf)).join (nodeSkLabelNocommitter stTs.tree groupId leafInd))
       tr.erase
+
+/-- `pending_commit_good` stays true when the trace grows (MLS* uses SMT patterns). -/
+public
+theorem PendingCommitGood_later {groupId: MlsBytes Bytes} {leafInd: Nat} (tr1 tr2: ProofTrace) (me: Participant)
+  (stTs: TreeSyncState Bytes tkt DyAsToken groupId) (stTk: TreeKEMTreeState Bytes leafInd) (tkPend: PendingCommit stTk)
+  : tr1 ≤ tr2 →
+    PendingCommitGood tr1 me stTs stTk tkPend →
+    PendingCommitGood tr2 me stTs stTk tkPend
+:= by
+  intro hle ⟨h, h1, h2, h3⟩
+  exact ⟨h, PathSecretsAreCorrect_later _ _ _ _ _ _ tr1 tr2 hle h1, by grind, by grind⟩
+
+grind_pattern PendingCommitGood_later => tr1 ≤ tr2, PendingCommitGood tr1 me stTs stTk tkPend
+grind_pattern [grind_later] PendingCommitGood_later => tr1 ≤ tr2, PendingCommitGood tr1 me stTs stTk tkPend
 
 variable [TraceInvariant] [HasMlsTreekemInvariants]
 

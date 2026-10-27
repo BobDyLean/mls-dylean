@@ -9,8 +9,8 @@ Port-specific differences:
 - The ghost data of MLS* (`randomness_ghost_data`: the usage and label of each random bytestring)
   is a ghost argument of the proofs in DyLean (`Random.genRand`):
   `generateRandomness` only takes the lengths of the random bytestrings (MLS*'s implicit `l`).
-- `randomness_has_ghost_data` and `split_randomness_ghost_data_lemma` are in `MLS.Symbolic.SymbolicProofs.Randomness`;
-  `generate_randomness_proof` is not ported yet.
+- `randomness_has_ghost_data`, `split_randomness_ghost_data_lemma` and `generate_randomness_proof`
+  are in `MLS.Symbolic.SymbolicProofs.Randomness`.
 -/
 
 namespace MLS

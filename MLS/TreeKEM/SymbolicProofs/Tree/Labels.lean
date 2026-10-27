@@ -780,6 +780,7 @@ theorem nodeSkLabelAux_canFlow_leaf {l: Nat} (t: TreeSync Bytes tkt l) (groupId:
   grind [nodeSkLabelAux_isCorrupt]
 
 /-- Port of `node_sk_label_flows_to_node_sk_label_nosig`. -/
+public
 theorem nodeSkLabel_canFlow_nodeSkLabelNosig {l: Nat} (t: TreeSync Bytes tkt l) (groupId: MlsBytes Bytes)
   (committerLeafIndex: Nat) (tr: ExecTrace):
   (nodeSkLabel t groupId).canFlow (nodeSkLabelNosig t groupId committerLeafIndex) tr

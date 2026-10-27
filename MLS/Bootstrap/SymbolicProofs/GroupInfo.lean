@@ -69,6 +69,22 @@ def GroupInfoSignPredAux (tr: ExecTrace) (inviterId: Participant) (groupContext:
     inviterEv.prin = inviterId ∧
     tr.EventLogged inviterEv
 
+omit [ProofTraceTypes] in
+/-- `group_info_sign_pred_aux` stays true when the trace grows (MLS* uses an SMT pattern). -/
+public
+theorem GroupInfoSignPredAux_le (tr1 tr2: ExecTrace) (inviterId: Participant) (groupContext: GroupContext Bytes)
+  (confirmationTag: Bytes)
+  : tr1 ≤ tr2 →
+    GroupInfoSignPredAux tr1 inviterId groupContext confirmationTag →
+    GroupInfoSignPredAux tr2 inviterId groupContext confirmationTag
+:= by
+  grind [GroupInfoSignPredAux]
+
+grind_pattern GroupInfoSignPredAux_le => tr1 ≤ tr2, GroupInfoSignPredAux tr1 inviterId groupContext confirmationTag
+grind_pattern [grind_later] GroupInfoSignPredAux_le =>
+  tr1 ≤ tr2,
+  GroupInfoSignPredAux tr1 inviterId groupContext confirmationTag
+
 /-- The pred field of `group_info_sign_pred`. -/
 @[expose]
 public
@@ -113,7 +129,11 @@ variable [ExecTraceTypes.Has (ProtocolEvent.ExecEntryT IAmInGroup)]
 variable [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT TreeSyncSignatureKeyState)]
 
 omit [ExecTraceTypes.Has (ProtocolEvent.ExecEntryT IAmInGroup)] in
-/-- Port of `get_signer_verification_key_proof`. -/
+/--
+Port of `get_signer_verification_key_proof`.
+The postcondition also states that `vk` is the signature key of the inviter's leaf node,
+which MLS*'s callers get from the definition of `get_signer_verification_key`.
+-/
 public
 theorem getSignerVerificationKey_proof (tr: ProofTrace) {tkt: TreeKEMTypes Bytes} {l: Nat}
   (tree: TreeSync Bytes tkt l) (groupInfo: GroupInfo Bytes) (tokens: ASTokens DyAsToken l) (vk: Bytes)
@@ -123,6 +143,7 @@ theorem getSignerVerificationKey_proof (tr: ProofTrace) {tkt: TreeKEMTypes Bytes
   ∃ inviterLeafNode inviterId,
     leafAt tree groupInfo.tbs.signer.toNat = some inviterLeafNode ∧
     credentialToPrincipal inviterLeafNode.data.credential = some inviterId ∧
+    vk = inviterLeafNode.data.signatureKey.val ∧
     IsSignatureKeyVk tr inviterId vk
 := by
   unfold getSignerVerificationKey at h

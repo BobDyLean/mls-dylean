@@ -21,6 +21,9 @@ Port-specific differences:
   A leaf node with source `update` is signed with the group identifier and the leaf index of its owner,
   hence `generateUpdateProposal'` (resp. `generateUpdateProposal`) also takes the group state
   (resp. its handle).
+  The signature predicate of leaf nodes with source `update` requires a tree event on the leaf
+  (as for the leaves of update paths, see `triggerExternalPathEvents`):
+  `generateUpdateLeafNode'` also triggers it.
 -/
 
 namespace MLS.TreeKEM
@@ -36,7 +39,8 @@ variable [HasSymbolicBytes] [ExecTraceTypes] [HasTreeSyncExecTrace tkt] [HasTree
 /--
 Variant of `generateLeafNode'` (MLS*'s `_generate_leaf_node`) for leaf nodes with source `update`
 (not in MLS*, see the module docstring):
-the group identifier and the leaf index are part of the signed content.
+the group identifier and the leaf index are part of the signed content,
+and the signature predicate requires a tree event on the leaf (without signature), which this function triggers.
 -/
 public
 def generateUpdateLeafNode' (me: Participant) (leafNodeSkeleton: LeafNode Bytes tkt) (signatureKeySid: Nat)
@@ -63,6 +67,8 @@ def generateUpdateLeafNode' (me: Participant) (leafNodeSkeleton: LeafNode Bytes 
     leafIndex := StaticOption.mk leafIndex.toUInt32
   }
   Symbolic.API.triggerLeafNodeEvent me leafNodeTbs
+  Symbolic.API.triggerTreeEvent me groupId leafIndex
+    ⟨0, (ChildSiblingView.leaf (some { data := leafNodeData, signature := MlsBytes.empty }) leafIndex).pack⟩
   let leafNode ← Symbolic.API.authenticateLeafNodeDataFromUpdate me signatureKeySid leafNodeData groupId leafIndex.toUInt32
   pure (leafNode, leafNodeKeySid)
 

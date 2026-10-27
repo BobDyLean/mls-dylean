@@ -42,6 +42,19 @@ theorem ASTokens.mf_wf {l: Nat} (pred: Bytes → Prop) [BytesCompatiblePred pred
 
 variable [ExecTraceTypes.Has (CompromisableState.ExecEntryT TreeSyncSignatureKeyState)]
 
+/-- The credentials of a TreeSync state stay valid when the trace grows (MLS* uses SMT patterns). -/
+public
+theorem treesyncStateValid_dyAsp_later {groupId: MlsBytes Bytes} (tr1 tr2: ProofTrace)
+  (st: TreeSyncState Bytes tkt DyAsToken groupId)
+  : tr1 ≤ tr2 →
+    treesyncStateValid (dyAsp tr1) st →
+    treesyncStateValid (dyAsp tr2) st
+:= by
+  grind [treesyncStateValid]
+
+grind_pattern treesyncStateValid_dyAsp_later => tr1 ≤ tr2, treesyncStateValid (dyAsp tr1) st
+grind_pattern [grind_later] treesyncStateValid_dyAsp_later => tr1 ≤ tr2, treesyncStateValid (dyAsp tr1) st
+
 /-- Port of `treesync_public_state_pred` (its predicate). -/
 @[expose]
 public

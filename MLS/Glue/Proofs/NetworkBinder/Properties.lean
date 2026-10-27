@@ -241,6 +241,34 @@ theorem ratchetTreeToTreesyncAux_wf {tkt: TreeKEMTypes Bytes} (l position: Nat) 
         Node.mf.wf_eq, List.mem_of_mem_take, List.mem_of_mem_drop, List.mem_cons_self]
     · grind [Result.internalFailure]
 
+/-- The tree built by `ratchetTreeToTreesyncAux` is at the given position (MLS*'s index `i` of the result type). -/
+public
+theorem ratchetTreeToTreesyncAux_position {tkt: TreeKEMTypes Bytes} (l position: Nat) (nodes: List (Option (Node Bytes tkt)))
+  (t: TreeSync Bytes tkt l) (h: ratchetTreeToTreesyncAux l position nodes = .success t):
+  t.position = position
+:= by
+  induction l generalizing position nodes with
+  | zero =>
+    unfold ratchetTreeToTreesyncAux at h
+    split at h <;> grind [Result.pure_eq_success, Result.error, Result.internalFailure, LeftRightView.pack]
+  | succ l ih =>
+    unfold ratchetTreeToTreesyncAux at h
+    split at h
+    · simp only [Result.bind_eq_success] at h
+      obtain ⟨left, hleft, right, hright, h⟩ := h
+      split at h <;> grind [Result.pure_eq_success, Result.error, LeftRightView.pack]
+    · grind [Result.internalFailure]
+
+/-- The tree built by `ratchetTreeToTreesync` is at position `0` (MLS*'s `treesync bytes tkt l 0`). -/
+public
+theorem ratchetTreeToTreesync_position {tkt: TreeKEMTypes Bytes} (nodes: RatchetTree Bytes tkt)
+  (res: (l: Nat) × TreeSync Bytes tkt l) (h: ratchetTreeToTreesync nodes = .success res):
+  res.2.position = 0
+:= by
+  simp only [ratchetTreeToTreesync, Result.bind_eq_success, Result.pure_eq_success] at h
+  obtain ⟨_, _, t, ht, rfl⟩ := h
+  exact ratchetTreeToTreesyncAux_position _ _ _ t ht
+
 /-- Port of `ratchet_tree_to_treesync_pre`. -/
 public
 theorem ratchetTreeToTreesync_wf {tkt: TreeKEMTypes Bytes} (nodes: RatchetTree Bytes tkt)
@@ -348,6 +376,7 @@ theorem updatePathToTreesync_wf {l: Nat} (p: SparseUpdatePath Bytes l)
       TreeKEM.tkt.mfNodeContent.wf_eq]
 
 /-- Port of `get_path_leaf_pre`. -/
+public
 theorem getPathLeaf_wf {Leaf Node: Type} {l: Nat}
   (mfLeaf: NonExtensibleMessageFormat Bytes Leaf) (mfNode: NonExtensibleMessageFormat Bytes Node)
   (p: Path Leaf Node l)

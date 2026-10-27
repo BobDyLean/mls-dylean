@@ -194,6 +194,26 @@ theorem wf_pack_node {l: Nat} (pred: Bytes → Prop) [BytesCompatiblePred pred]
 := by
   simp [LeftRightView.pack, wf_eq]
 
+/-- Port of `ps_tree_is_well_formed` (leaf case), on child / sibling views. -/
+@[simp]
+public
+theorem wf_pack_childSibling_leaf (pred: Bytes → Prop) [BytesCompatiblePred pred] (content: Leaf) (position: Nat):
+  (Tree.mf mfLeaf mfNode 0).wf pred (ChildSiblingView.leaf content position).pack = mfLeaf.wf pred content
+:= by
+  simp [ChildSiblingView.pack]
+
+/-- Port of `ps_tree_is_well_formed` (node case), on child / sibling views. -/
+@[simp]
+public
+theorem wf_pack_childSibling_node {l: Nat} (pred: Bytes → Prop) [BytesCompatiblePred pred]
+  (content: Node) (child sibling: Tree Leaf Node l):
+  (Tree.mf mfLeaf mfNode (l+1)).wf pred (ChildSiblingView.node content child sibling).pack = (
+    mfNode.wf pred content ∧ (Tree.mf mfLeaf mfNode l).wf pred child ∧ (Tree.mf mfLeaf mfNode l).wf pred sibling
+  )
+:= by
+  simp only [ChildSiblingView.pack]
+  split <;> simp only [wf_pack_node] <;> grind
+
 /-- Well-formedness of a leaf, through its projections. -/
 public
 theorem wf_zero (pred: Bytes → Prop) [BytesCompatiblePred pred] (t: Tree Leaf Node 0):
