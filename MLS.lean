@@ -69,6 +69,7 @@ public import MLS.TreeSync.SymbolicProofs.State.AuthServiceCache
 public import MLS.TreeSync.SymbolicProofs.State.GroupManager
 public import MLS.TreeSync.SymbolicProofs.State.KeyPackageManager
 public import MLS.TreeSync.SymbolicProofs.AuthService
+public import MLS.TreeSync.SymbolicProofs.AuthService.CredentialInterpretation
 public import MLS.TreeSync.SymbolicProofs.IsWellFormed
 public import MLS.TreeSync.SymbolicProofs.LeafNodeSignature
 public import MLS.TreeSync.SymbolicProofs.Event.LeafNodeHasBeenVerified

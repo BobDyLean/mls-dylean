@@ -11,7 +11,7 @@ Port-specific differences:
 - Principals are DyLean's `Participant`s, serialized as strings (`slowString`, as DyLean's local states),
   instead of DY*'s `ps_principal`.
 - The lemmas (`principal_to_credential_to_principal`, `is_publishable_principal_to_credential`)
-  are not ported yet (they will be in `MLS.TreeSync.SymbolicProofs.AuthService.CredentialInterpretation`).
+  are in `MLS.TreeSync.SymbolicProofs.AuthService.CredentialInterpretation`.
 -/
 
 namespace MLS.TreeSync
