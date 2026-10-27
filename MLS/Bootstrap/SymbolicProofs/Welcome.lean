@@ -275,6 +275,23 @@ def OneKpSecretsGood {a: Type} (tr: ProofTrace) (me: Participant)
     hpkeSk.HasUsage (initKeyUsage me (kpSecretsToKeyPackage kpSecrets).tbs.leafNode.data.content.val) tr ∧
     credentialToPrincipal (kpSecretsToKeyPackage kpSecrets).tbs.leafNode.data.credential = some me
 
+/-- `OneKpSecretsGood` is preserved when the trace grows (MLS* uses an SMT pattern). -/
+public
+theorem OneKpSecretsGood_later {a: Type} (tr1 tr2: ProofTrace) (me: Participant)
+  (kpSecretsToHpkeSk: a → Result Bytes) (kpSecretsToKeyPackage: a → KeyPackage Bytes TreeKEM.tkt) (kpSecrets: a)
+  : tr1 ≤ tr2 →
+    OneKpSecretsGood tr1 me kpSecretsToHpkeSk kpSecretsToKeyPackage kpSecrets →
+    OneKpSecretsGood tr2 me kpSecretsToHpkeSk kpSecretsToKeyPackage kpSecrets
+:= by
+  grind [OneKpSecretsGood]
+
+grind_pattern OneKpSecretsGood_later =>
+  tr1 ≤ tr2,
+  OneKpSecretsGood tr1 me kpSecretsToHpkeSk kpSecretsToKeyPackage kpSecrets
+grind_pattern [grind_later] OneKpSecretsGood_later =>
+  tr1 ≤ tr2,
+  OneKpSecretsGood tr1 me kpSecretsToHpkeSk kpSecretsToKeyPackage kpSecrets
+
 /-- Port of `kp_secrets_good`. -/
 @[expose]
 public

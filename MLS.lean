@@ -108,6 +108,7 @@ public import MLS.Bootstrap.SymbolicSpec.State.InitKey
 public import MLS.Bootstrap.SymbolicSpec.State.KeyPackageStore
 public import MLS.Bootstrap.SymbolicSpec.KeyPackage
 public import MLS.Bootstrap.SymbolicProofs.State.InitKey
+public import MLS.Bootstrap.SymbolicProofs.State.KeyPackageStore
 public import MLS.Bootstrap.SymbolicProofs.KeyPackage
 public import MLS.Bootstrap.SymbolicProofs.KeyPackageRef
 public import MLS.Bootstrap.SymbolicProofs.Welcome

@@ -14,7 +14,7 @@ Port-specific differences:
 - States are identified by handles instead of session identifiers.
   DyLean's states are immutable: `extendKeyPackageStore` stores a new version of the store, and returns its handle.
 - The `*_post` types have no format, since they are not stored.
-- The invariants and the proofs are not ported yet.
+- The invariant and the proofs are in `MLS.Bootstrap.SymbolicProofs.State.KeyPackageStore`.
 -/
 
 namespace MLS.Bootstrap

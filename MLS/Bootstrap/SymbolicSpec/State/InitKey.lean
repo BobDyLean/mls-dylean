@@ -12,7 +12,7 @@ Port-specific differences:
 - The usage and label of the init key (the arguments of MLS*'s `my_mk_rand`)
   are ghost arguments of the proofs in DyLean (`Random.genRand`).
 - The label and the usages are in `MLS.Bootstrap.SymbolicProofs.State.InitKey`;
-  the state invariant and the proofs of the traceful functions are not ported yet.
+  so are the state invariant and the proofs of the traceful functions.
 - `InitKeyUsageT` (MLS*'s `init_key_usage_t`) has no `ParseableSerializeable` instance:
   its usage data is serialized with `serializeNE InitKeyUsageT.mf`.
 -/
