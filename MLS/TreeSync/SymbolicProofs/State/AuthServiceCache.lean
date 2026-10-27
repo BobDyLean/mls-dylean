@@ -3,7 +3,10 @@ module
 public import MLS.TreeSync.SymbolicSpec.State.AuthServiceCache
 public import MLS.TreeSync.SymbolicProofs.AuthService
 public import MLS.Symbolic.SymbolicProofs.MiscLemmas
+public import MLS.Symbolic.SymbolicProofs.Symbolic
+public import MLS.TreeSync.SymbolicProofs.AuthService.CredentialInterpretation
 import all MLS.TreeSync.SymbolicSpec.State.AuthServiceCache
+import DY.Meta.Step
 
 /-!
 Port of the invariant of `MLS.TreeSync.Symbolic.State.AuthServiceCache`:
@@ -14,6 +17,7 @@ Port-specific differences:
   which gives the invariant of the maps: MLS*'s `has_as_cache_invariant` is not needed.
 - The proofs of the API functions (DY*'s `initialize_map_invariant`, … in MLS*) are DyLean Hoare triples (instances),
   assuming the proof trace entries of the map.
+- `verifyCredential.proof` is not in MLS* (see `MLS.TreeSync.verifyCredential`).
 -/
 
 namespace MLS.TreeSync
@@ -83,6 +87,37 @@ theorem findVerifiedCredential.proof (prin: Participant) (sid: Nat) (key: AsCach
 := by
   unfold findVerifiedCredential
   exact DySlop.Map.findValue.proof prin sid key
+
+attribute [local instance] getTimestamp.proof_eq in
+/-- Invariant of `verifyCredential`: the token is the current time, at which `who` has its signature key. -/
+@[instance]
+public
+theorem verifyCredential.proof
+  [ProofTraceTypes.Has (CompromisableState.ProofEntryT TreeSyncSignatureKeyState)]
+  [TraceInvariant.Has (CompromisableState.ProofEntryT TreeSyncSignatureKeyState)]
+  (me: Participant) (authServiceSid: Nat) (who: Participant) (whoSignatureKeySid: Nat):
+  HoareTriple
+    (verifyCredential me authServiceSid who whoSignatureKeySid)
+    (fun _ => True)
+    (fun _ _ => True)
+:= by
+  unfold verifyCredential
+  step
+  step
+  split
+  · step
+    -- `time = tr.length` cannot be monotonized: substitute it
+    rename_i hcred htime
+    subst htime
+    step by
+      simp only [MapPred.pred, dyAsp, credentialToPrincipal_principalToCredential _ _ hcred,
+        Trace.prefix_length_eq_self, Nat.le_refl, true_and]
+      obtain rfl := (mkMlsBytes_eq_success _ _ _ _).1 ‹_›
+      have := principalToCredential_wf tr _ _ hcred
+      grind [IsSignatureKeyVk]
+    trivial
+  · simp only [WP.wp, Traceful.run_failure]
+    exists tr
 
 end Proofs
 

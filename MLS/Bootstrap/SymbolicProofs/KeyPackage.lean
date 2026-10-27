@@ -210,14 +210,14 @@ theorem keyPackageHasBeenVerifiedLabel_isCorrupt (keyPackage: KeyPackage Bytes T
 
 /--
 Port of `key_package_to_init_label_is_corrupt`.
-MLS*'s `prefix tr (find_event_triggered_at_timestamp tr me …)` is the prefix before one of the times the event was logged.
+MLS*'s `prefix tr (find_event_triggered_at_timestamp tr me …)` is the prefix before the first time the event was logged.
 -/
 public
 theorem keyPackageToInitLabel_isCorrupt (tr: ExecTrace) (me prin: Participant) (keyPackage: KeyPackage Bytes TreeKEM.tkt)
   (h: (keyPackageToInitLabel keyPackage).isCorrupt tr)
   (hprin: keyPackageToPrincipal keyPackage = some prin)
   (hev: IHaveVerifiedKeyPackage tr me keyPackage):
-  (∃ i, tr.EventLoggedAt ({ prin := me, keyPackage }: KeyPackageHasBeenVerified) i ∧
+  (∃ i, tr.EventFirstLoggedAt ({ prin := me, keyPackage }: KeyPackageHasBeenVerified) i ∧
     (signatureKeyLabel prin keyPackage.tbs.leafNode.data.signatureKey.val).isCorrupt (tr.prefix i)) ∨
   (initKeyLabel prin keyPackage.tbs.initKey.val).isCorrupt tr
 := by

@@ -287,7 +287,7 @@ theorem leafNodeHasBeenVerifiedLabel_isCorrupt (leafNode: LeafNode Bytes tkt) (g
 
 /--
 Port of `guarded_signature_key_label_is_corrupt`.
-MLS*'s `prefix tr (find_event_triggered_at_timestamp tr me …)` is the prefix before one of the times the event was logged.
+MLS*'s `prefix tr (find_event_triggered_at_timestamp tr me …)` is the prefix before the first time the event was logged.
 -/
 public
 theorem guardedSignatureKeyLabel_isCorrupt (tr: ExecTrace) (me prin: Participant)
@@ -295,7 +295,7 @@ theorem guardedSignatureKeyLabel_isCorrupt (tr: ExecTrace) (me prin: Participant
   (h: (guardedSignatureKeyLabel leafNode groupId leafIndex).isCorrupt tr)
   (hprin: credentialToPrincipal leafNode.data.credential = some prin)
   (hev: IHaveVerifiedLeafNode tr me leafNode groupId leafIndex):
-  ∃ i, tr.EventLoggedAt ({ prin := me, leafNode, groupId, leafIndex }: LeafNodeHasBeenVerified tkt) i ∧
+  ∃ i, tr.EventFirstLoggedAt ({ prin := me, leafNode, groupId, leafIndex }: LeafNodeHasBeenVerified tkt) i ∧
     (signatureKeyLabel prin leafNode.data.signatureKey.val).isCorrupt (tr.prefix i)
 := by
   simp only [guardedSignatureKeyLabel, hprin] at h

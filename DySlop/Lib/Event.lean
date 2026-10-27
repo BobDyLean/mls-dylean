@@ -42,6 +42,30 @@ theorem eventLoggedAt_of_prefix_succ (tr: ExecTrace) (ev: EventT) (i: Nat)
     exact hn ⟨j, Trace.EventLoggedAt_le' ev j _ _ (by grind) hle hj⟩
   grind
 
+/--
+The event `ev` is logged at time `i` for the first time in `tr`
+(DY*'s `find_event_triggered_at_timestamp tr prin ev = i`).
+-/
+@[expose]
+public
+def _root_.DY.Trace.EventFirstLoggedAt (ev: EventT) (i: Nat) (tr: ExecTrace): Prop :=
+  tr.EventLoggedAt ev i ∧ ¬ (tr.prefix i).EventLogged ev
+
+/-- An event logged in a trace has a first occurrence (DY*'s `find_event_triggered_at_timestamp`). -/
+public
+theorem exists_eventFirstLoggedAt (tr: ExecTrace) (ev: EventT) (h: tr.EventLogged ev):
+  ∃ i, tr.EventFirstLoggedAt ev i
+:= by
+  suffices ∀ n, (tr.prefix n).EventLogged ev → ∃ i, tr.EventFirstLoggedAt ev i from
+    this tr.length (by simpa using h)
+  intro n hn
+  induction n with
+  | zero => exact absurd hn (not_eventLogged_prefix_zero tr ev)
+  | succ k ih =>
+    by_cases hk: (tr.prefix k).EventLogged ev
+    · exact ih hk
+    · exact ⟨k, eventLoggedAt_of_prefix_succ tr ev k hn hk, hk⟩
+
 end Execution
 
 section Proof

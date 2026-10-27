@@ -147,6 +147,7 @@ public import MLS.TreeKEM.SymbolicSpec.Traceful.ProcessProposal
 public import MLS.TreeKEM.SymbolicSpec.Traceful.ProcessCommit
 public import MLS.TreeKEM.SymbolicSpec.Traceful.GenerateCommitWelcome
 public import MLS.TreeKEM.SymbolicSpec.Traceful.ProcessWelcome
+public import MLS.TreeKEM.SymbolicSpec.Reachability
 public import MLS.TreeKEM.SymbolicSpec.SanityChecks
 public import MLS.TreeKEM.SymbolicSpecProofs.API.Tree
 public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.AllInvariants
@@ -157,3 +158,4 @@ public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.ProcessCommit
 public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.ProcessProposal
 public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.GenerateCommitWelcome
 public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.ProcessWelcome
+public import MLS.TreeKEM.SymbolicSpecProofs.SecurityTheorem

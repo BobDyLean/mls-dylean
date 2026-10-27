@@ -3,6 +3,8 @@ module
 public import MLS.Symbolic.Code.Symbolic
 public import MLS.Common.Code.NetworkTypes
 public import MLS.TreeSync.SymbolicSpec.AuthService
+public import MLS.TreeSync.SymbolicSpec.AuthService.CredentialInterpretation
+public import MLS.TreeSync.SymbolicSpec.State.SignatureKey
 public import DySlop.Lib.State.Map
 
 /-!
@@ -12,6 +14,8 @@ a map from (signature verification key, credential) to the tokens of the Authent
 Port-specific differences:
 - The map is a DyLean local state (see `DySlop.Map`): its handle changes when it is updated.
 - The invariants (`as_cache_pred`, …) are in `MLS.TreeSync.SymbolicProofs.State.AuthServiceCache`.
+- `verifyCredential` is not in MLS*: it fills the AS cache (as an honest PKI),
+  for the reachability configuration (`MLS.TreeKEM.SymbolicSpec.Reachability`) and the sanity checks.
 -/
 
 namespace MLS.TreeSync
@@ -122,5 +126,25 @@ def addVerifiedCredential (prin: Participant) (sid: Nat) (key: AsCacheKey) (valu
 public
 def findVerifiedCredential (prin: Participant) (sid: Nat) (key: AsCacheKey): Traceful AsCacheValue :=
   DySlop.Map.findValue prin sid key
+
+/-! ## Credential verification -/
+
+variable [ExecTraceTypes.Has (PersistentLocalState.State.ExecEntryT TreeSyncSignatureKeyState)]
+
+/--
+The authentication service of `me` verifies the credential of `who`, whose signature key state has handle
+`whoSignatureKeySid`, and stores it in the AS cache of `me` (with handle `authServiceSid`).
+Returns the new handle of the AS cache.
+Not in MLS*, where the authentication service is not specified: it models an honest PKI,
+which reads the verification key of `who` in its state.
+The token is the current time: the signature key of `who` exists in the prefix of the trace before it.
+-/
+public
+def verifyCredential (me: Participant) (authServiceSid: Nat) (who: Participant) (whoSignatureKeySid: Nat): Traceful Nat := do
+  let verificationKey ← getSignatureKeyVk who whoSignatureKeySid
+  let verificationKey ← extractResult (mkMlsBytes verificationKey "verifyCredential" "verificationKey")
+  let some credential := principalToCredential (Bytes := Bytes) who | failure
+  let time ← getTimestamp
+  addVerifiedCredential me authServiceSid { verificationKey, credential } { token := { time } }
 
 end MLS.TreeSync

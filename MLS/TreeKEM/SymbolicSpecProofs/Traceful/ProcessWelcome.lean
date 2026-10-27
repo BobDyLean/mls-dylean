@@ -316,11 +316,13 @@ theorem processWelcome'.proof (me: Participant) (keyPackageStoreSid authServiceS
   have hvalid := ‹treesyncStateValid (dyAsp tr) treesyncSt›
   step by
     rw [ProtocolEvent.EventInv.Has.invariant_eq (pred := iAmInGroupPred)]
-    obtain ⟨-, inviterLeafNode, inviterId, hleaf, hcredInv, rfl, hsig⟩ :=
+    obtain ⟨hsigner, inviterLeafNode, inviterId, hleaf, hcredInv, rfl, hsig⟩ :=
       getSignerVerificationKey_proof tr treesyncSt.tree groupInfo treesyncSt.tokens vk hvk hvalid.1 hvalid.2
     have := verifyWelcomeGroupInfo_proof tr inviterId _ groupInfo _ psks treekemSt.keyscheduleState hverif
       ‹GroupInfo.mf.wf _ groupInfo› hsig hauth htag.symm
-    exact ⟨hth, ‹IHaveVerifiedEveryLeafNode _ _ _ _›, inviterLeafNode, inviterId, hleaf, hcredInv, this⟩
+    have hinviter: treesyncSt.tree.containsLeafIndex groupInfo.tbs.signer.toNat := by
+      simp [Tree.containsLeafIndex, ‹treesyncSt.tree.position = 0›, hsigner]
+    exact ⟨hth, ‹IHaveVerifiedEveryLeafNode _ _ _ _›, hinviter, inviterLeafNode, inviterId, hleaf, hcredInv, this⟩
   step by
     have hpsk := ‹treekemSt.keyscheduleState.epochKeys.resumptionPsk.KnowableBy _ tr›
     exact rememberPsk_resumptionPsk_pre tr me _ treesyncSt.tree myLeafIndex _ ‹GroupContext.mf.wf _ groupInfo.tbs.groupContext›

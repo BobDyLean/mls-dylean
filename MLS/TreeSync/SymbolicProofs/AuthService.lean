@@ -9,7 +9,9 @@ public import MLS.TreeSync.Proofs.Invariants.AuthService
 Port of the instantiation of the Authentication Service in `MLS.TreeSync.Symbolic.AuthService`.
 
 Port-specific differences:
-- DY*'s `on_trace` (`token.time < trace_length tr`) is inlined in `dyAsp`.
+- DY*'s `on_trace` (`token.time < trace_length tr`) is weakened to `token.time ≤ tr.length` in `dyAsp`
+  (DY* needs it for `prefix tr token.time`, which is total in DyLean), so that the current time is a valid token
+  (see `MLS.TreeSync.verifyCredential`).
 -/
 
 namespace MLS.TreeSync
@@ -33,7 +35,7 @@ def dyAsp (tr: ProofTrace): ASParameters Bytes DyAsToken where
     match credentialToPrincipal cred with
     | none => False
     | some who =>
-      token.time < tr.length ∧
+      token.time ≤ tr.length ∧
       IsSignatureKeyVk (tr.prefix token.time) who vk.val
   validSuccessor _ _ := True
 

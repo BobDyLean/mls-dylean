@@ -15,7 +15,8 @@ Port-specific differences:
 - `IHavePreviousEpochEvent_le` is not in MLS* (DY*'s SMT patterns on `event_triggered` give it).
 - The principal who triggered the event is its field `prin` (MLS*'s `me`), and events are on `tr.erase`.
 - MLS*'s `Some? (leaf_at …)` and `Some?.v` are existentials (`∃ ln, leafAt … = some ln ∧ …`).
-  In `JustJoined`, MLS*'s `inviter < pow2 ev.tree_height` is dropped: it follows from `leafAt ev.tree inviter = some _`.
+  In `JustJoined`, MLS*'s `inviter < pow2 ev.tree_height` is `ev.tree.containsLeafIndex inviter`
+  (MLS*'s tree is at position `0`; Lean's `leafAt` does not check that the leaf index is in the tree).
 - MLS*'s `has_i_am_in_group_invariant` is the class `HasIAmInGroupInvariant`, whose fields are scoped instances
   in `MLS.TreeKEM`. MLS*'s `has_treekem_invariants` is not a class: it is
   `[HasKeyPackageInvariant] [HasTreesyncTreekemLinkInvariants] [HasIAmInGroupInvariant]`, which contain the predicates
@@ -75,6 +76,7 @@ def iAmInGroupPred (tr: ProofTrace) (ev: IAmInGroup): Prop :=
     TreekemKeyscheduleStateGood tr ev.epochKeys ev.groupContext ∧
     TreekemKeyscheduleStateLabelGoodAux tr Label.secret ev.epochKeys ev.groupContext
   | .justJoined { inviter } =>
+    ev.tree.containsLeafIndex inviter ∧
     ∃ inviterLeafNode inviterId,
       leafAt ev.tree inviter = some inviterLeafNode ∧
       credentialToPrincipal inviterLeafNode.data.credential = some inviterId ∧ (

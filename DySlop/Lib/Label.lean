@@ -8,7 +8,8 @@
   - DY*'s `event_triggered_label prin content` is DyLean's `ProtocolEvent.label ev`
     (DyLean's events record their principal as a field).
   - `is_corrupt_guarded_event` is only ported in the direction used by MLS* (`Label.isCorrupt_guarded_event`),
-    with the time of an occurrence of the event (instead of `find_event_triggered_at_timestamp`, the first one).
+    with the time `i` of the first occurrence of the event (`tr.EventFirstLoggedAt ev i`)
+    instead of `find_event_triggered_at_timestamp`.
   - `guarded_authentication_lemma` (`Label.guarded_authentication`) is stated on the prefixes of a proof trace,
     and its hypothesis is directly on the prefix just before the label `g` becomes corrupt
     (DY*'s `event_pred_lemma` and `auth_pred_lemma` are applied to the minimal corrupt trace,
@@ -19,6 +20,7 @@ module
 
 public import DY.Label
 public import DY.Actions.ProtocolEvent
+public import DySlop.Lib.Event
 
 open DY
 
@@ -197,19 +199,19 @@ theorem le_prefix_of_not_eventLogged {EventT: Type} [ExecTraceTypes.Has (Protoco
 
 /--
 Port of `is_corrupt_guarded_event` (one direction):
-if `guarded l (event label)` is corrupt, `l` was corrupt before (one of the times) the event was logged.
+if `guarded l (event label)` is corrupt, `l` was corrupt before the first time the event was logged.
 -/
 public
 theorem isCorrupt_guarded_event {EventT: Type} [ExecTraceTypes.Has (ProtocolEvent.ExecEntryT EventT)]
   (tr: ExecTrace) (l: Label) (ev: EventT)
   (h: (guarded l (ProtocolEvent.label ev)).isCorrupt tr) (hev: tr.EventLogged ev):
-  ∃ i, tr.EventLoggedAt ev i ∧ l.isCorrupt (tr.prefix i)
+  ∃ i, tr.EventFirstLoggedAt ev i ∧ l.isCorrupt (tr.prefix i)
 := by
   obtain ⟨trBefore, hle, hl, hng⟩ := h
-  obtain ⟨i, hi⟩ := hev
-  refine ⟨i, hi, ?_⟩
+  obtain ⟨i, hfirst⟩ := ProtocolEvent.exists_eventFirstLoggedAt tr ev hev
+  refine ⟨i, hfirst, ?_⟩
   rw [ProtocolEvent.label_isCorrupt] at hng
-  exact l.isCorruptLater _ _ (le_prefix_of_not_eventLogged ev _ _ _ hle hi hng) hl
+  exact l.isCorruptLater _ _ (le_prefix_of_not_eventLogged ev _ _ _ hle hfirst.1 hng) hl
 
 /--
 Port of `guarded_authentication_lemma`.

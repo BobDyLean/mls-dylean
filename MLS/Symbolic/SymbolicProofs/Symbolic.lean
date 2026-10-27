@@ -2,11 +2,13 @@ module
 
 public import MLS.Symbolic.Code.Symbolic
 import all MLS.Symbolic.Code.Symbolic
+import all DY.Trace.Manipulation
 import DY.Meta.Step
 
 /-!
 Proofs about the traceful functions of `MLS.Symbolic` (`MLS/Symbolic/Code/Symbolic.lean`):
 the Hoare triple of `extractResult`, which MLS* proves by unfolding it,
+a Hoare triple of DyLean's `getTimestamp` giving its result,
 and the Hoare triple of `List.foldlM` (MLS*'s `fold_leftM_proof`, from `MLS.TreeKEM.Symbolic.Traceful.ProcessCommit.Proof`).
 -/
 
@@ -33,6 +35,24 @@ theorem extractResult.proof {α: Type} (x: Result α):
     intro tr _ _
     simp only [WP.wp, Traceful.run_failure]
     exists tr
+
+/--
+Hoare triple of DyLean's `getTimestamp`, giving its result: the length of the trace.
+Its postcondition cannot be monotonized: it is not an instance (use it with `attribute [local instance]`),
+and is only useful for the next action.
+-/
+public
+theorem getTimestamp.proof_eq:
+  HoareTriple
+    getTimestamp
+    (fun _ => True)
+    (fun time tr => time = tr.length)
+:= by
+  apply HoareTriple.mk
+  simp only [hoareTriple, WP.wp, getTimestamp, Traceful.run_mk]
+  intro tr _ _
+  exists tr
+  simp_all [Trace.erase_length, Trace.le_refl]
 
 /--
 The ghost argument of the Hoare triple of `List.foldlM` (as DyLean's `LoopInvariantAndProof` for `forIn`):

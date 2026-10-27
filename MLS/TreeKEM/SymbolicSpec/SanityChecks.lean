@@ -201,10 +201,7 @@ def Client.initialize (me: Participant): Traceful Client := do
 /-- The authentication service of `c` verifies the credential of `other`. -/
 public
 def Client.verifyCredential (c other: Client): Traceful Client := do
-  let verificationKey ← getSignatureKeyVk other.me other.signatureKeySid
-  let verificationKey ← extractResult (mkMlsBytes verificationKey "verifyCredential" "verificationKey")
-  let some credential := principalToCredential (Bytes := Bytes) other.me | failure
-  let authServiceSid ← addVerifiedCredential c.me c.authServiceSid { verificationKey, credential } { token := { time := 0 } }
+  let authServiceSid ← TreeSync.verifyCredential c.me c.authServiceSid other.me other.signatureKeySid
   pure { c with authServiceSid }
 
 /-- The authentication service of `c` verifies the credentials of `others`. -/
