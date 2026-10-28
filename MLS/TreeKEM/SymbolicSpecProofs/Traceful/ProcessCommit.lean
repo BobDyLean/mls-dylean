@@ -165,6 +165,31 @@ theorem proposalsToKeyPackages_singleton_reverse (p: Proposal Bytes):
 := by
   cases p <;> simp [proposalsToKeyPackages]
 
+/-- `sortProposals'` keeps the add proposals, in order. -/
+theorem proposalsToKeyPackages_sortProposals' (proposals: List ProposalAndSender):
+  proposalsToKeyPackages (proposals.map (·.proposal)) = proposalsToKeyPackages (sortProposals' proposals).adds
+:= by
+  induction proposals with
+  | nil => simp [sortProposals', proposalsToKeyPackages]
+  | cons hd t ih =>
+    obtain ⟨proposal, sender⟩ := hd
+    cases proposal <;> simp_all [sortProposals', proposalsToKeyPackages]
+
+/-- The proposals sorted by `sortProposals'` come from its input. -/
+theorem mem_sortProposals' (proposals: List ProposalAndSender):
+  (∀ p ∈ (sortProposals' proposals).groupContextExtensions, p ∈ proposals.map (·.proposal)) ∧
+  (∀ p ∈ (sortProposals' proposals).adds, p ∈ proposals.map (·.proposal)) ∧
+  (∀ p ∈ (sortProposals' proposals).updates, p ∈ proposals) ∧
+  (∀ p ∈ (sortProposals' proposals).removes, p ∈ proposals.map (·.proposal)) ∧
+  (∀ psk ∈ (sortProposals' proposals).psks, .psk { psk } ∈ proposals.map (·.proposal)) ∧
+  (∀ p ∈ (sortProposals' proposals).other, p ∈ proposals.map (·.proposal))
+:= by
+  induction proposals with
+  | nil => simp [sortProposals']
+  | cons hd t ih =>
+    obtain ⟨proposal, sender⟩ := hd
+    cases proposal <;> simp_all [sortProposals']
+
 /--
 Port of `_sort_proposals_proof`.
 MLS*'s `add_proposals_to_key_packages` is `proposalsToKeyPackages`.
@@ -179,13 +204,11 @@ theorem sortProposals'_proof (tr: ProofTrace) (proposals: List ProposalAndSender
   PskIdsGood tr (sortProposals' proposals).psks ∧
   (∀ p ∈ (sortProposals' proposals).other, Proposal.mf.wf (Bytes.Publishable · tr) p)
 := by
-  induction proposals with
-  | nil => simp [sortProposals', proposalsToKeyPackages, PskIdsGood]
-  | cons hd t ih =>
-    obtain ⟨proposal, sender⟩ := hd
-    cases proposal <;>
-      simp_all [sortProposals', proposalsToKeyPackages, PskIdsGood, ProposalAndSenderIsPublishable, Proposal.mf.wf_eq,
-        PreSharedKey.mf.wf_eq]
+  obtain ⟨hgce, hadd, hupd, hrem, hpsk, hother⟩ := mem_sortProposals' proposals
+  refine ⟨proposalsToKeyPackages_sortProposals' proposals, by grind, by grind, ?_, by grind, ?_, by grind⟩
+  · grind [ProposalAndSenderIsPublishable]
+  · intro psk hpsk'
+    simpa [Proposal.mf.wf_eq, PreSharedKey.mf.wf_eq] using h _ (hpsk psk hpsk')
 
 /-- The proposals of a list are publishable (stated with a definition, so that `step` can monotonize it). -/
 @[expose]
