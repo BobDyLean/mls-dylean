@@ -33,10 +33,6 @@ lean_lib DySlop
 @[default_target]
 lean_lib MLS
 
-@[default_target]
-lean_exe mls where
-  root := `Main
-
 /-! ## Test vectors -/
 
 /-- Commit of https://github.com/mlswg/mls-implementations from which the test vectors are fetched. -/
