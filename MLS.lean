@@ -104,7 +104,6 @@ public import MLS.Glue.Code.TreeSyncTreeKEMBinder
 public import MLS.Glue.Proofs.NetworkBinder.Properties
 public import MLS.Glue.Proofs.TreeSyncTreeKEMBinder
 public import MLS.Test.SanityChecks
-public import MLS.Test
 public import MLS.Bootstrap.SymbolicSpec.State.InitKey
 public import MLS.Bootstrap.SymbolicSpec.State.KeyPackageStore
 public import MLS.Bootstrap.SymbolicSpec.KeyPackage
