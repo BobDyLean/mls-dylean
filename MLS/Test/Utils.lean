@@ -62,6 +62,14 @@ def extractResult {α: Type} (x: MLS.Result α): IO α :=
   | .internalError s => throw (IO.userError s!"InternalError: {s}")
   | .protocolError s => throw (IO.userError s!"ProtocolError: {s}")
 
+/-! ## Ciphersuites -/
+
+/-- Port of `uint16_to_ciphersuite`. -/
+@[expose]
+public
+def uint16ToCiphersuite (x: UInt16): MLS.Result MLS.AvailableCiphersuite :=
+  MLS.availableCiphersuiteFromNetwork (MLS.CipherSuite.ofUInt16 x)
+
 /-! ## Deterministic randomness -/
 
 public

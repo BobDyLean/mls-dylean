@@ -334,36 +334,6 @@ def decryptWithLabel (skR: Bytes) (label: String) (context: Bytes) (kemOutput: B
   let contextBytes ← computeEncryptionContext label context
   CryptoBytes.hpkeDecrypt kemOutput skR contextBytes BytesLike.empty ciphertext
 
-/-! ## Randomness -/
-
-/--
-Port of `split_randomness`.
-`l1` (implicit in MLS*) gives the lengths of the bytes of the first part.
-MLS* requires the randomness to have at least `l1.length` bytes (`randomness bytes (l1@l2)`); otherwise, this function fails.
--/
-@[expose]
-public
-def splitRandomness {Bytes: Type}: (l1: List Nat) → Randomness Bytes → Result (Randomness Bytes × Randomness Bytes)
-  | [], r => pure (mkEmptyRandomness Bytes, r)
-  | _::t1, r => do
-    let (rh, rt) ← destRandomness r
-    let (rt1, rl2) ← splitRandomness t1 rt
-    pure (mkRandomness (rh, rt1), rl2)
-
-/-! ## Zero vector -/
-
-/-- Port of `mk_zero_vector`. -/
-@[expose]
-public
-def mkZeroVector {Bytes: Type} [BytesLike Bytes] (n: Nat): Bytes :=
-  BytesLike.fromByteArray ⟨Array.replicate n 0⟩
-
-/-- Port of `zero_vector`. -/
-@[expose]
-public
-def zeroVector: Bytes :=
-  mkZeroVector (CryptoBytes.kdfLength Bytes)
-
 /-! ## Ref hash -/
 
 /--
@@ -432,5 +402,35 @@ def makeKeypackageRef (buf: Bytes): Result Bytes :=
 public
 def makeProposalRef (buf: Bytes): Result Bytes :=
   refHash "MLS 1.0 Proposal Reference" buf
+
+/-! ## Randomness -/
+
+/--
+Port of `split_randomness`.
+`l1` (implicit in MLS*) gives the lengths of the bytes of the first part.
+MLS* requires the randomness to have at least `l1.length` bytes (`randomness bytes (l1@l2)`); otherwise, this function fails.
+-/
+@[expose]
+public
+def splitRandomness {Bytes: Type}: (l1: List Nat) → Randomness Bytes → Result (Randomness Bytes × Randomness Bytes)
+  | [], r => pure (mkEmptyRandomness Bytes, r)
+  | _::t1, r => do
+    let (rh, rt) ← destRandomness r
+    let (rt1, rl2) ← splitRandomness t1 rt
+    pure (mkRandomness (rh, rt1), rl2)
+
+/-! ## Zero vector -/
+
+/-- Port of `mk_zero_vector`. -/
+@[expose]
+public
+def mkZeroVector {Bytes: Type} [BytesLike Bytes] (n: Nat): Bytes :=
+  BytesLike.fromByteArray ⟨Array.replicate n 0⟩
+
+/-- Port of `zero_vector`. -/
+@[expose]
+public
+def zeroVector: Bytes :=
+  mkZeroVector (CryptoBytes.kdfLength Bytes)
 
 end MLS

@@ -17,6 +17,8 @@ Port-specific differences:
   (as `MLS.TreeSync.signatureKeyLabel`); `init_key_label_pred` is inlined in `initKeyLabel`.
 - The state predicate (`bootstrap_init_key_state_pred`) is the DyLean state invariant `bootstrapInitKeyStateInv`
   (an instance, as in DyLean's examples): MLS*'s `has_bootstrap_init_key_state_invariant` is not needed.
+- `InitKeyUsageT` (MLS*'s `init_key_usage_t`) has no `ParseableSerializeable` instance:
+  its usage data is serialized with `serializeNE InitKeyUsageT.mf`.
 - The proofs of the traceful functions (`mk_init_key_invariant`, …) are DyLean Hoare triples (instances).
   They assume the proof trace entries of the state, and the trace entries and bytes invariants of randomness
   for `mkInitKey`. The `tr_out == tr` part of their postconditions is not ported
@@ -70,6 +72,46 @@ end Labels
 section Usages
 
 variable [HasSymbolicBytes]
+
+/-- Port of `init_key_usage_t`. -/
+public
+structure InitKeyUsageT [BytesFunctor] where
+  me: Participant
+  leafPublicKey: Bytes
+
+namespace InitKeyUsageT
+
+@[expose]
+public
+def f: Participant × Bytes → InitKeyUsageT :=
+  fun (me, leafPublicKey) => { me, leafPublicKey }
+
+@[expose]
+public
+def g: InitKeyUsageT → Participant × Bytes :=
+  fun { me, leafPublicKey } => (me, leafPublicKey)
+
+public
+instance: LeftInverse g f := ⟨by intro _; rfl⟩
+public
+instance: RightInverse g f := ⟨by intro _; rfl⟩
+
+end InitKeyUsageT
+
+/-- Port of `ps_init_key_usage_t`. -/
+@[expose]
+public
+def InitKeyUsageT.mf: NonExtensibleMessageFormat Bytes InitKeyUsageT :=
+  .isomorphic (.prod .slowString .slowBytes) InitKeyUsageT.f InitKeyUsageT.g
+deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+/-- Port of `ps_init_key_usage_t_is_well_formed`. -/
+@[simp]
+public
+theorem InitKeyUsageT.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: InitKeyUsageT):
+  InitKeyUsageT.mf.wf pred x = pred x.leafPublicKey
+:= by
+  simp [InitKeyUsageT.mf, InitKeyUsageT.g]
 
 /-- Port of `init_key_usage_data`. -/
 @[expose]

@@ -370,7 +370,49 @@ enum {
   reference(2),
   (255)
 } ProposalOrRefType;
+-/
+public
+inductive ProposalOrRefType where
+  | proposal
+  | reference
+deriving DecidableEq
 
+@[expose]
+public
+def ProposalOrRefType.ofUInt8 (n: UInt8): Option ProposalOrRefType :=
+  match n with
+  | 1 => some .proposal
+  | 2 => some .reference
+  | _ => none
+
+@[expose]
+public
+def ProposalOrRefType.toUInt8: ProposalOrRefType → UInt8
+  | .proposal => 1
+  | .reference => 2
+
+public
+instance: SubsetLeftInverse ProposalOrRefType.toUInt8 ProposalOrRefType.ofUInt8 where
+  left_inv n := by grind [ProposalOrRefType.ofUInt8, ProposalOrRefType.toUInt8]
+
+public
+instance: SubsetRightInverse ProposalOrRefType.toUInt8 ProposalOrRefType.ofUInt8 where
+  right_inv x := by cases x <;> rfl
+
+@[expose]
+public
+def ProposalOrRefType.mf: NonExtensibleMessageFormat Bytes ProposalOrRefType :=
+  .subsetIsomorphic .uint8 ProposalOrRefType.ofUInt8 ProposalOrRefType.toUInt8
+deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
+
+@[simp]
+public
+theorem ProposalOrRefType.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: ProposalOrRefType):
+  (ProposalOrRefType.mf (Bytes := Bytes)).wf pred x = True
+:= by
+  simp [ProposalOrRefType.mf]
+
+/--
 struct {
   ProposalOrRefType type;
   select (ProposalOrRef.type) {
@@ -388,50 +430,42 @@ namespace ProposalOrRef
 
 @[expose]
 public
-def internalType (Bytes: Type) [BytesLike Bytes]: Fin 3 → Type
-  | 1 => Proposal Bytes
-  | 2 => ProposalRef Bytes
-  | 0 => Empty
+def internalType (Bytes: Type) [BytesLike Bytes]: ProposalOrRefType → Type
+  | .proposal => Proposal Bytes
+  | .reference => ProposalRef Bytes
 
 @[expose]
 public
-def internalType.mf: (t: Fin 3) → NonExtensibleMessageFormat Bytes (internalType Bytes t)
-  | 1 => Proposal.mf
-  | 2 => ProposalRef.mf
-  | 0 => .empty
+def internalType.mf: (t: ProposalOrRefType) → NonExtensibleMessageFormat Bytes (internalType Bytes t)
+  | .proposal => Proposal.mf
+  | .reference => ProposalRef.mf
 
 public
 instance: ∀ t, (internalType.mf (Bytes := Bytes) t).IsNonAmbiguous
-  | 0 | 1 | 2 => by
+  | .proposal | .reference => by
     dsimp only [internalType.mf, internalType]
     infer_instance
 
 public
 instance: ∀ t, (internalType.mf (Bytes := Bytes) t).HasUniqueRepresentation
-  | 0 | 1 | 2 => by
+  | .proposal | .reference => by
     dsimp only [internalType.mf, internalType]
     infer_instance
 
 @[expose]
 public
-def f: (t: Fin 3) × internalType Bytes t → ProposalOrRef Bytes
-  | ⟨1, x⟩ => .proposal x
-  | ⟨2, x⟩ => .reference x
-  | ⟨0, x⟩ => nomatch x
+def f: (t: ProposalOrRefType) × internalType Bytes t → ProposalOrRef Bytes
+  | ⟨.proposal, x⟩ => .proposal x
+  | ⟨.reference, x⟩ => .reference x
 
 @[expose]
 public
-def g: ProposalOrRef Bytes → (t: Fin 3) × internalType Bytes t
-  | .proposal x => ⟨1, x⟩
-  | .reference x => ⟨2, x⟩
+def g: ProposalOrRef Bytes → (t: ProposalOrRefType) × internalType Bytes t
+  | .proposal x => ⟨.proposal, x⟩
+  | .reference x => ⟨.reference, x⟩
 
 public
-instance: LeftInverse (g (Bytes := Bytes)) f := ⟨by
-  intro ⟨t, x⟩
-  match t, x with
-  | 0, x => exact nomatch x
-  | 1, _ => rfl
-  | 2, _ => rfl⟩
+instance: LeftInverse (g (Bytes := Bytes)) f := ⟨by intro ⟨t, _⟩; cases t <;> rfl⟩
 public
 instance: RightInverse (g (Bytes := Bytes)) f := ⟨by intro x; cases x <;> rfl⟩
 
@@ -440,7 +474,7 @@ end ProposalOrRef
 @[expose]
 public
 def ProposalOrRef.mf: NonExtensibleMessageFormat Bytes (ProposalOrRef Bytes) :=
-  .isomorphic (.sigma (.fin8 3 (by decide)) ProposalOrRef.internalType.mf) ProposalOrRef.f ProposalOrRef.g
+  .isomorphic (.sigma ProposalOrRefType.mf ProposalOrRef.internalType.mf) ProposalOrRef.f ProposalOrRef.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
@@ -516,11 +550,12 @@ deriving DecidableEq
 @[expose]
 public
 def SenderType.ofUInt8 (n: UInt8): Option SenderType :=
-  if n = 1 then some .member
-  else if n = 2 then some .external
-  else if n = 3 then some .newMemberProposal
-  else if n = 4 then some .newMemberCommit
-  else none
+  match n with
+  | 1 => some .member
+  | 2 => some .external
+  | 3 => some .newMemberProposal
+  | 4 => some .newMemberCommit
+  | _ => none
 
 @[expose]
 public
@@ -654,13 +689,14 @@ deriving DecidableEq
 @[expose]
 public
 def WireFormat.ofUInt16 (n: UInt16): WireFormat :=
-  if h: 5 < n.toNat then .unknown n h
-  else if n = 0 then .reserved
-  else if n = 1 then .mlsPublicMessage
-  else if n = 2 then .mlsPrivateMessage
-  else if n = 3 then .mlsWelcome
-  else if n = 4 then .mlsGroupInfo
-  else .mlsKeyPackage
+  match _: n.toNat with
+  | 0 => .reserved
+  | 1 => .mlsPublicMessage
+  | 2 => .mlsPrivateMessage
+  | 3 => .mlsWelcome
+  | 4 => .mlsGroupInfo
+  | 5 => .mlsKeyPackage
+  | _+6 => .unknown n (by grind)
 
 @[expose]
 public
@@ -675,7 +711,7 @@ def WireFormat.toUInt16: WireFormat → UInt16
 
 public
 instance: LeftInverse WireFormat.toUInt16 WireFormat.ofUInt16 where
-  left_inv n := by grind [WireFormat.ofUInt16, WireFormat.toUInt16, ← UInt16.toNat_inj]
+  left_inv n := by grind [WireFormat.ofUInt16, WireFormat.toUInt16]
 
 public
 instance: RightInverse WireFormat.toUInt16 WireFormat.ofUInt16 where
@@ -713,10 +749,11 @@ deriving DecidableEq
 @[expose]
 public
 def ContentType.ofUInt8 (n: UInt8): Option ContentType :=
-  if n = 1 then some .application
-  else if n = 2 then some .proposal
-  else if n = 3 then some .commit
-  else none
+  match n with
+  | 1 => some .application
+  | 2 => some .proposal
+  | 3 => some .commit
+  | _ => none
 
 @[expose]
 public

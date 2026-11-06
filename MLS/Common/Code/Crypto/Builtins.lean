@@ -220,10 +220,8 @@ def mkConcreteCryptoBytes (acs: AvailableCiphersuite): CryptoBytes ByteArray :=
       -- Checked at runtime, to prove `hashHash_ne_empty`.
       if h.size = 0 then Result.internalFailure "hash_hash: empty output" else pure h
     hashHash_ne_empty buf := by
-      simp only [Bind.bind, Result.bind]
-      split <;> try split
-      all_goals simp_all [Result.internalFailure, pure, Result.fromOption, Result.error]
-      exact ‹¬_ = ByteArray.empty›
+      simp only [Bind.bind, Result.bind, Result.internalFailure, Result.fromOption, Result.error, pure]
+      grind [ByteArray.size_eq_zero_iff]
     hashOutputLength := cs.kdfHash.hashLength
 
     kdfLength := cs.kdfHash.hashLength

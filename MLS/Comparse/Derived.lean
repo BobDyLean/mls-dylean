@@ -237,7 +237,7 @@ abbrev Raw (pre: Nat → Prop) (mf: ExtensibleMessageFormat Bytes a) :=
 @[expose]
 public
 def f (x: Raw pre mf): {x: a // pre (BytesLike.length (mf.serialize x))} :=
-  ⟨x.snd.val, by rw [x.snd.property]; exact x.fst.property⟩
+  ⟨x.snd.val, by grind⟩
 
 @[expose]
 public
@@ -358,13 +358,13 @@ def firstByte.g (x: Fin 4 × Fin 64): UInt8 :=
 public
 instance: LeftInverse firstByte.g firstByte.f where
   left_inv x := by
-    simp only [firstByte.f, firstByte.g, ← UInt8.toNat_inj, UInt8.toNat_ofNat']
+    simp only [firstByte.f, firstByte.g]
     grind
 
 public
 instance: RightInverse firstByte.g firstByte.f where
   right_inv x := by
-    simp only [firstByte.f, firstByte.g, UInt8.toNat_ofNat', Prod.ext_iff, Fin.ext_iff]
+    simp only [firstByte.f, firstByte.g]
     grind
 
 @[expose]

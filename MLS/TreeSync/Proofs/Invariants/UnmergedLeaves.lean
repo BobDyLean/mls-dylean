@@ -109,11 +109,18 @@ theorem unmergedLeavesOk_treeTruncate {l: Nat} (t: TreeSync Bytes tkt (l+1)) (h:
 := by
   grind [unmergedLeavesOk.eq_def, treeTruncate]
 
+/-- The unmerged leaves are sorted when every pair of them is (`<` is transitive). -/
+public
+theorem unmergedLeavesSorted_iff (l: List UInt32):
+  unmergedLeavesSorted l ↔ l.Pairwise (· < ·)
+:= by
+  grind [unmergedLeavesSorted, listChain_iff_pairwise]
+
 /-- Port of `unmerged_leaves_sorted_insert_sorted`. -/
 theorem unmergedLeavesSorted_insertSorted (x: UInt32) (l: List UInt32) (h: unmergedLeavesSorted l):
   unmergedLeavesSorted (insertSorted x l)
 := by
-  induction l <;> grind [unmergedLeavesSorted, insertSorted, List.pairwise_cons]
+  induction l <;> grind [unmergedLeavesSorted_iff, insertSorted, List.pairwise_cons]
 
 /-- Port of `unmerged_leaf_consistent_not_in_tree`. -/
 theorem unmergedLeafConsistent_of_not_mem {l: Nat} (t: TreeSync Bytes tkt l) (li: UInt32)
@@ -181,7 +188,7 @@ theorem unmergedLeavesOk_applyPathAux {l: Nat}
     obtain ⟨newOptContent, _, _, _, h1, rfl, h2⟩ := applyPathAux_succ t li p parentParentHash t' h
     simp only [unmergedLeavesOk_succ _ li, Bool.and_eq_true] at hok ⊢
     have := ih _ _ _ h1 hok.1.2
-    cases newOptContent <;> simp_all [applyPathAux_position _ _ _ _ _ h1, unmergedLeavesSorted]
+    cases newOptContent <;> simp_all [applyPathAux_position _ _ _ _ _ h1, unmergedLeavesSorted, ListChain]
 
 /-- Port of `unmerged_leaves_ok_apply_path`. -/
 public

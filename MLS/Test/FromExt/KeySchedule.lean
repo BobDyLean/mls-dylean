@@ -1,7 +1,6 @@
 module
 
 public import MLS.TreeKEM.Code.KeySchedule
-public import MLS.Test.FromExt.CryptoBasics
 public import MLS.Test.Types
 public import MLS.Test.Utils
 
@@ -17,7 +16,6 @@ namespace MLS.Test.FromExt.KeySchedule
 open Comparse
 open MLS MLS.TreeKEM
 open MLS.Test
-open MLS.Test.FromExt.CryptoBasics
 
 section CryptoBytes
 

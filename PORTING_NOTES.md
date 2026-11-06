@@ -102,3 +102,63 @@ Also, in MLS*, there are a few instances where a `traceful` function uses defini
 such as instance is `path_to_tree_list`, defined in the parent-hash guarantees proof file,
 but also used in the `traceful` functions,
 to actually log these trees.
+
+## Non-trivial decisions took be the LLM
+
+Manual audit of the code revealed non-trivial design changes took by the LLM,
+i.e. changes that do not look line-by-line equivalent to the MLS\* code
+(other than the design decisions documented above).
+
+### `MLS.TreeSync.pathToTreeList`
+
+This function outputs the list of subtrees
+that would be authenticated by the parent hash of the path leaf.
+Typically, these are not all the subtrees from the leaf to the root (after having applied the path):
+subtrees that sit at *filtered nodes* (because they have empty sibling)
+are omitted from this list.
+
+In MLS\*, the function `path_to_tree_list` (via its companion `path_to_tree_list_aux`)
+does this by doing jumps,
+using the function `find_node_and_path_parent_hash_link`
+which finds the next non-filtered subtree.
+To ensure termination of `path_to_tree_list_aux`,
+the function `find_node_and_path_parent_hash_link` comes with a post-condition
+that the output tree height is strictly smaller than the input tree height.
+
+In here, to avoid this non-trivial termination argument that relies on post-conditions,
+the function `find_node_and_path_parent_hash_link` is inlined in `path_to_tree_list_aux`.
+The behavior of this function is otherwise the same.
+
+### `MLS.TreeKEM.encryptPathSecretsEntropyLengths`
+
+This function computes the amount of entropy needed
+to encrypt the path secrets to their corresponding resolution.
+To do this computation properly,
+there are two things to notice:
+1. the path secrets are encrypted separately to the joiners (in `GroupSecrets`),
+   hence this function (whose goal is to create the `UpdatePath` / `UpdatePathNode` ciphertexts)
+   must not account the entropy required to encrypt to joiners (which are unmerged leaves)
+2. because of filtering,
+   not every node on the path to the leaf has a path secret,
+   hence this function must ensure to not compute entropy for path nodes that don't exist
+
+In MLS\*, this is taken care by `finalize_create_commit_entropy_lengths` (the only caller of `encrypt_path_secrets_entropy_lengths`),
+which achieves (1) by un-adding the joiners,
+and achieves (2) by supplying a path of booleans that mirrors the path of optional path secrets,
+generated from the tree via `generate_forgotten_path_secrets`,
+or from a path of optional path secrets via `forget_path_secrets`,
+so that entropy is generated only when there exists a corresponding path secret.
+The reason for this path of booleans
+is that we cannot know whether a node is filtered from the tree after un-adding joiners:
+it is possible that a sibling might be empty because it only contains joiners that were un-added,
+hence the corresponding node is not filtered despite having an empty sibling.
+
+In here,
+the code is simplified to achieve (2) by shortcuting the path of booleans,
+and computing whether a node is filtered by checking whether the sibling is empty anyway
+—
+despite the careful explanation from the previous paragraph on why we should not do this!
+The key observation is that when a node is not filtered
+and has empty sibling in the tree with joiners un-added,
+then MLS\* would compute the sibling resolution of an empty tree, which yields an empty list,
+hence it is the same as if the node were filtered.

@@ -181,9 +181,7 @@ def parentHashCorrect {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSync Bytes
     | none => false
     | some expectedParentHash =>
       let originalSibling := unAdd (p.sibling d.position) pContent.unmergedLeaves.val
-      match computeParentHash pContent.content pContent.parentHash.val originalSibling with
-      | .success ph => ph == expectedParentHash.val
-      | _ => false
+      computeParentHash pContent.content pContent.parentHash.val originalSibling == .success expectedParentHash.val
 
 /--
 Port of `parent_hash_linked`.

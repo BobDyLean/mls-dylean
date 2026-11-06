@@ -83,10 +83,10 @@ def natToHexString (n: Nat): String :=
 /-- Port of `parse_ok`. -/
 @[expose]
 public
-def parseOk {a: Type} [BEq a] (mf: NonExtensibleMessageFormat ByteArray a) (s: String) (x: a): Bool :=
+def parseOk {a: Type} [DecidableEq a] (mf: NonExtensibleMessageFormat ByteArray a) (s: String) (x: a): Bool :=
   match hexStringToBytes s with
   | none => false
-  | some b => mf.toExtensible.parse b == some x
+  | some b => mf.toExtensible.parse b = some x
 
 /-- Port of `parse_fail`. -/
 @[expose]
@@ -100,11 +100,7 @@ def parseFail {a: Type} (mf: NonExtensibleMessageFormat ByteArray a) (s: String)
 @[expose]
 public
 def serializeOk {a: Type} (mf: NonExtensibleMessageFormat ByteArray a) (s: String) (x: a): Bool :=
-  hexStringToBytes s == some (mf.toExtensible.serialize x)
-
-public
-instance: BEq QuicNat where
-  beq x y := x.val == y.val
+  hexStringToBytes s = some (mf.toExtensible.serialize x)
 
 -- ps_nat_lbytes_is_big_endian
 #guard parseOk (NonExtensibleMessageFormat.bitVecBE 8) "0123456789ABCDEF" 0x0123456789ABCDEF
@@ -174,7 +170,7 @@ structure SimpleRecord where
   simpleRecord2: UInt16
   simpleRecord3: BitVec (8*3)
   simpleRecord4: UInt32
-deriving BEq
+deriving DecidableEq
 
 @[expose]
 public

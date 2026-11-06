@@ -35,6 +35,11 @@ public
 theorem fromOption_eq_success {α: Type} (s: String) (x: Option α) (y: α): fromOption s x = .success y ↔ x = some y := by
   cases x <;> simp [fromOption, error, pure]
 
+@[simp]
+public
+theorem success_beq_success {α: Type} [BEq α] [LawfulBEq α] (a b: α): (Result.success a == Result.success b) = (a == b) := by
+  grind
+
 end Result
 
 end MLS

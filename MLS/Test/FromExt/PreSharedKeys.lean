@@ -1,7 +1,6 @@
 module
 
 public import MLS.TreeKEM.Code.PSK
-public import MLS.Test.FromExt.CryptoBasics
 public import MLS.Test.Types
 public import MLS.Test.Utils
 
@@ -14,7 +13,6 @@ namespace MLS.Test.FromExt.PreSharedKeys
 open Comparse
 open MLS MLS.TreeKEM
 open MLS.Test
-open MLS.Test.FromExt.CryptoBasics
 
 /-- Port of `test_psk_one`. -/
 @[expose]

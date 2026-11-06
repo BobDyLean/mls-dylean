@@ -8,6 +8,8 @@ public import MLS.Bootstrap.SymbolicProofs.KeyPackage
 public import MLS.Bootstrap.SymbolicProofs.State.InitKey
 public import MLS.TreeSync.SymbolicProofs.State.SignatureKey
 public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.ProtocolInvariants
+public import MLS.TreeKEM.SymbolicSpec.Reachability
+public import MLS.TreeKEM.SymbolicSpecProofs.Reachability
 import all MLS.TreeKEM.SymbolicSpec.EpochEvent
 import all MLS.Bootstrap.SymbolicSpec.KeyPackage
 
@@ -262,6 +264,21 @@ end HelperLemmas
 
 section SecurityTheorem
 
+public
+theorem reachableImpliesInvariant:
+  ∀ trExec: ExecTrace,
+    trExec.Reachable MLS.TreeKEM.reachability →
+    ∃ trProof: ProofTrace,
+      trProof.erase = trExec ∧
+      trProof.Invariant
+:= Trace.Reachable_implies_Invariant MLS.TreeKEM.reachability
+
+/--
+info: 'MLS.TreeKEM.reachableImpliesInvariant' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms reachableImpliesInvariant
+
 /-- Port of `treekem_security_theorem`. -/
 public
 theorem treekemSecurityTheorem:
@@ -272,43 +289,68 @@ theorem treekemSecurityTheorem:
   match ev.how with
   | .processedCommit lastEpochLink =>
     -- (1) the attacker compromised the epoch secret state
-    InitKeyIsCompromised tr.erase ev.groupContext ev.tree ∨
+    (
+      InitKeyIsCompromised tr.erase ev.groupContext ev.tree
+    ) ∨
     -- (2) the attacker compromised a joiner's initialization key
-    ((∃ joiner ∈ lastEpochLink.joiners, JoinersInitKeyIsCompromised tr.erase joiner) ∧
-      AllPsksArePublishable tr ev.psks) ∨
+    (
+      (∃ joiner ∈ lastEpochLink.joiners, JoinersInitKeyIsCompromised tr.erase joiner) ∧
+      AllPsksArePublishable tr ev.psks
+    ) ∨
     -- (3) the attacker compromised a joiner's signature key
-    ((∃ joiner ∈ lastEpochLink.joiners, JoinersSignatureKeyIsCompromisedBeforeICheckedIt tr.erase ev.prin joiner) ∧
-      AllPsksArePublishable tr ev.psks) ∨
+    (
+      (∃ joiner ∈ lastEpochLink.joiners, JoinersSignatureKeyIsCompromisedBeforeICheckedIt tr.erase ev.prin joiner) ∧
+      AllPsksArePublishable tr ev.psks
+    ) ∨
     -- (4)-(7): the attacker knows the previous init secret, pre-shared keys and...
     -- (4) ... the commit is add-only
-    (lastEpochLink.commitTy = .addOnlyCommit ∧
+    (
+      lastEpochLink.commitTy = .addOnlyCommit ∧
       AllPsksArePublishable tr ev.psks ∧
-      lastEpochLink.previousInitSecret.Publishable tr) ∨
+      lastEpochLink.previousInitSecret.Publishable tr
+    ) ∨
     -- (5) ... the attacker compromised the node keys stored by a participant
-    ((∃ li ln, leafAt ev.tree li = some ln ∧ NodeKeyIsCompromised tr.erase ln) ∧
+    (
+      (∃ li ln, leafAt ev.tree li = some ln ∧ NodeKeyIsCompromised tr.erase ln) ∧
       lastEpochLink.commitTy = .fullCommit ∧
       AllPsksArePublishable tr ev.psks ∧
-      lastEpochLink.previousInitSecret.Publishable tr) ∨
+      lastEpochLink.previousInitSecret.Publishable tr
+    ) ∨
     -- (6) ... the attacker compromised the signature keys of a participant
-    ((∃ li ln, ev.tree.containsLeafIndex li ∧ leafAt ev.tree li = some ln ∧
-        SignatureKeyIsCompromisedBeforeICheckedLeafNode tr.erase ev.prin ln ev.groupContext.groupId li) ∧
+    (
+      (∃ li ln,
+        ev.tree.containsLeafIndex li ∧
+        leafAt ev.tree li = some ln ∧
+        SignatureKeyIsCompromisedBeforeICheckedLeafNode tr.erase ev.prin ln ev.groupContext.groupId li
+      ) ∧
       lastEpochLink.commitTy = .fullCommit ∧
       AllPsksArePublishable tr ev.psks ∧
-      lastEpochLink.previousInitSecret.Publishable tr) ∨
+      lastEpochLink.previousInitSecret.Publishable tr
+    ) ∨
     -- (7) ... the attacker compromised the initialization key of a stale participant
-    ((∃ li ln, leafAt ev.tree li = some ln ∧
+    (
+      (∃ li ln,
+        leafAt ev.tree li = some ln ∧
         ln.data.source = .keyPackage ∧
-        CorrespondingInitKeyIsCompromised tr.erase ln) ∧
+        CorrespondingInitKeyIsCompromised tr.erase ln
+      ) ∧
       lastEpochLink.commitTy = .fullCommit ∧
       AllPsksArePublishable tr ev.psks ∧
-      lastEpochLink.previousInitSecret.Publishable tr)
+      lastEpochLink.previousInitSecret.Publishable tr
+    )
   | .justJoined { inviter } =>
     -- (8) the attacker compromised the inviter signature key
-    (ev.tree.containsLeafIndex inviter ∧
-      ∃ ln, leafAt ev.tree inviter = some ln ∧ InviterSignatureKeyIsCompromisedBeforeIJoined tr.erase ln ev) ∨
+    (
+      ev.tree.containsLeafIndex inviter ∧
+      ∃ ln, leafAt ev.tree inviter = some ln ∧
+      InviterSignatureKeyIsCompromisedBeforeIJoined tr.erase ln ev
+    ) ∨
     -- (9) the inviter belongs to the same group as us
-    (ev.tree.containsLeafIndex inviter ∧
-      ∃ ln, leafAt ev.tree inviter = some ln ∧ InviterWasInSameGroupAsMe tr.erase ln ev)
+    (
+      ev.tree.containsLeafIndex inviter ∧
+      ∃ ln, leafAt ev.tree inviter = some ln ∧
+      InviterWasInSameGroupAsMe tr.erase ln ev
+    )
   | .justCreated =>
     -- (10) the attacker compromised my epoch secret state
     ParticipantInitKeyIsCompromised tr.erase ev.prin ev.groupContext

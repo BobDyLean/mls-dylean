@@ -1,7 +1,7 @@
 module
 
 public import MLS.TreeSync.SymbolicSpec.AuthService
-public import MLS.TreeSync.SymbolicSpec.AuthService.CredentialInterpretation
+public import MLS.TreeSync.SymbolicProofs.AuthService.CredentialInterpretation
 public import MLS.TreeSync.SymbolicProofs.State.SignatureKey
 public import MLS.TreeSync.Proofs.Invariants.AuthService
 

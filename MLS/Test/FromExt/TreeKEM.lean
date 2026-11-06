@@ -5,7 +5,6 @@ public import MLS.TreeSync.Code.TreeHash
 public import MLS.TreeKEM.Code.API.Tree
 public import MLS.Glue.Code.NetworkBinder
 public import MLS.Glue.Code.TreeSyncTreeKEMBinder
-public import MLS.Test.FromExt.CryptoBasics
 public import MLS.Test.Types
 public import MLS.Test.Utils
 
@@ -24,7 +23,6 @@ namespace MLS.Test.FromExt.TreeKEM
 open Comparse
 open MLS MLS.TreeSync MLS.TreeKEM
 open MLS.Test
-open MLS.Test.FromExt.CryptoBasics
 
 /--
 Port of `MLS.TreeMath.Internal.level`.

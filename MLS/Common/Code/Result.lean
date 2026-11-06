@@ -15,7 +15,7 @@ inductive Result (α: Type) where
   | success: α → Result α
   | internalError: String → Result α
   | protocolError: String → Result α
-deriving Repr, BEq
+deriving Repr, BEq, ReflBEq, LawfulBEq
 
 namespace Result
 

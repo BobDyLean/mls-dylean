@@ -6,7 +6,6 @@ public import MLS.TreeSync.Code.Invariants.UnmergedLeaves
 public import MLS.TreeSync.Code.Invariants.ParentHash
 public import MLS.TreeKEM.Code.NetworkTypes
 public import MLS.Glue.Code.NetworkBinder
-public import MLS.Test.FromExt.CryptoBasics
 public import MLS.Test.Types
 public import MLS.Test.Utils
 
@@ -23,7 +22,6 @@ namespace MLS.Test.FromExt.TreeValidation
 open Comparse
 open MLS MLS.TreeSync MLS.TreeKEM
 open MLS.Test
-open MLS.Test.FromExt.CryptoBasics
 
 /-- Port of `compute_tree_hashes`. -/
 @[expose]

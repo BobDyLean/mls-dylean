@@ -147,6 +147,6 @@ def ratchetGetGenerationKey (st: RatchetState Bytes) (i: Nat): Result (RatchetOu
     | .success nextSt =>
       ratchetGetGenerationKey nextSt i
 termination_by i - st.generation
-decreasing_by have := ratchetNextState_generation st nextSt _h; omega
+decreasing_by grind [ratchetNextState_generation]
 
 end MLS.TreeDEM

@@ -347,7 +347,7 @@ def nodeIndicesAreSorted (l: List NodeIndex): Bool :=
 theorem unmergedResolution_sorted (l: List UInt32) (h: unmergedLeavesSorted l):
   NodeIndicesAreLeafIndices (unmergedResolution l) ∧ nodeIndicesAreSorted (unmergedResolution l)
 := by
-  simp only [unmergedLeavesSorted, decide_eq_true_eq] at h
+  rw [unmergedLeavesSorted_iff] at h
   simp only [NodeIndicesAreLeafIndices, nodeIndicesAreSorted, unmergedResolution, List.mem_map, decide_eq_true_eq,
     List.pairwise_map, nodeIndexLt, NodeIndex.ofLeafIndex]
   grind [List.Pairwise.imp]
@@ -399,10 +399,10 @@ theorem lastUpdateRhs_sorted {ld lp: Nat} (d: TreeSync Bytes tkt ld) (p: TreeSyn
   apply unmergedResolution_sorted
   rw [unmergedLeavesOf_eq]
   cases h: p.nodeContent with
-  | none => simp [unmergedLeavesSorted]
+  | none => simp [unmergedLeavesSorted, ListChain]
   | some content =>
     have := (unmergedLeavesOk_content p content h hok).2
-    simp only [unmergedLeavesSorted, decide_eq_true_eq, Option.map_some, Option.getD_some] at *
+    simp only [unmergedLeavesSorted_iff, Option.map_some, Option.getD_some] at *
     grind
 
 /--
@@ -1107,9 +1107,7 @@ def pathIsParentHashValidAux {l: Nat}
 :=
   let newLp := p.getPathLeaf
   if h: newLp.data.source == .commit then
-    match computeLeafParentHashFromPath t li p parentParentHash with
-    | .success ph => ph == (newLp.data.parentHash.get h).val
-    | _ => false
+    computeLeafParentHashFromPath t li p parentParentHash == .success ((newLp.data.parentHash.get h).val)
   else
     false
 
@@ -1127,7 +1125,7 @@ theorem pathIsParentHashValidAux_leaf (t: TreeSync Bytes tkt 0) (li: Nat) (ln: L
   have: computeLeafParentHashFromPath t li (.leaf ln) parentParentHash = .success parentParentHash := by
     unfold computeLeafParentHashFromPath
     simp [pure]
-  grind [pathIsParentHashValidAux, Path.getPathLeaf]
+  grind [pathIsParentHashValidAux, Path.getPathLeaf, Result.success_beq_success]
 
 public
 theorem pathIsParentHashValidAux_node {l: Nat}

@@ -55,10 +55,11 @@ deriving DecidableEq
 @[expose]
 public
 def LeafNodeSource.ofUInt8 (n: UInt8): Option LeafNodeSource :=
-  if n = 1 then some .keyPackage
-  else if n = 2 then some .update
-  else if n = 3 then some .commit
-  else none
+  match n with
+  | 1 => some .keyPackage
+  | 2 => some .update
+  | 3 => some .commit
+  | _ => none
 
 @[expose]
 public
@@ -479,9 +480,10 @@ deriving DecidableEq
 @[expose]
 public
 def NodeType.ofUInt8 (n: UInt8): Option NodeType :=
-  if n = 1 then some .leaf
-  else if n = 2 then some .parent
-  else none
+  match n with
+  | 1 => some .leaf
+  | 2 => some .parent
+  | _ => none
 
 @[expose]
 public

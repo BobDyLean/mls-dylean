@@ -3,7 +3,6 @@ module
 public import MLS.TreeDEM.Code.NetworkTypes
 public import MLS.Bootstrap.Code.Welcome
 public import MLS.TreeKEM.Code.KeySchedule
-public import MLS.Test.FromExt.CryptoBasics
 public import MLS.Test.Types
 public import MLS.Test.Utils
 
@@ -16,7 +15,6 @@ namespace MLS.Test.FromExt.Welcome
 open Comparse
 open MLS MLS.TreeKEM MLS.TreeDEM MLS.Bootstrap
 open MLS.Test
-open MLS.Test.FromExt.CryptoBasics
 
 /-- Port of `test_welcome_one`. -/
 @[expose]

@@ -2,7 +2,6 @@ module
 
 public import MLS.TreeDEM.Code.Message.Framing
 public import MLS.Glue.Code.NetworkBinder
-public import MLS.Test.FromExt.CryptoBasics
 public import MLS.Test.Types
 public import MLS.Test.Utils
 
@@ -15,7 +14,6 @@ namespace MLS.Test.FromExt.SecretTree
 open Comparse
 open MLS MLS.TreeDEM
 open MLS.Test
-open MLS.Test.FromExt.CryptoBasics
 
 section CryptoBytes
 

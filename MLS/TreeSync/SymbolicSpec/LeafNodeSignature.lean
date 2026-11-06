@@ -15,6 +15,8 @@ Port-specific differences:
   (`ProtocolEvent.ExecEntryT (LeafNodeSignedEvent tkt)`, `ProtocolEvent.ExecEntryT (GroupHasTreeEvent tkt)`).
 - The signature predicate (`leaf_node_sign_pred`, …) and the proofs (`parent_hash_implies_event`,
   `state_implies_event`, `is_msg_external_path_to_path`, …) are in `MLS.TreeSync.SymbolicProofs.LeafNodeSignature`.
+- `leaf_node_label` is not ported: the label `"LeafNodeTBS"` is written literally
+  (as in the tags of the split signature predicate, which `#combine` evaluates).
 -/
 
 namespace MLS.TreeSync
@@ -82,10 +84,6 @@ def TreeListHasEvent (prin: Participant) (tr: ExecTrace)
   ∀ t ∈ tl, TreeHasEvent prin tr groupId authentifierLeafIndex t
 
 end Events
-
-/-- Port of `leaf_node_label`. -/
-public
-def leafNodeLabel: String := "LeafNodeTBS"
 
 /-! ## Path signature -/
 

@@ -2,7 +2,6 @@ module
 
 public import MLS.TreeDEM.Code.Message.Transcript
 public import MLS.TreeKEM.Code.KeySchedule
-public import MLS.Test.FromExt.CryptoBasics
 public import MLS.Test.Types
 public import MLS.Test.Utils
 
@@ -15,7 +14,6 @@ namespace MLS.Test.FromExt.TranscriptHashes
 open Comparse
 open MLS MLS.TreeKEM MLS.TreeDEM
 open MLS.Test
-open MLS.Test.FromExt.CryptoBasics
 
 /-- Port of `test_transcript_hashes_one`. -/
 @[expose]

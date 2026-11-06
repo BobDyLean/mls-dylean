@@ -33,6 +33,12 @@ open MLS MLS.TreeSync
 
 variable [HasSymbolicInvariants]
 
+/-- Port of `key_package_store_value_to_key_package`. -/
+@[expose]
+public
+def keyPackageStoreValueToKeyPackage (value: KeyPackageStoreValuePost): KeyPackage Bytes TreeKEM.tkt :=
+  value.keyPackage
+
 /-- Port of `key_package_store_elem_is_mine`. -/
 @[expose]
 public

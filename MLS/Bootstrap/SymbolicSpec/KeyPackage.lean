@@ -13,6 +13,8 @@ Port-specific differences:
 - The event has no tag nor format (MLS*'s `event` instance).
 - The labels, the predicates (`key_package_sign_pred`, `key_package_has_been_verified_pred`, …) and the lemmas
   are in `MLS.Bootstrap.SymbolicProofs.KeyPackage`.
+- `key_package_label` is not ported: the label `"KeyPackageTBS"` is written literally
+  (as in the tags of the split signature predicate, which `#combine` evaluates).
 -/
 
 namespace MLS.Bootstrap
@@ -20,10 +22,6 @@ namespace MLS.Bootstrap
 open Comparse
 open DY
 open MLS
-
-/-- Port of `key_package_label`. -/
-public
-def keyPackageLabel: String := "KeyPackageTBS"
 
 variable [HasSymbolicBytes]
 

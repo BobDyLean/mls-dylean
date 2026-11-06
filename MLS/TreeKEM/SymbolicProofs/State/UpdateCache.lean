@@ -1,7 +1,7 @@
 module
 
 public import MLS.TreeKEM.SymbolicSpec.State.UpdateCache
-public import MLS.TreeSync.SymbolicSpec.AuthService.CredentialInterpretation
+public import MLS.TreeSync.SymbolicProofs.AuthService.CredentialInterpretation
 public import MLS.Symbolic.SymbolicProofs.MiscLemmas
 import all MLS.TreeKEM.SymbolicSpec.State.UpdateCache
 import DY.Meta.Step

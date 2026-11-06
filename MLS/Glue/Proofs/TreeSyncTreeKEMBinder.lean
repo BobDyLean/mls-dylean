@@ -595,7 +595,7 @@ theorem findEmptyLeaf_treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt l):
   findEmptyLeaf (treesyncToTreekem t) = findEmptyLeaf t
 := by
   induction t using Tree.leftRightInduction with
-  | leaf t => unfold findEmptyLeaf; simp
+  | leaf t => unfold findEmptyLeaf; simp; grind
   | node t ihl ihr => unfold findEmptyLeaf; simp [ihl, ihr]
 
 /-- Port of `find_empty_leaf_treesync_treekem_rel`, stated as an equation. -/

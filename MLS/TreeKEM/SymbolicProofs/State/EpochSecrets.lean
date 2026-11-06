@@ -1,7 +1,7 @@
 module
 
 public import MLS.TreeKEM.SymbolicSpec.State.EpochSecrets
-public import MLS.TreeSync.SymbolicSpec.AuthService.CredentialInterpretation
+public import MLS.TreeSync.SymbolicProofs.AuthService.CredentialInterpretation
 public import MLS.TreeSync.Proofs.TreeHash
 public import MLS.TreeKEM.Code.Parsers
 public import DySlop.Lib.Label
@@ -207,6 +207,21 @@ end GroupLabels
 section ConfirmationTag
 
 variable [HasSymbolicBytes]
+
+/-- Port of `keyschedule_state_to_key`. -/
+@[expose]
+public
+def keyscheduleStateToKey (st: TreeKEMKeyscheduleState Bytes) (ty: EpochSecretType): Bytes :=
+  match ty with
+  | .initSecret => st.initSecret
+  | .senderDataSecret => st.epochKeys.senderDataSecret
+  | .encryptionSecret => BytesLike.empty
+  | .exporterSecret => st.epochKeys.exporterSecret
+  | .externalSecret => st.epochKeys.externalSecret
+  | .confirmationKey => BytesLike.empty
+  | .membershipKey => st.epochKeys.membershipKey
+  | .resumptionPsk => st.epochKeys.resumptionPsk
+  | .epochAuthenticator => st.epochKeys.epochAuthenticator
 
 /-- Port of `key_is_authenticated_by_confirmation_tag_with_witness`. -/
 @[expose]

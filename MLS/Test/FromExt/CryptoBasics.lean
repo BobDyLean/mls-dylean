@@ -104,12 +104,6 @@ namespace MLS.Test.FromExt.CryptoBasics
 
 open MLS MLS.Test
 
-/-- Port of `uint16_to_ciphersuite`. -/
-@[expose]
-public
-def uint16ToCiphersuite (x: UInt16): Result AvailableCiphersuite :=
-  availableCiphersuiteFromNetwork (CipherSuite.ofUInt16 x)
-
 /-- Port of `test_crypto_basics_one`. -/
 @[expose]
 public

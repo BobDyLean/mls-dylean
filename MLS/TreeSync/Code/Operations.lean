@@ -73,11 +73,7 @@ def unAddP {l: Nat} (t: TreeSync Bytes tkt l) (pred: Nat → Bool): TreeSync Byt
   | .leaf content position => (LeftRightView.leaf (if pred position then content else none) position).pack
   | .node optContent left right =>
     let newOptContent := optContent.map fun content => { content with
-      unmergedLeaves := ⟨content.unmergedLeaves.val.filter (fun x => pred x.toNat), by
-        have := bytes_length_filter (NonExtensibleMessageFormat.uint32BE (Bytes := Bytes)) (fun x => pred x.toNat) content.unmergedLeaves.val
-        have := content.unmergedLeaves.property
-        simp only [mlsNatPred] at *
-        omega⟩
+      unmergedLeaves := ⟨content.unmergedLeaves.val.filter (fun x => pred x.toNat), by grind [bytes_length_filter, mlsNatPred]⟩
     }
     (LeftRightView.node newOptContent (unAddP left pred) (unAddP right pred)).pack
 termination_by l
@@ -177,9 +173,7 @@ def pathIsParentHashValid {l: Nat}
 :=
   let newLp := p.getPathLeaf
   if h: newLp.data.source == .commit then
-    match computeLeafParentHashFromPath t li p rootParentHash.val with
-    | .success ph => ph == (newLp.data.parentHash.get h).val
-    | _ => false
+    computeLeafParentHashFromPath t li p rootParentHash.val == .success ((newLp.data.parentHash.get h).val)
   else
     false
 
@@ -308,6 +302,7 @@ def signLeafNodeDataKeyPackage (lnData: LeafNodeData Bytes tkt)
 := do
   if lnData.source != .keyPackage then
     Result.internalFailure "sign_leaf_node_data_key_package: source must be key_package"
+  -- groupId and leafIndex are trash values (StaticOption.mk ignore them because source is keyPackage)
   let lnTbs := serializeNE (LeafNodeTBS.mf tkt) { data := lnData, groupId := StaticOption.mk rootParentHash, leafIndex := StaticOption.mk 0 }
   let signature ← signWithLabel signKey "LeafNodeTBS" lnTbs nonce
   let signature ← mkMlsBytes signature "sign_leaf_node_data_key_package" "signature"
@@ -351,13 +346,13 @@ def pathToTreeListAux {l: Nat}
 :=
   match t.intoChildSiblingView li, p with
   | .leaf _ position, .leaf ln => pure [⟨0, (ChildSiblingView.leaf (some ln) position).pack⟩]
-  | .node content child sibling, .node optExtContent pNext => do
+  | .node _ child sibling, .node optExtContent pNext => do
     let (_, newParentParentHash) ← computeNewNpAndPh optExtContent sibling parentParentHash
     let tailTl ← pathToTreeListAux child li pNext newParentParentHash
     match optExtContent with
     | none => pure tailTl
     | some _ =>
-      let t' ← applyPathAux (ChildSiblingView.node content child sibling).pack li (.node optExtContent pNext) parentParentHash
+      let t' ← applyPathAux t li (.node optExtContent pNext) parentParentHash
       pure (⟨_, t'⟩ :: tailTl)
 termination_by l
 

@@ -1,6 +1,7 @@
 module
 
 public import MLS.TreeSync.Code.Types
+public import MLS.Common.Code.MiscLemmas
 
 /-!
 Port of `MLS.TreeSync.Invariants.UnmergedLeaves`.
@@ -34,8 +35,7 @@ def unmergedLeafConsistent {l: Nat} (t: TreeSync Bytes tkt l) (li: UInt32): Bool
   | .node optContent left right =>
     (match optContent with
       | none => true
-      -- Read as: Tree.containsLeafIndex ... → li ∈ content.unmergedLeaves
-      | some content => !(t.containsLeafIndex li.toNat) || content.unmergedLeaves.val.contains li) &&
+      | some content => (t.containsLeafIndex li.toNat) → content.unmergedLeaves.val.contains li) &&
     unmergedLeafConsistent left li &&
     unmergedLeafConsistent right li
 
@@ -46,7 +46,7 @@ Check that the unmerged leaves are sorted.
 @[expose]
 public
 def unmergedLeavesSorted (l: List UInt32): Bool :=
-  decide (l.Pairwise (· < ·))
+  ListChain (· < ·) l
 
 /--
 Port of `unmerged_leaves_ok`.

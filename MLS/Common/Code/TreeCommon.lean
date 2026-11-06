@@ -87,7 +87,8 @@ def treeTruncate {l: Nat} (t: Tree (Option Leaf) (Option Node) (l+1)): Tree (Opt
 public
 def findEmptyLeaf {l: Nat} (t: Tree (Option Leaf) (Option Node) l): Option Nat :=
   match t.intoLeftRightView with
-  | .leaf content position => if content.isNone then some position else none
+  | .leaf (some _) position => none
+  | .leaf none position => some position
   | .node _ left right =>
     match findEmptyLeaf left with
     | some x => some x

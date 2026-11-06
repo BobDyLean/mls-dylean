@@ -14,7 +14,8 @@ Port-specific differences:
 - States are identified by handles instead of session identifiers.
   DyLean's states are immutable: `extendKeyPackageStore` stores a new version of the store, and returns its handle.
 - The `*_post` types have no format, since they are not stored.
-- The invariant and the proofs are in `MLS.Bootstrap.SymbolicProofs.State.KeyPackageStore`.
+- The invariant and the proofs are in `MLS.Bootstrap.SymbolicProofs.State.KeyPackageStore`;
+  so is `key_package_store_value_to_key_package`, which only the invariant uses.
 -/
 
 namespace MLS.Bootstrap
@@ -272,10 +273,5 @@ def keyPackageStoreValueToHpkeSk (value: KeyPackageStoreValuePost): Result Bytes
     Result.error ""
   else
     pure res
-
-/-- Port of `key_package_store_value_to_key_package`. -/
-public
-def keyPackageStoreValueToKeyPackage (value: KeyPackageStoreValuePost): KeyPackage Bytes TreeKEM.tkt :=
-  value.keyPackage
 
 end MLS.Bootstrap

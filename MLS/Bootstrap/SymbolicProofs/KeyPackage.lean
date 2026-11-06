@@ -5,7 +5,7 @@ public import MLS.Bootstrap.SymbolicProofs.State.InitKey
 public import MLS.TreeSync.SymbolicProofs.State.SignatureKey
 public import MLS.TreeSync.SymbolicProofs.AuthService
 public import MLS.TreeSync.SymbolicProofs.LeafNodeSignature
-public import MLS.TreeSync.SymbolicSpec.AuthService.CredentialInterpretation
+public import MLS.TreeSync.SymbolicProofs.AuthService.CredentialInterpretation
 public import MLS.Common.SymbolicProofs.Crypto.Derived.SignWithLabel
 public import DySlop.Lib.Label
 public import DySlop.Lib.Event
@@ -101,7 +101,7 @@ def keyPackageHasBeenVerifiedPred (tr: ProofTrace) (ev: KeyPackageHasBeenVerifie
   (KeyPackage.mf TreeKEM.tkt).wf (Bytes.Invariant · tr) ev.keyPackage ∧
   (∃ token, (dyAsp tr).credentialOk (leafNodeToAsInput ev.keyPackage.tbs.leafNode) token) ∧
   -- verification succeeded
-  verifyWithLabel ev.keyPackage.tbs.leafNode.data.signatureKey.val keyPackageLabel
+  verifyWithLabel ev.keyPackage.tbs.leafNode.data.signatureKey.val "KeyPackageTBS"
     (serializeNE (KeyPackageTBS.mf TreeKEM.tkt) ev.keyPackage.tbs) ev.keyPackage.signature.val = true
 
 variable [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT BootstrapInitKeyState)]

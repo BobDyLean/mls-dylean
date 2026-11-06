@@ -14,7 +14,8 @@ Port-specific differences:
 - States are identified by handles instead of session identifiers.
 - Group contexts have no decidable equality: `getEpochSecret` compares their serializations.
 - The usages and labels (`mk_epoch_secret_usage`, `mk_group_secret_label`, …) are in
-  `MLS.TreeKEM.SymbolicProofs.State.EpochSecrets`, with the invariants and proofs.
+  `MLS.TreeKEM.SymbolicProofs.State.EpochSecrets`, with the invariants and proofs;
+  so is `keyschedule_state_to_key`, which only the invariant uses.
 -/
 
 namespace MLS.TreeKEM
@@ -134,22 +135,6 @@ theorem TreeKEMEpochSecret.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred 
 public
 instance TreeKEMEpochSecret.ps: ParseableSerializeableNE TreeKEMEpochSecret :=
   .make TreeKEMEpochSecret.mf
-
-/-! ## Keys of the key schedule state -/
-
-/-- Port of `keyschedule_state_to_key`. -/
-public
-def keyscheduleStateToKey (st: TreeKEMKeyscheduleState Bytes) (ty: EpochSecretType): Bytes :=
-  match ty with
-  | .initSecret => st.initSecret
-  | .senderDataSecret => st.epochKeys.senderDataSecret
-  | .encryptionSecret => BytesLike.empty
-  | .exporterSecret => st.epochKeys.exporterSecret
-  | .externalSecret => st.epochKeys.externalSecret
-  | .confirmationKey => BytesLike.empty
-  | .membershipKey => st.epochKeys.membershipKey
-  | .resumptionPsk => st.epochKeys.resumptionPsk
-  | .epochAuthenticator => st.epochKeys.epochAuthenticator
 
 /-! ## Traceful API -/
 

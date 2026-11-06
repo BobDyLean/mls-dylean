@@ -106,7 +106,7 @@ inductive LeftRightView (Leaf Node: Type): Nat → Type where
 public
 def Tree.intoLeftRightView {l: Nat} (t: Tree Leaf Node l): LeftRightView Leaf Node l :=
   match l, t with
-  | _, { position, bareTree := .leaf content } => .leaf content position
+  | 0, { position, bareTree := .leaf content } => .leaf content position
   | l+1, { position, bareTree := .node content left right } =>
     .node content
       { position, bareTree := left }
@@ -160,6 +160,12 @@ def ChildSiblingView.pack {l: Nat}: ChildSiblingView Leaf Node l → Tree Leaf N
 
 @[expose]
 public
+def Tree.leafContent (t: Tree Leaf Node 0): Leaf :=
+  match t.bareTree with
+  | .leaf content => content
+
+@[expose]
+public
 def Tree.nodeContent {l: Nat} (t: Tree Leaf Node (l+1)): Node :=
   match t.intoLeftRightView with
   | .node content _ _ => content
@@ -191,12 +197,6 @@ public
 def Tree.sibling {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat): Tree Leaf Node l :=
   match t.intoChildSiblingView li with
   | .node _ _ sibling => sibling
-
-@[expose]
-public
-def Tree.leafContent (t: Tree Leaf Node 0): Leaf :=
-  match t.bareTree with
-  | .leaf content => content
 
 /-! ## Tree functions -/
 

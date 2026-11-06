@@ -158,3 +158,4 @@ public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.ProcessProposal
 public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.GenerateCommitWelcome
 public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.ProcessWelcome
 public import MLS.TreeKEM.SymbolicSpecProofs.SecurityTheorem
+public import MLS.TreeKEM.SymbolicSpecProofs.Reachability

@@ -287,7 +287,7 @@ public instance: ProtocolEvent.EventInv.Has leafNodeSignedEventPred := ⟨fun _ 
 /-! ### Trace invariant (port of `all_local_state_pred` and `treesync_treekem_trace_invariants`) -/
 
 -- The state predicates are the instances `CompromisableLocalStateInv X` (e.g. `treeSyncSignatureKeyStateInv`).
-#combine +toplevel into SubTraceInvariant from
+#combine +toplevel into SubTraceInvariant, SubBaseAttackerKnowledgeTheorem from
   Network,
   DY.Random,
   CompromisableState TreeSyncSignatureKeyState,
@@ -309,6 +309,20 @@ public instance: ProtocolEvent.EventInv.Has leafNodeSignedEventPred := ⟨fun _ 
   ProtocolEvent IAmInGroup,
   ProtocolEvent KeyPackageHasBeenVerified,
   ProtocolEvent (LeafNodeHasBeenVerified TreeKEM.tkt)
+
+/-! ### Attacker knowledge (needed by the reachability theorem, `MLS.TreeKEM.SymbolicSpecProofs.Reachability`) -/
+
+#combine +toplevel into SubAttackerKnowledgeTheorem from
+  DY.Random,
+  DY.Literal,
+  DY.Concat,
+  DY.Hash,
+  DySlop.KdfExtract,
+  DySlop.KdfExpand,
+  DySlop.Kem,
+  DySlop.Signature,
+  DySlop.Aead,
+  DySlop.Mac
 
 /-! ## Bundles of invariants (port of `treesync_treekem_protocol_invariants_correct`) -/
 

@@ -23,7 +23,7 @@ Port-specific differences:
   and `parentHashGuaranteeTheoremAux` goes on when the step does not return a hash collision.
   The tree reasoning of `parent_hash_guarantee_theorem_step` is the lemma `equivalent_of_lastUpdateCorrect`.
 - Tree lists are lists of dependent pairs (`OneTreeSync`).
-  `tree_list_is_parent_hash_linkedP` (and its reversed version) is the generic `ListChain`:
+  `tree_list_is_parent_hash_linkedP` (and its reversed version) is the generic `ListChain` (in `MLS.Common.Code.MiscLemmas`):
   the "Reversing" section is `ListChain.reverse`, `List.mem_reverse` and `List.head?_reverse`.
 - `parent_hash_invariant_to_tree_list(_rev)` and `compute_parent_hash_link(_aux)` only compute a witness:
   they are the existential `exists_treeList_of_parentHashInvariant`.
@@ -56,16 +56,6 @@ theorem Tree.position_eq_of_sibling_position_eq {l: Nat} (t1 t2: Tree Leaf Node 
   t1.position = t2.position
 := by
   grind [Tree.containsLeafIndex]
-
-/--
-Each element of the list is related to the next one by `R`.
-MLS* defines it for each relation (e.g. `tree_list_is_parent_hash_linkedP`).
--/
-@[expose]
-public
-def ListChain {α: Type} (R: α → α → Prop): List α → Prop
-  | [] | [_] => True
-  | a :: b :: l => R a b ∧ ListChain R (b :: l)
 
 theorem ListChain.append_singleton {α: Type} {R: α → α → Prop} {l: List α} {a: α}
   (h: ListChain R l) (hlast: ∀ x ∈ l.getLast?, R x a):

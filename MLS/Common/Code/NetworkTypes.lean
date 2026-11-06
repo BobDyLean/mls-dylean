@@ -177,33 +177,15 @@ abbrev MlsAsciiString :=
 public
 def MlsAsciiString.mf: NonExtensibleMessageFormat Bytes (MlsAsciiString (Bytes := Bytes)) :=
   .lengthPrefix mlsNatPred MlsNat.mf (.subtype .string isAsciiString)
-
-namespace MlsAsciiString.mf
-
-public
-instance: (MlsAsciiString.mf (Bytes := Bytes)).IsNonAmbiguous := by
-  dsimp only [MlsAsciiString.mf]
-  infer_instance
-
-public
-instance: (MlsAsciiString.mf (Bytes := Bytes)).HasUniqueRepresentation := by
-  dsimp only [MlsAsciiString.mf]
-  infer_instance
-
-public
-instance: (MlsAsciiString.mf (Bytes := Bytes)).ParseConsumes := by
-  dsimp only [MlsAsciiString.mf]
-  infer_instance
+deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- ASCII strings contain no bytes (their well-formedness is trivial). -/
 @[simp]
 public
-theorem wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsAsciiString (Bytes := Bytes)):
+theorem MlsAsciiString.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (x: MlsAsciiString (Bytes := Bytes)):
   (MlsAsciiString.mf (Bytes := Bytes)).wf pred x = True
 := by
   simp [MlsAsciiString.mf, MlsNat.mf]
-
-end MlsAsciiString.mf
 
 /-! ## HPKEPublicKey, MAC -/
 
@@ -258,9 +240,10 @@ deriving DecidableEq
 @[expose]
 public
 def ProtocolVersion.ofUInt16 (n: UInt16): ProtocolVersion :=
-  if h: 1 < n.toNat then .unknown n h
-  else if n = 0 then .reserved
-  else .mls10
+  match _: n.toNat with
+  | 0 => .reserved
+  | 1 => .mls10
+  | _+2 => .unknown n (by grind)
 
 @[expose]
 public
@@ -271,7 +254,7 @@ def ProtocolVersion.toUInt16: ProtocolVersion → UInt16
 
 public
 instance: LeftInverse ProtocolVersion.toUInt16 ProtocolVersion.ofUInt16 where
-  left_inv n := by grind [ProtocolVersion.ofUInt16, ProtocolVersion.toUInt16, ← UInt16.toNat_inj]
+  left_inv n := by grind [ProtocolVersion.ofUInt16, ProtocolVersion.toUInt16]
 
 public
 instance: RightInverse ProtocolVersion.toUInt16 ProtocolVersion.ofUInt16 where
@@ -309,15 +292,16 @@ deriving DecidableEq
 @[expose]
 public
 def CipherSuite.ofUInt16 (n: UInt16): CipherSuite :=
-  if h: 7 < n.toNat then .unknown n h
-  else if n = 0 then .reserved
-  else if n = 1 then .mls_128_dhkemx25519_aes128gcm_sha256_ed25519
-  else if n = 2 then .mls_128_dhkemp256_aes128gcm_sha256_p256
-  else if n = 3 then .mls_128_dhkemx25519_chacha20poly1305_sha256_ed25519
-  else if n = 4 then .mls_256_dhkemx448_aes256gcm_sha512_ed448
-  else if n = 5 then .mls_256_dhkemp521_aes256gcm_sha512_p521
-  else if n = 6 then .mls_256_dhkemx448_chacha20poly1305_sha512_ed448
-  else .mls_256_dhkemp384_aes256gcm_sha384_p384
+  match _: n.toNat with
+  | 0 => .reserved
+  | 1 => .mls_128_dhkemx25519_aes128gcm_sha256_ed25519
+  | 2 => .mls_128_dhkemp256_aes128gcm_sha256_p256
+  | 3 => .mls_128_dhkemx25519_chacha20poly1305_sha256_ed25519
+  | 4 => .mls_256_dhkemx448_aes256gcm_sha512_ed448
+  | 5 => .mls_256_dhkemp521_aes256gcm_sha512_p521
+  | 6 => .mls_256_dhkemx448_chacha20poly1305_sha512_ed448
+  | 7 => .mls_256_dhkemp384_aes256gcm_sha384_p384
+  | _+8 => .unknown n (by grind)
 
 @[expose]
 public
@@ -334,7 +318,7 @@ def CipherSuite.toUInt16: CipherSuite → UInt16
 
 public
 instance: LeftInverse CipherSuite.toUInt16 CipherSuite.ofUInt16 where
-  left_inv n := by grind [CipherSuite.ofUInt16, CipherSuite.toUInt16, ← UInt16.toNat_inj]
+  left_inv n := by grind [CipherSuite.ofUInt16, CipherSuite.toUInt16]
 
 public
 instance: RightInverse CipherSuite.toUInt16 CipherSuite.ofUInt16 where
@@ -370,13 +354,14 @@ deriving DecidableEq
 @[expose]
 public
 def ExtensionType.ofUInt16 (n: UInt16): ExtensionType :=
-  if h: 5 < n.toNat then .unknown n h
-  else if n = 0 then .reserved
-  else if n = 1 then .applicationId
-  else if n = 2 then .ratchetTree
-  else if n = 3 then .requiredCapabilities
-  else if n = 4 then .externalPub
-  else .externalSenders
+  match _: n.toNat with
+  | 0 => .reserved
+  | 1 => .applicationId
+  | 2 => .ratchetTree
+  | 3 => .requiredCapabilities
+  | 4 => .externalPub
+  | 5 => .externalSenders
+  | _+6 => .unknown n (by grind)
 
 @[expose]
 public
@@ -391,7 +376,7 @@ def ExtensionType.toUInt16: ExtensionType → UInt16
 
 public
 instance: LeftInverse ExtensionType.toUInt16 ExtensionType.ofUInt16 where
-  left_inv n := by grind [ExtensionType.ofUInt16, ExtensionType.toUInt16, ← UInt16.toNat_inj]
+  left_inv n := by grind [ExtensionType.ofUInt16, ExtensionType.toUInt16]
 
 public
 instance: RightInverse ExtensionType.toUInt16 ExtensionType.ofUInt16 where
@@ -726,15 +711,16 @@ deriving DecidableEq
 @[expose]
 public
 def ProposalType.ofUInt16 (n: UInt16): ProposalType :=
-  if h: 7 < n.toNat then .unknown n h
-  else if n = 0 then .reserved
-  else if n = 1 then .add
-  else if n = 2 then .update
-  else if n = 3 then .remove
-  else if n = 4 then .psk
-  else if n = 5 then .reinit
-  else if n = 6 then .externalInit
-  else .groupContextExtensions
+  match _: n.toNat with
+  | 0 => .reserved
+  | 1 => .add
+  | 2 => .update
+  | 3 => .remove
+  | 4 => .psk
+  | 5 => .reinit
+  | 6 => .externalInit
+  | 7 => .groupContextExtensions
+  | _+8 => .unknown n (by grind)
 
 @[expose]
 public
@@ -751,7 +737,7 @@ def ProposalType.toUInt16: ProposalType → UInt16
 
 public
 instance: LeftInverse ProposalType.toUInt16 ProposalType.ofUInt16 where
-  left_inv n := by grind [ProposalType.ofUInt16, ProposalType.toUInt16, ← UInt16.toNat_inj]
+  left_inv n := by grind [ProposalType.ofUInt16, ProposalType.toUInt16]
 
 public
 instance: RightInverse ProposalType.toUInt16 ProposalType.ofUInt16 where
@@ -802,10 +788,11 @@ deriving DecidableEq
 @[expose]
 public
 def CredentialType.ofUInt16 (n: UInt16): CredentialType :=
-  if h: 2 < n.toNat then .unknown n h
-  else if n = 0 then .reserved
-  else if n = 1 then .basic
-  else .x509
+  match _: n.toNat with
+  | 0 => .reserved
+  | 1 => .basic
+  | 2 => .x509
+  | _+3 => .unknown n (by grind)
 
 @[expose]
 public
@@ -817,7 +804,7 @@ def CredentialType.toUInt16: CredentialType → UInt16
 
 public
 instance: LeftInverse CredentialType.toUInt16 CredentialType.ofUInt16 where
-  left_inv n := by grind [CredentialType.ofUInt16, CredentialType.toUInt16, ← UInt16.toNat_inj]
+  left_inv n := by grind [CredentialType.ofUInt16, CredentialType.toUInt16]
 
 public
 instance: RightInverse CredentialType.toUInt16 CredentialType.ofUInt16 where

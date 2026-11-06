@@ -23,6 +23,7 @@ and outputs handles of the states of the leaf node key and init key.
 Port-specific differences:
 - MLS*'s functions with a leading underscore (`_generate_leaf_node`, …) end with a prime.
 - DyLean's states are immutable: `generateKeyPackage` also returns the new handle of the key package store.
+- `key_package_private_state_ids` (unused in MLS*) is not ported: the handles are in `KeyPackageStoreValuePre`.
 -/
 
 namespace MLS.TreeKEM
@@ -76,13 +77,6 @@ def signKeyPackage' (me: Participant) (keyPackageTbs: KeyPackageTBS Bytes tkt) (
     tbs := keyPackageTbs
     signature
   }
-
-/-- Port of `key_package_private_state_ids`. -/
-public
-structure KeyPackagePrivateStateIds where
-  signatureKeySid: Nat
-  leafNodeKeySid: Nat
-  initKeySid: Nat
 
 /-- Port of `_generate_key_package`. -/
 public

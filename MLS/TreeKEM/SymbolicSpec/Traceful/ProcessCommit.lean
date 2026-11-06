@@ -46,11 +46,9 @@ MLS* requires `P_group_context_extensions? proposal`; otherwise, this function f
 public
 def processGroupContextExtensionsProposal' (st: TreeSyncTreeKEMState) (proposal: Proposal Bytes):
   Traceful TreeSyncTreeKEMState
-:=
-  match proposal with
-  | .groupContextExtensions { extensions } =>
-    pure { st with groupContext := { st.groupContext with extensions } }
-  | _ => failure
+:= do
+  let .groupContextExtensions { extensions } := proposal | failure
+  pure { st with groupContext := { st.groupContext with extensions } }
 
 /--
 Port of `_process_add_proposal_aux`.

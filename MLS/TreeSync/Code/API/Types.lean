@@ -19,7 +19,7 @@ open MLS
 
 /-- Port of `treesync_state`. -/
 public
-structure TreeSyncState (Bytes: Type) [CryptoBytes Bytes] (tkt: TreeKEMTypes Bytes) (TokenT: Type) (groupId: MlsBytes Bytes) where
+structure TreeSyncState (Bytes: Type) [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) (TokenT: Type) (groupId: MlsBytes Bytes) where
   levels: Nat
   tree: TreeSync Bytes tkt levels
   tokens: ASTokens TokenT levels
@@ -31,7 +31,7 @@ Unlike MLS*, it also states that the tree and the tokens have the same position
 -/
 @[expose]
 public
-def treesyncStateValid {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes} {TokenT: Type} {groupId: MlsBytes Bytes}
+def treesyncStateValid {Bytes: Type} [BytesLike Bytes] {tkt: TreeKEMTypes Bytes} {TokenT: Type} {groupId: MlsBytes Bytes}
   (asp: ASParameters Bytes TokenT) (st: TreeSyncState Bytes tkt TokenT groupId): Prop
 :=
   st.tree.position = st.tokens.position ∧ allCredentialsOk asp st.tree st.tokens

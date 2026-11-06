@@ -184,9 +184,10 @@ deriving DecidableEq
 @[expose]
 public
 def PskType.ofUInt8 (n: UInt8): Option PskType :=
-  if n = 1 then some .external
-  else if n = 2 then some .resumption
-  else none
+  match n with
+  | 1 => some .external
+  | 2 => some .resumption
+  | _ => none
 
 @[expose]
 public
@@ -234,10 +235,11 @@ deriving DecidableEq
 @[expose]
 public
 def ResumptionPskUsage.ofUInt8 (n: UInt8): Option ResumptionPskUsage :=
-  if n = 1 then some .application
-  else if n = 2 then some .reinit
-  else if n = 3 then some .branch
-  else none
+  match n with
+  | 1 => some .application
+  | 2 => some .reinit
+  | 3 => some .branch
+  | _ => none
 
 @[expose]
 public
