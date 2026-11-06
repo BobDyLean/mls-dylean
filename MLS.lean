@@ -18,6 +18,7 @@ public import MLS.Symbolic.SymbolicSpec.Randomness
 public import MLS.Symbolic.SymbolicProofs.Randomness
 public import MLS.Symbolic.SymbolicProofs.MiscLemmas
 public import MLS.Symbolic.SymbolicProofs.Symbolic
+public import MLS.Symbolic.SymbolicProofs.Reachability
 public import MLS.Common.SymbolicProofs.Crypto.Derived.MlsLabel
 public import MLS.Common.SymbolicProofs.Crypto.Derived.SignWithLabel
 public import MLS.Common.SymbolicProofs.Crypto.Derived.ExpandWithLabel
@@ -159,3 +160,4 @@ public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.GenerateCommitWelcome
 public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.ProcessWelcome
 public import MLS.TreeKEM.SymbolicSpecProofs.SecurityTheorem
 public import MLS.TreeKEM.SymbolicSpecProofs.Reachability
+public import MLS.TreeKEM.SymbolicSpecProofs.SanityChecks

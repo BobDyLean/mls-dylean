@@ -82,6 +82,7 @@ public instance (StateT: Type) [Comparse.ParseableSerializeable StateT]
 
 #combine into ReachabilityTheorem from
   Network,
+  DY.Random,
   mkSignatureKey,
   initializeAsCache,
   initializeKeyPackageStore,

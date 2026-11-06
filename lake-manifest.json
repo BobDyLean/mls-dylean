@@ -5,7 +5,7 @@
    "type": "git",
    "subDir": null,
    "scope": "",
-   "rev": "bb24c359a52ea09097d6d3d0c02838441af4ffb0",
+   "rev": "1662f9ad8224240bc0bc4cd24804e2e688ad56ee",
    "name": "dylean",
    "manifestFile": "lake-manifest.json",
    "inputRev": "main",

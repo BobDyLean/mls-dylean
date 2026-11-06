@@ -28,7 +28,11 @@ so reading a group state (`getTreesyncTreekemState`, which compares confirmation
 costs about 8 times more at each epoch.
 `fullScenario` is a longer run (epochs 0 to 6) which is not checked yet, as it would take hours.
 
-Reachability of this run is not proved yet.
+The traces of `scenario` and `fullScenario` are reachable (`scenario_reachable`, `fullScenario_reachable`,
+in `MLS.TreeKEM.SymbolicSpecProofs.SanityChecks`):
+the runs only use the actions of `MLS.TreeKEM.reachability` and reads of the states,
+and the attacker only sends messages it knows: skeletons of literals, and proposals built from messages it received
+(it reads the group identifier in a commit, and samples the nonce of the resumption PSK with `Random.attackerGenRand`).
 -/
 
 namespace MLS.TreeKEM.SanityChecks
@@ -160,6 +164,13 @@ def receiveProposal (proposalTs: Nat): Traceful (Proposal Bytes) := do
   let proposalBytes ← Network.receiveMessage proposalTs
   let some proposal := (Proposal.mf (Bytes := Bytes)).toExtensible.parse proposalBytes | failure
   pure proposal
+
+/-- The attacker reads a commit from the network. -/
+public
+def receiveCommit (commitTs: Nat): Traceful (ConfirmedTranscriptHashInput Bytes) := do
+  let commitBytes ← Network.receiveMessage commitTs
+  let some commit := (ConfirmedTranscriptHashInput.mf (Bytes := Bytes)).toExtensible.parse commitBytes | failure
+  pure commit
 
 /-- The attacker sends a proposal on the network. -/
 public
@@ -336,8 +347,9 @@ def scenario: Traceful Unit := do
   let bob ← bob.processProposal updateBobTs 1
   let charlie ← charlie.processProposal updateBobTs 1
   let dave ← dave.processProposal updateBobTs 1
-  let groupId := (← alice.state).groupContext.groupId
-  let pskNonce ← extractResult (mkMlsBytes (← Random.genRand 32) "scenario" "pskNonce")
+  -- the attacker reads the group identifier in the previous commit
+  let groupId := (← receiveCommit res.messageTs).content.groupId
+  let pskNonce ← extractResult (mkMlsBytes (← Random.attackerGenRand 32) "scenario" "pskNonce")
   let removeDave: Proposal Bytes := .remove { removed := 3 }
   let pskEpoch2: Proposal Bytes := .psk { psk := .resumption .application groupId 2 pskNonce }
   let groupContextExtensions: Proposal Bytes := .groupContextExtensions { extensions := emptyExtensions }
@@ -420,8 +432,9 @@ def fullScenario: Traceful Unit := do
   let bob ← bob.processProposal updateBobTs 1
   let charlie ← charlie.processProposal updateBobTs 1
   let dave ← dave.processProposal updateBobTs 1
-  let groupId := (← alice.state).groupContext.groupId
-  let pskNonce ← extractResult (mkMlsBytes (← Random.genRand 32) "fullScenario" "pskNonce")
+  -- the attacker reads the group identifier in the previous commit
+  let groupId := (← receiveCommit res.messageTs).content.groupId
+  let pskNonce ← extractResult (mkMlsBytes (← Random.attackerGenRand 32) "fullScenario" "pskNonce")
   let removeCharlie: Proposal Bytes := .remove { removed := 2 }
   let pskEpoch2: Proposal Bytes := .psk { psk := .resumption .application groupId 2 pskNonce }
   let groupContextExtensions: Proposal Bytes := .groupContextExtensions { extensions := emptyExtensions }

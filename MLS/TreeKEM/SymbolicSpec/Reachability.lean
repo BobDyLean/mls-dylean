@@ -15,6 +15,7 @@ The reachability configuration of TreeKEM (not in MLS*, which states its securit
 satisfying the trace invariant): the actions that the attacker can trigger.
 
 - The network: the attacker sends any message it knows (`Network`).
+- The attacker samples randomness (`DY.Random`).
 - The honest participants: they create their signature key (`mkSignatureKey`) and initialize their states
   (`initializeAsCache`, `initializeKeyPackageStore`, `initializeProposalCache`, `initializeUpdateCache`,
   `initializePskStore`), verify credentials (`MLS.TreeSync.verifyCredential`), and run the traceful functions of TreeKEM
@@ -89,6 +90,7 @@ end
 
 #combine into ReachabilityConfig from
   Network,
+  DY.Random,
   mkSignatureKey,
   initializeAsCache,
   initializeKeyPackageStore,
