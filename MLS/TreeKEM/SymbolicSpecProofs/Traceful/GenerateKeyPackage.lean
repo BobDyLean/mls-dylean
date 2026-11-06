@@ -62,10 +62,7 @@ theorem generateLeafNode'.proof (me: Participant) (leafNodeSkeleton: LeafNode By
       grind [IsSignatureKeyVk, IsNodePkForLeafPk, mkMlsBytes_eq_success, tkt.mfLeafContent.wf_eq]
     step
     grind [credentialToPrincipal_principalToCredential]
-  · apply HoareTriple.mk
-    intro tr _ _
-    simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 omit [HasTreeKEMProofTrace] [HasTreesyncTreekemLinkInvariants] in
 /--
@@ -150,7 +147,6 @@ theorem generateKeyPackage.proof (me: Participant) (keyPackageSkeletonTs: Nat) (
       exact (pred_serializeNE_iff _ _ _).2 ‹_›
     step
     trivial
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 end MLS.TreeKEM

@@ -82,10 +82,7 @@ theorem generateUpdateLeafNode'.proof (me: Participant) (leafNodeSkeleton: LeafN
       grind [IsSignatureKeyVk, IsNodePkForLeafPk, mkMlsBytes_eq_success, tkt.mfLeafContent.wf_eq]
     step
     grind [credentialToPrincipal_principalToCredential]
-  · apply HoareTriple.mk
-    intro tr _ _
-    simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 /--
 Port of `_generate_update_proposal_proof`.
@@ -135,7 +132,6 @@ theorem generateUpdateProposal.proof (me: Participant) (updateCacheSid: Nat) (gr
       exact (pred_serializeNE_iff _ _ _).2 ‹_›
     step
     trivial
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 end MLS.TreeKEM

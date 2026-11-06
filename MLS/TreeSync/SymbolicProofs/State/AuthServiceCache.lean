@@ -116,8 +116,7 @@ theorem verifyCredential.proof
       have := principalToCredential_wf tr _ _ hcred
       grind [IsSignatureKeyVk]
     trivial
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 end Proofs
 

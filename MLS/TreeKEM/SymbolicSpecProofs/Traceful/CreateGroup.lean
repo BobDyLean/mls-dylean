@@ -116,7 +116,6 @@ theorem createGroup.proof (me: Participant) (mySignatureKeySid: Nat) (authServic
       exact wf_of_parse _ _ _ _ ‹_› ‹_›
     step
     trivial
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 end MLS.TreeKEM

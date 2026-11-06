@@ -221,10 +221,7 @@ theorem processWelcomeTreekem'.proof {groupId: MlsBytes Bytes} (me: Participant)
   unfold processWelcomeTreekem'
   split
   rotate_left
-  · apply HoareTriple.mk
-    intro tr _ _
-    simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
   rename_i myLeafIndex hfind
   step_intro
   step_intro
@@ -355,12 +352,10 @@ theorem processWelcome.proof (me: Participant) (keyPackageStoreSid authServiceSi
   step
   split
   rotate_left
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
   split
   rotate_left
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
   step by
     exact ⟨wf_invariant_of_publishable _ _ _ (wf_of_parse _ _ _ _ ‹_› ‹welcomeBytes.Publishable tr›),
       wf_of_parse _ _ _ _ ‹_› ‹ratchetTreeBytes.Publishable tr›⟩

@@ -340,8 +340,7 @@ theorem getTreesyncTreekemState.proof (me: Participant) (sid: Nat):
       treekemPrivInvariant, treesyncTreekemStateRel, TreeSyncPublicStatePred, TreeSyncState.TreeValid,
       treesyncToTreekem_invariant, TreekemKeyscheduleStateAuthWeakExists.of_keysAreAuthenticated,
       KeyIsAuthenticatedByConfirmationTag.inj]
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 end Proofs
 

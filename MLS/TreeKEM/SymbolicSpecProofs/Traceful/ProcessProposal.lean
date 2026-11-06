@@ -38,7 +38,6 @@ theorem processProposal.proof (me: Participant) (proposalCacheSid: Nat) (proposa
   · step by
       exact wf_of_parse _ _ _ _ ‹_› ‹_›
     trivial
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 end MLS.TreeKEM

@@ -540,9 +540,7 @@ theorem processGroupContextExtensionsProposal'.proof (me: Participant) (st: Tree
     simp only [Proposal.mf.wf_eq, GroupContextExtensions.mf.wf_eq, TreesyncTreekemStateInvariant,
       TreesyncTreekemStateInvariantAux, GroupContext.mf.wf_eq] at *
     grind
-  · intro tr _ _
-    simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 /-- Port of `_process_add_proposal_aux_proof`. -/
 @[instance]
@@ -621,10 +619,7 @@ theorem processAddProposalAux'.proof (me: Participant) (authServiceSid: Nat)
     · exact TreeSync.API.finalizeAdd_valid addPend token treesync addIndex hfin hpend ‹_› hasp
     · exact IHaveVerifiedEveryLeafNode_finalizeAdd _ _ addPend token treesync addIndex hfin hverif ‹_›
     · exact MLS.TreeKEM.Symbolic.API.Tree.add_proof tr me _ _ hpriv
-  · apply HoareTriple.mk
-    intro tr _ _
-    simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 /-- Port of `_process_add_proposal_proof`. -/
 @[instance]
@@ -744,10 +739,7 @@ theorem processUpdateProposal'.proof (me: Participant) (authServiceSid updateCac
       · first
         | exact MLS.TreeKEM.Symbolic.API.Tree.updateMyself_proof tr me _ _ _ ‹_› hpriv
         | exact MLS.TreeKEM.Symbolic.API.Tree.updateOther_proof tr me _ _ senderIndex (by grind) (by grind) hpriv
-  · apply HoareTriple.mk
-    intro tr _ _
-    simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 public
 instance (st: TreeSyncTreeKEMState) (proposal: Proposal Bytes):
@@ -804,9 +796,7 @@ theorem processRemoveProposal'.proof (me: Participant) (st: TreeSyncTreeKEMState
     · exact TreeSync.API.finalizeRemove_valid removePend hpend hasp
     · exact IHaveVerifiedEveryLeafNode_finalizeRemove _ _ removePend hpend.1 hverif
     · exact MLS.TreeKEM.Symbolic.API.Tree.remove_proof tr me _ _ (by grind) (by grind) hpriv
-  · intro tr _ _
-    simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 /-- The ghost of the fold over the group context extensions in `_process_proposals_proof`. -/
 abbrev processGroupContextExtensionsLoop (me: Participant) (st0: TreeSyncTreeKEMState) (l: List (Proposal Bytes)):
@@ -1022,8 +1012,7 @@ theorem processUpdatePath'.proof (me: Participant) (authServiceSid: Nat)
   step_intro
   split
   rotate_left
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
   rename_i hl
   step_intro
   step
@@ -1250,18 +1239,12 @@ theorem processCommit'.proof (me: Participant) (authServiceSid proposalCacheSid 
   step_intro
   split
   rotate_left
-  · apply HoareTriple.mk
-    intro tr _ _
-    simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
   rename_i commit hcontent
   dsimp -proj -iota only
   split
   rotate_left
-  · apply HoareTriple.mk
-    intro tr _ _
-    simp only [WP.wp, Traceful.run_bind, Traceful.run_failure]
-    exists tr
+  · step
   step
   step
   step by
@@ -1335,8 +1318,7 @@ theorem processCommit.proof (me: Participant) (authServiceSid proposalCacheSid u
   step
   split
   rotate_left
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
   step
   step by
     exact ⟨wf_of_parse _ _ _ _ ‹_› ‹_›, ‹_›⟩

@@ -234,8 +234,7 @@ theorem getNodeKeys.proof {l: Nat} (me: Participant) (sid: Nat):
   · step
     simp only [LocalStateInv.invariant] at *
     grind
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 /-- Port of `get_leaf_node_key_proof`. -/
 @[instance]

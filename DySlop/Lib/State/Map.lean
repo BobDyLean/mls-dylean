@@ -328,8 +328,7 @@ theorem findValue.proof (prin: Participant) (handle: Nat) (key: K):
     have := mem_of_findValueAux key _ _ ‹_›
     simp only [LocalStateInv.invariant] at *
     grind [MapPred.Invariant]
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 end Proofs
 

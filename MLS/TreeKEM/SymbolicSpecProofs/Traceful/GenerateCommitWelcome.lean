@@ -304,8 +304,7 @@ theorem generateUpdatePathPath'.proof (me: Participant) (st: TreeSyncTreeKEMStat
     refine ⟨‹_›, ‹_›, API.prepareCreateCommit_valid _ _ _ _ ‹API.prepareCreateCommit _ _ = _›,
       pathsyncExternalPathsyncPathSecretsRel_lemma _ _ _ ‹externalPathsyncPathSecretsRel externalPath _› ‹_›,
       ‹_›, ‹_›⟩
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 /-- A verified key package has the source `key_package` and a principal (from the event predicate of its verification). -/
 theorem IHaveVerifiedKeyPackage.facts (tr: ProofTrace) (me: Participant) (kp: KeyPackage Bytes tkt)
@@ -423,10 +422,7 @@ theorem generateUpdatePathTree'.proof (me: Participant) (authServiceSid: Nat) (s
   unfold generateUpdatePathTree'
   split
   rotate_left
-  · apply HoareTriple.mk
-    intro tr _ _
-    simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
   rename_i hl
   step
   step_intro
@@ -557,8 +553,7 @@ theorem generateUpdatePath'.proof (me: Participant) (authServiceSid updateCacheS
   rename_i st joiners pskIds _ _ _
   split
   rotate_left
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
   rename_i hli
   step
   split
@@ -631,8 +626,7 @@ theorem generateNoUpdatePath'.proof (me: Participant) (authServiceSid updateCach
   rename_i st joiners pskIds _ canAddOnly _
   split
   rotate_left
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
   rename_i hli
   dsimp only at *
   step
@@ -841,10 +835,7 @@ theorem createCommit'.proof (me: Participant) (authServiceSid proposalCacheSid u
   step_intro
   split
   rotate_left
-  · apply HoareTriple.mk
-    intro tr _ _
-    simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
   rename_i commitSkeleton hcontent
   step_intro
   step by
@@ -954,8 +945,7 @@ theorem createCommitAndWelcome.proof (me: Participant) (authServiceSid proposalC
   step
   split
   rotate_left
-  · simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
   step
   step by
     exact ⟨wf_of_parse _ _ _ _ ‹_› ‹_›, ‹_›⟩

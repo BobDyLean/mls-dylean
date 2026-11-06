@@ -31,10 +31,7 @@ theorem extractResult.proof {α: Type} (x: Result α):
   split
   · step
     grind
-  · apply HoareTriple.mk
-    intro tr _ _
-    simp only [WP.wp, Traceful.run_failure]
-    exists tr
+  · step
 
 /--
 Hoare triple of DyLean's `getTimestamp`, giving its result: the length of the trace.
