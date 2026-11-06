@@ -50,7 +50,7 @@ end KeyPackageManagerValue
 /-- Port of `ps_key_package_manager_value`. -/
 public
 def KeyPackageManagerValue.mf: NonExtensibleMessageFormat Bytes KeyPackageManagerValue :=
-  .isomorphic .slowNat KeyPackageManagerValue.f KeyPackageManagerValue.g
+  .isomorphic .unboundedNat KeyPackageManagerValue.f KeyPackageManagerValue.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_key_package_manager_value_is_well_formed`. -/

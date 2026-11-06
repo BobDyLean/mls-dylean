@@ -50,7 +50,7 @@ end BootstrapInitKeyState
 /-- Port of `ps_bootstrap_init_key_state`. -/
 public
 def BootstrapInitKeyState.mf: NonExtensibleMessageFormat Bytes BootstrapInitKeyState :=
-  .isomorphic (.prod .slowBytes .slowBytes) BootstrapInitKeyState.f BootstrapInitKeyState.g
+  .isomorphic (.prod .unboundedBytes .unboundedBytes) BootstrapInitKeyState.f BootstrapInitKeyState.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_bootstrap_init_key_state_is_well_formed`. -/

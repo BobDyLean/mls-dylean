@@ -98,7 +98,7 @@ end InitKeyUsageT
 /-- Port of `ps_init_key_usage_t`. -/
 public
 def InitKeyUsageT.mf: NonExtensibleMessageFormat Bytes InitKeyUsageT :=
-  .isomorphic (.prod .slowString .slowBytes) InitKeyUsageT.f InitKeyUsageT.g
+  .isomorphic (.prod .unboundedString .unboundedBytes) InitKeyUsageT.f InitKeyUsageT.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_init_key_usage_t_is_well_formed`. -/

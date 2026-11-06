@@ -48,7 +48,7 @@ end ProposalCacheKey
 /-- Port of `ps_proposal_cache_key`. -/
 public
 def ProposalCacheKey.mf: NonExtensibleMessageFormat Bytes ProposalCacheKey :=
-  .isomorphic .slowBytes ProposalCacheKey.f ProposalCacheKey.g
+  .isomorphic .unboundedBytes ProposalCacheKey.f ProposalCacheKey.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_proposal_cache_key_is_well_formed`. -/
@@ -85,7 +85,7 @@ end ProposalAndSender
 /-- Port of `ps_proposal_and_sender`. -/
 public
 def ProposalAndSender.mf: NonExtensibleMessageFormat Bytes ProposalAndSender :=
-  .isomorphic (.prod Proposal.mf .slowNat) ProposalAndSender.f ProposalAndSender.g
+  .isomorphic (.prod Proposal.mf .unboundedNat) ProposalAndSender.f ProposalAndSender.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_proposal_and_sender_is_well_formed`. -/
@@ -95,7 +95,7 @@ theorem ProposalAndSender.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred p
   ProposalAndSender.mf.wf pred x = Proposal.mf.wf pred x.proposal
 := by
   simp only [ProposalAndSender.mf, NonExtensibleMessageFormat.isomorphic.wf_eq, ProposalAndSender.g,
-    NonExtensibleMessageFormat.prod.wf_eq, NonExtensibleMessageFormat.slowNat.wf_eq, and_true]
+    NonExtensibleMessageFormat.prod.wf_eq, NonExtensibleMessageFormat.unboundedNat.wf_eq, and_true]
 
 /-- Port of `proposal_cache_types`. -/
 public

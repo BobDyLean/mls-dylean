@@ -8,7 +8,7 @@ Port of `MLS.TreeKEM.Parsers`.
 
 Port-specific differences:
 - `ps_hpke_private_key` is not ported: HPKE private keys are plain `Bytes` (their length is not in their type),
-  serialized with `slowBytes`.
+  serialized with `unboundedBytes`.
 - The formats of trees and paths are `abbrev`s, so that the well-formedness lemmas of `Tree.mf` and `Path.mf` apply to them.
 -/
 
@@ -39,7 +39,7 @@ end TreeKEMLeaf
 /-- Port of `ps_treekem_leaf`. -/
 public
 def TreeKEMLeaf.mf: NonExtensibleMessageFormat Bytes (TreeKEMLeaf Bytes) :=
-  .isomorphic .slowBytes TreeKEMLeaf.f TreeKEMLeaf.g
+  .isomorphic .unboundedBytes TreeKEMLeaf.f TreeKEMLeaf.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
@@ -69,7 +69,7 @@ end TreeKEMNode
 /-- Port of `ps_treekem_node`. -/
 public
 def TreeKEMNode.mf: NonExtensibleMessageFormat Bytes (TreeKEMNode Bytes) :=
-  .isomorphic (.prod .slowBytes (.slowList .slowNat)) TreeKEMNode.f TreeKEMNode.g
+  .isomorphic (.prod .unboundedBytes (.unboundedList .unboundedNat)) TreeKEMNode.f TreeKEMNode.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
@@ -87,7 +87,7 @@ abbrev TreeKEM.mf (l: Nat): NonExtensibleMessageFormat Bytes (TreeKEM Bytes l) :
 /-- Port of `ps_treekem_priv`. -/
 public
 abbrev TreeKEMPriv.mf (l: Nat): NonExtensibleMessageFormat Bytes (TreeKEMPriv Bytes l) :=
-  Path.mf .slowBytes (MlsOption.mf .slowBytes) l
+  Path.mf .unboundedBytes (MlsOption.mf .unboundedBytes) l
 
 /-- The format of `pathkem` (MLS*'s `ps_path ps_treekem_leaf (ps_option ps_update_path_node_nt)`). -/
 public

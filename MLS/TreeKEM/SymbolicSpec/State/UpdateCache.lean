@@ -85,7 +85,7 @@ end UpdateCacheValue
 /-- Port of `ps_update_cache_value`. -/
 public
 def UpdateCacheValue.mf: NonExtensibleMessageFormat Bytes UpdateCacheValue :=
-  .isomorphic .slowNat UpdateCacheValue.f UpdateCacheValue.g
+  .isomorphic .unboundedNat UpdateCacheValue.f UpdateCacheValue.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_update_cache_value_is_well_formed`. -/

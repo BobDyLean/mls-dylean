@@ -73,7 +73,7 @@ variable [HasHpkeBytes]
 
 public
 instance LabeledExpandInfo.ps: ParseableSerializeable LabeledExpandInfo := .make <|
-  .triviallyIsomorphic (.prod .uint16 (.prod .slowString .bytes))
+  .triviallyIsomorphic (.prod .uint16 (.prod .unboundedString .bytes))
     (fun ⟨len, label, info⟩ => { len, label, info })
     (fun { len, label, info } => ⟨len, label, info⟩)
 

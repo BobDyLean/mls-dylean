@@ -138,7 +138,7 @@ end OnePskState
 /-- Port of `ps_one_psk_state`. -/
 public
 def OnePskState.mf: NonExtensibleMessageFormat Bytes OnePskState :=
-  .isomorphic (.prod PreSharedKeyIdShort.mf .slowBytes) OnePskState.f OnePskState.g
+  .isomorphic (.prod PreSharedKeyIdShort.mf .unboundedBytes) OnePskState.f OnePskState.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_one_psk_state_is_well_formed`. -/
@@ -148,7 +148,7 @@ theorem OnePskState.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (
   OnePskState.mf.wf pred x = (PreSharedKeyIdShort.mf.wf pred x.pskId ∧ pred x.psk)
 := by
   simp only [OnePskState.mf, NonExtensibleMessageFormat.isomorphic.wf_eq, OnePskState.g,
-    NonExtensibleMessageFormat.prod.wf_eq, NonExtensibleMessageFormat.slowBytes.wf_eq]
+    NonExtensibleMessageFormat.prod.wf_eq, NonExtensibleMessageFormat.unboundedBytes.wf_eq]
 
 /-- Port of `local_state_one_psk_state` (for its format). -/
 public

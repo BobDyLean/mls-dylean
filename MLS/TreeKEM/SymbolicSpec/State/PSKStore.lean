@@ -87,7 +87,7 @@ end PskStoreValue
 /-- Port of `ps_psk_store_value`. -/
 public
 def PskStoreValue.mf: NonExtensibleMessageFormat Bytes PskStoreValue :=
-  .isomorphic .slowNat PskStoreValue.f PskStoreValue.g
+  .isomorphic .unboundedNat PskStoreValue.f PskStoreValue.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_psk_store_value_is_well_formed`. -/

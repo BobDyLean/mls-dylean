@@ -50,7 +50,7 @@ end TreeSyncSignatureKeyState
 /-- Port of `ps_treesync_signature_key_state`. -/
 public
 def TreeSyncSignatureKeyState.mf: NonExtensibleMessageFormat Bytes TreeSyncSignatureKeyState :=
-  .isomorphic .slowBytes TreeSyncSignatureKeyState.f TreeSyncSignatureKeyState.g
+  .isomorphic .unboundedBytes TreeSyncSignatureKeyState.f TreeSyncSignatureKeyState.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_treesync_signature_key_state_is_well_formed`. -/

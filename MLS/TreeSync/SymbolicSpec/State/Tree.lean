@@ -66,7 +66,7 @@ end TreeSyncPublicState
 public
 def TreeSyncPublicState.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (TreeSyncPublicState tkt) :=
   .isomorphic
-    (.prod MlsBytes.mf (.sigma .slowNat (fun levels => .prod (TreeSync.mf tkt levels) (ASTokens.mf DyAsToken.mf levels))))
+    (.prod MlsBytes.mf (.sigma .unboundedNat (fun levels => .prod (TreeSync.mf tkt levels) (ASTokens.mf DyAsToken.mf levels))))
     TreeSyncPublicState.f TreeSyncPublicState.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 

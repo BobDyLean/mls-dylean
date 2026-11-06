@@ -9,7 +9,7 @@ Port of `MLS.Symbolic.Parsers`: message formats for trees and paths.
 Port-specific differences:
 - `ps_tree_index` and `ps_leaf_index` are not ported: tree and leaf indices are plain `Nat`s.
 - Trees carry their position (MLS*'s index `i`, in the type): `BareTree.mf` is the port of `ps_tree`,
-  and `Tree.mf` serializes the position (with `slowNat`, as MLS*'s `ps_tree_index`) before the bare tree.
+  and `Tree.mf` serializes the position (with `unboundedNat`, as MLS*'s `ps_tree_index`) before the bare tree.
 - Paths are indexed by neither the tree index nor the leaf index: `Path.mf` only takes the height.
 -/
 
@@ -139,7 +139,7 @@ public
 def Tree.mf (mfLeaf: NonExtensibleMessageFormat Bytes Leaf) (mfNode: NonExtensibleMessageFormat Bytes Node) (l: Nat):
   NonExtensibleMessageFormat Bytes (Tree Leaf Node l)
 :=
-  .isomorphic (.prod .slowNat (BareTree.mf mfLeaf mfNode l)) Tree.f Tree.g
+  .isomorphic (.prod .unboundedNat (BareTree.mf mfLeaf mfNode l)) Tree.f Tree.g
 
 namespace Tree.mf
 

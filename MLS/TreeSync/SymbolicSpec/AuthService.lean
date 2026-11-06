@@ -41,7 +41,7 @@ variable {Bytes: Type} [BytesLike Bytes]
 /-- Port of `ps_dy_as_token`. -/
 public
 def DyAsToken.mf: NonExtensibleMessageFormat Bytes DyAsToken :=
-  .isomorphic .slowNat DyAsToken.f DyAsToken.g
+  .isomorphic .unboundedNat DyAsToken.f DyAsToken.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_dy_as_token_is_well_formed`. -/

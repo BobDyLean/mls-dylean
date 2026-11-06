@@ -20,7 +20,7 @@ and the proof that the node keys of a tree verified by a principal have the expe
 
 Port-specific differences:
 - `one_path_secret_usage` contains the tree, whose position is MLS*'s `i`.
-  The list of path secret usages is serialized with `slowList` (MLS* uses Comparse's `ps_whole_list`).
+  The list of path secret usages is serialized with `unboundedList` (MLS* uses Comparse's `ps_whole_list`).
 - The trace entries are the bundles `HasTreeSyncExecTrace tkt` and `HasTreeKEMExecTrace`.
 - `get_node_content` returns the empty bytestring on blank nodes (MLS* requires `node_not_blank t`).
 - `is_root_node_pk` drops the length of the public key, only needed for MLS*'s refinement `hpke_public_key`.
@@ -80,7 +80,7 @@ end OnePathSecretUsage
 /-- Port of `ps_one_path_secret_usage`. -/
 public
 def OnePathSecretUsage.mf: NonExtensibleMessageFormat Bytes OnePathSecretUsage :=
-  .isomorphic (.prod (.sigma .slowNat (TreeSync.mf tkt)) (.prod MlsBytes.mf .slowNat)) OnePathSecretUsage.f OnePathSecretUsage.g
+  .isomorphic (.prod (.sigma .unboundedNat (TreeSync.mf tkt)) (.prod MlsBytes.mf .unboundedNat)) OnePathSecretUsage.f OnePathSecretUsage.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 @[simp]
@@ -97,7 +97,7 @@ abbrev PathSecretUsage := List OnePathSecretUsage
 /-- Port of `parseable_serializeable_path_secret_usage`. -/
 public
 def PathSecretUsage.mf: NonExtensibleMessageFormat Bytes PathSecretUsage :=
-  .slowList OnePathSecretUsage.mf
+  .unboundedList OnePathSecretUsage.mf
 
 public
 instance: PathSecretUsage.mf.IsNonAmbiguous := by

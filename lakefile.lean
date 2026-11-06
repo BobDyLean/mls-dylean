@@ -3,7 +3,7 @@ open Lake DSL
 
 package mls
 
-require dylean from git "https://github.com/BobDyLean/dylean" @ "v4.36.0-rc1"
+require dylean from git "https://github.com/BobDyLean/dylean" @ "main"
 
 /-! ## OpenSSL bindings (`OpenSSL/`) -/
 

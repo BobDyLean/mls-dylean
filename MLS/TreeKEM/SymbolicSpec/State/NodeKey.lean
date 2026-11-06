@@ -52,7 +52,7 @@ end TreeKEMNodeKeysState
 /-- Port of `ps_treekem_node_keys_state`. -/
 public
 def TreeKEMNodeKeysState.mf: NonExtensibleMessageFormat Bytes TreeKEMNodeKeysState :=
-  .isomorphic (.sigma .slowNat TreeKEMPriv.mf) TreeKEMNodeKeysState.f TreeKEMNodeKeysState.g
+  .isomorphic (.sigma .unboundedNat TreeKEMPriv.mf) TreeKEMNodeKeysState.f TreeKEMNodeKeysState.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_treekem_node_keys_state_is_well_formed`. -/

@@ -89,7 +89,7 @@ end GroupManagerValue
 /-- Port of `ps_group_manager_value`. -/
 public
 def GroupManagerValue.mf: NonExtensibleMessageFormat Bytes GroupManagerValue :=
-  .isomorphic (.prod .slowNat .slowNat) GroupManagerValue.f GroupManagerValue.g
+  .isomorphic (.prod .unboundedNat .unboundedNat) GroupManagerValue.f GroupManagerValue.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_group_manager_value_is_well_formed`. -/

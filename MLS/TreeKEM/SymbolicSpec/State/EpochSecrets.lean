@@ -118,7 +118,7 @@ end TreeKEMEpochSecret
 /-- Port of `ps_treekem_epoch_secret`. -/
 public
 def TreeKEMEpochSecret.mf: NonExtensibleMessageFormat Bytes TreeKEMEpochSecret :=
-  .isomorphic (.prod EpochSecretType.mf (.prod GroupContext.mf (.prod .slowBytes .slowBytes)))
+  .isomorphic (.prod EpochSecretType.mf (.prod GroupContext.mf (.prod .unboundedBytes .unboundedBytes)))
     TreeKEMEpochSecret.f TreeKEMEpochSecret.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
@@ -129,7 +129,7 @@ theorem TreeKEMEpochSecret.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred 
   TreeKEMEpochSecret.mf.wf pred x = (GroupContext.mf.wf pred x.context ∧ pred x.confirmationTag ∧ pred x.secret)
 := by
   simp only [TreeKEMEpochSecret.mf, NonExtensibleMessageFormat.isomorphic.wf_eq, TreeKEMEpochSecret.g,
-    NonExtensibleMessageFormat.prod.wf_eq, EpochSecretType.mf.wf_eq, NonExtensibleMessageFormat.slowBytes.wf_eq, true_and]
+    NonExtensibleMessageFormat.prod.wf_eq, EpochSecretType.mf.wf_eq, NonExtensibleMessageFormat.unboundedBytes.wf_eq, true_and]
 
 /-- Port of `local_state_treekem_epoch_secret` (for its format). -/
 public

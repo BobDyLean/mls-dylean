@@ -53,7 +53,7 @@ end KeyPackageStoreKey
 /-- Port of `ps_key_package_store_key`. -/
 public
 def KeyPackageStoreKey.mf: NonExtensibleMessageFormat Bytes KeyPackageStoreKey :=
-  .isomorphic .slowBytes KeyPackageStoreKey.f KeyPackageStoreKey.g
+  .isomorphic .unboundedBytes KeyPackageStoreKey.f KeyPackageStoreKey.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_key_package_store_key_is_well_formed`. -/
@@ -92,7 +92,7 @@ end KeyPackageStoreValuePre
 /-- Port of `ps_key_package_store_value_pre`. -/
 public
 def KeyPackageStoreValuePre.mf: NonExtensibleMessageFormat Bytes KeyPackageStoreValuePre :=
-  .isomorphic (.prod (KeyPackage.mf TreeKEM.tkt) (.prod .slowNat (.prod .slowNat .slowNat)))
+  .isomorphic (.prod (KeyPackage.mf TreeKEM.tkt) (.prod .unboundedNat (.prod .unboundedNat .unboundedNat)))
     KeyPackageStoreValuePre.f KeyPackageStoreValuePre.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
@@ -167,7 +167,7 @@ end KeyPackageStorePre
 /-- Port of `ps_key_package_store_pre`. -/
 public
 def KeyPackageStorePre.mf: NonExtensibleMessageFormat Bytes KeyPackageStorePre :=
-  .isomorphic (.slowList KeyPackageStoreElemPre.mf) KeyPackageStorePre.f KeyPackageStorePre.g
+  .isomorphic (.unboundedList KeyPackageStoreElemPre.mf) KeyPackageStorePre.f KeyPackageStorePre.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
 /-- Port of `ps_key_package_store_pre_is_well_formed`. -/

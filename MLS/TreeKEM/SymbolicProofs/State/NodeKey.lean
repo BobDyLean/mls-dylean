@@ -153,11 +153,11 @@ theorem TreekemPrivStatePred_knowable {l: Nat} (tr: ProofTrace) (prin: Participa
 := by
   induction p with
   | leaf leafSk =>
-    simp [TreekemPrivStatePred, NonExtensibleMessageFormat.slowBytes.wf_eq, Path.getPathLeaf]
+    simp [TreekemPrivStatePred, NonExtensibleMessageFormat.unboundedBytes.wf_eq, Path.getPathLeaf]
     grind [IsNodeSkForLeafPk, Bytes.KnowableBy]
   | node optNodeSk pNext ih =>
     cases optNodeSk <;>
-      simp_all [TreekemPrivStatePred, MlsOption.mf.wf_eq, NonExtensibleMessageFormat.slowBytes.wf_eq, Path.getPathLeaf] <;>
+      simp_all [TreekemPrivStatePred, MlsOption.mf.wf_eq, NonExtensibleMessageFormat.unboundedBytes.wf_eq, Path.getPathLeaf] <;>
       grind [IsNodeSkForLeafPk, Bytes.KnowableBy]
 
 /-- Port of `treekem_node_keys_state_pred`: the invariant of node keys states. -/

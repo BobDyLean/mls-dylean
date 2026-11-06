@@ -78,7 +78,7 @@ variable [HasHpkeBytes]
 
 public
 instance InternalUsage.ps: ParseableSerializeableNE InternalUsage := .make <|
-  .triviallyIsomorphic (.prod .slowString .slowBytes)
+  .triviallyIsomorphic (.prod .unboundedString .unboundedBytes)
     (fun ⟨usageTag, usageData⟩ => { usageTag, usageData })
     (fun { usageTag, usageData } => ⟨usageTag, usageData⟩)
 
@@ -246,7 +246,7 @@ theorem LabeledExpandInfo.pred_serialize
   intro h
   rw [IsWellFormed_FormatRel pre _ x tr (serialize_FormatRel x), IsWellFormed]
   show (Comparse.ExtensibleMessageFormat.triviallyIsomorphic
-    (.prod .uint16 (.prod .slowString .bytes)) _ _ _ _: Comparse.ExtensibleMessageFormat Bytes LabeledExpandInfo).wf (pre · tr) x
+    (.prod .uint16 (.prod .unboundedString .bytes)) _ _ _ _: Comparse.ExtensibleMessageFormat Bytes LabeledExpandInfo).wf (pre · tr) x
   simpa using h
 
 /-- The usage of the AEAD key. -/

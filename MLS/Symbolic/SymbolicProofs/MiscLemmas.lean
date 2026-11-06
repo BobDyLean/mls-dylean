@@ -74,7 +74,7 @@ theorem literalToBytes_ne_kdfExtract (lit: ByteArray) (salt ikm: Bytes):
   DY.Literal.literalToBytes lit ≠ DySlop.KdfExtract.kdfExtract salt ikm
 := by
   intro heq
-  have := congrArg (fun b: Bytes => b.usage Trace.nil) heq
+  have := congrArg (fun b: Bytes => b.usage Trace.empty) heq
   simp [DY.Literal.literalToBytes, Bytes.usage.eq, DY.Literal.Literal.invariants, DySlop.KdfExtract.extractedKeyUsage,
     Usage.nothing, Usage.kdfExpandKey] at this
 

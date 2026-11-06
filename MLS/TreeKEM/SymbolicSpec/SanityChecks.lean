@@ -351,7 +351,7 @@ def scenario: Traceful Unit := do
   guard daveFailed
   checkGroup 3 [(alice, 0), (bob, 1), (charlie, 2)]
 
-#guard (scenario.run Trace.nil).fst = some ()
+#guard (scenario.run Trace.empty).fst = some ()
 
 /--
 A longer honest run, not checked yet (see the module docstring):
@@ -452,6 +452,6 @@ def fullScenario: Traceful Unit := do
   checkGroup 6 [(bob, 1), (charlie, 2)]
 
 -- Too slow for now (see the module docstring).
--- #guard (fullScenario.run Trace.nil).fst = some ()
+-- #guard (fullScenario.run Trace.empty).fst = some ()
 
 end MLS.TreeKEM.SanityChecks

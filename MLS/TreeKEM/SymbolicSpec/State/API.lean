@@ -79,9 +79,9 @@ end BareTreeKEMState
 public
 def BareTreeKEMState.mf: NonExtensibleMessageFormat Bytes BareTreeKEMState :=
   .isomorphic
-    (.sigma .slowNat (fun levels =>
-      .prod (TreeKEM.mf levels) (.prod .slowNat (.prod .slowNat (.prod .slowNat (.prod .slowNat (.prod .slowNat
-        (.prod .slowNat (.prod .slowNat (.prod .slowBytes .slowNat))))))))))
+    (.sigma .unboundedNat (fun levels =>
+      .prod (TreeKEM.mf levels) (.prod .unboundedNat (.prod .unboundedNat (.prod .unboundedNat (.prod .unboundedNat (.prod .unboundedNat
+        (.prod .unboundedNat (.prod .unboundedNat (.prod .unboundedBytes .unboundedNat))))))))))
     BareTreeKEMState.f BareTreeKEMState.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
@@ -93,7 +93,7 @@ theorem BareTreeKEMState.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pr
 := by
   simp only [BareTreeKEMState.mf, NonExtensibleMessageFormat.isomorphic.wf_eq, BareTreeKEMState.g,
     NonExtensibleMessageFormat.sigma.wf_eq, NonExtensibleMessageFormat.prod.wf_eq,
-    NonExtensibleMessageFormat.slowNat.wf_eq, NonExtensibleMessageFormat.slowBytes.wf_eq, true_and, and_true]
+    NonExtensibleMessageFormat.unboundedNat.wf_eq, NonExtensibleMessageFormat.unboundedBytes.wf_eq, true_and, and_true]
 
 /-- Port of `bare_treesync_treekem_state`. -/
 public
@@ -131,7 +131,7 @@ end BareTreeSyncTreeKEMState
 public
 def BareTreeSyncTreeKEMState.mf: NonExtensibleMessageFormat Bytes BareTreeSyncTreeKEMState :=
   .isomorphic
-    (.prod .slowNat (.prod GroupContext.mf (.prod .slowNat (.prod (TreeSyncPublicState.mf tkt) BareTreeKEMState.mf))))
+    (.prod .unboundedNat (.prod GroupContext.mf (.prod .unboundedNat (.prod (TreeSyncPublicState.mf tkt) BareTreeKEMState.mf))))
     BareTreeSyncTreeKEMState.f BareTreeSyncTreeKEMState.g
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
 
@@ -145,7 +145,7 @@ theorem BareTreeSyncTreeKEMState.mf.wf_eq (pred: Bytes → Prop) [BytesCompatibl
   )
 := by
   simp only [BareTreeSyncTreeKEMState.mf, NonExtensibleMessageFormat.isomorphic.wf_eq, BareTreeSyncTreeKEMState.g,
-    NonExtensibleMessageFormat.prod.wf_eq, NonExtensibleMessageFormat.slowNat.wf_eq, true_and]
+    NonExtensibleMessageFormat.prod.wf_eq, NonExtensibleMessageFormat.unboundedNat.wf_eq, true_and]
 
 /-- Port of `local_state_treesync_treekem_state` (for its format). -/
 public

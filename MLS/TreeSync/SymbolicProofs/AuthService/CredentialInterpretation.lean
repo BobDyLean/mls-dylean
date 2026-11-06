@@ -52,8 +52,8 @@ theorem principalToCredential_wf (tr: ProofTrace) (p: Participant) (cred: Creden
   have := (mkMlsBytes_eq_success _ _ _ _).1 hid
   subst h
   simp only [Credential.mf.wf_eq, ← this]
-  exact (pred_serializeNE_iff NonExtensibleMessageFormat.slowString (Bytes.Publishable · tr) p).2
-    (NonExtensibleMessageFormat.slowString.wf_eq _ p)
+  exact (pred_serializeNE_iff NonExtensibleMessageFormat.unboundedString (Bytes.Publishable · tr) p).2
+    (NonExtensibleMessageFormat.unboundedString.wf_eq _ p)
 
 end Symbolic
 

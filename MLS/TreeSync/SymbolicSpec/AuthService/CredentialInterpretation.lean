@@ -8,7 +8,7 @@ Port of `MLS.TreeSync.Symbolic.AuthService.CredentialInterpretation`:
 how principals are encoded in (basic) credentials.
 
 Port-specific differences:
-- Principals are DyLean's `Participant`s, serialized as strings (`slowString`, as DyLean's local states),
+- Principals are DyLean's `Participant`s, serialized as strings (`unboundedString`, as DyLean's local states),
   instead of DY*'s `ps_principal`.
 - The lemmas (`principal_to_credential_to_principal`, `is_publishable_principal_to_credential`)
   are in `MLS.TreeSync.SymbolicProofs.AuthService.CredentialInterpretation`.
@@ -26,13 +26,13 @@ variable {Bytes: Type} [BytesLike Bytes]
 public
 def credentialToPrincipal (cred: Credential Bytes): Option Participant :=
   match cred with
-  | .basic identity => (NonExtensibleMessageFormat.slowString (Bytes := Bytes)).toExtensible.parse identity.val
+  | .basic identity => (NonExtensibleMessageFormat.unboundedString (Bytes := Bytes)).toExtensible.parse identity.val
   | _ => none
 
 /-- Port of `principal_to_credential`. -/
 public
 def principalToCredential (p: Participant): Option (Credential Bytes) :=
-  let pBytes: Bytes := NonExtensibleMessageFormat.slowString.toExtensible.serialize p
+  let pBytes: Bytes := NonExtensibleMessageFormat.unboundedString.toExtensible.serialize p
   match mkMlsBytes pBytes "principal_to_credential" "p_bytes" with
   | .success identity => some (.basic identity)
   | _ => none
