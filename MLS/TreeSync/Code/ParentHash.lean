@@ -29,12 +29,10 @@ namespace ParentHashInput
 
 variable {Bytes: Type} [BytesLike Bytes] {tkt: TreeKEMTypes Bytes}
 
-@[expose]
 public
 def f: tkt.NodeContent × MlsBytes Bytes × MlsBytes Bytes → ParentHashInput Bytes tkt :=
   fun (content, parentHash, originalSiblingTreeHash) => { content, parentHash, originalSiblingTreeHash }
 
-@[expose]
 public
 def g: ParentHashInput Bytes tkt → tkt.NodeContent × MlsBytes Bytes × MlsBytes Bytes :=
   fun { content, parentHash, originalSiblingTreeHash } => (content, parentHash, originalSiblingTreeHash)
@@ -46,7 +44,6 @@ instance: RightInverse (g (tkt := tkt)) f := ⟨by intro _; rfl⟩
 
 end ParentHashInput
 
-@[expose]
 public
 def ParentHashInput.mf {Bytes: Type} [BytesLike Bytes] (tkt: TreeKEMTypes Bytes):
   NonExtensibleMessageFormat Bytes (ParentHashInput Bytes tkt)
@@ -72,7 +69,6 @@ Compute the parent hash to store in the child of a node, given:
 - the parent hash stored in the node,
 - the original sibling.
 -/
-@[expose]
 public
 def computeParentHash {l: Nat}
   (content: tkt.NodeContent) (parentHash: Bytes) (originalSibling: TreeSync Bytes tkt l)

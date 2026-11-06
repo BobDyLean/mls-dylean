@@ -33,7 +33,6 @@ section UpdatePath
 variable {Bytes: Type} [BytesLike Bytes]
 
 /-- Port of `uncompress_update_path_aux`. -/
-@[expose]
 public
 def uncompressUpdatePathAux {Leaf Node: Type} {l: Nat} (li: Nat) (t: Tree (Option Leaf) (Option Node) l)
   (leafNodeAndNodes: LeafNode Bytes TreeKEM.tkt × List (TreeKEM.UpdatePathNode Bytes))
@@ -60,7 +59,6 @@ def uncompressUpdatePathAux {Leaf Node: Type} {l: Nat} (li: Nat) (t: Tree (Optio
 termination_by l
 
 /-- Port of `uncompress_update_path`. -/
-@[expose]
 public
 def uncompressUpdatePath {Leaf Node: Type} {l: Nat} (li: Nat) (t: Tree (Option Leaf) (Option Node) l)
   (updatePath: TreeKEM.UpdatePath Bytes)
@@ -69,7 +67,6 @@ def uncompressUpdatePath {Leaf Node: Type} {l: Nat} (li: Nat) (t: Tree (Option L
   uncompressUpdatePathAux li t (updatePath.leafNode, updatePath.nodes.val)
 
 /-- Port of `update_path_to_treesync`. -/
-@[expose]
 public
 def updatePathToTreesync: {l: Nat} → SparseUpdatePath Bytes l → PathSync Bytes TreeKEM.tkt l
   | _, .leaf ln => .leaf ln
@@ -79,13 +76,11 @@ def updatePathToTreesync: {l: Nat} → SparseUpdatePath Bytes l → PathSync Byt
     .node pathData pathNext
 
 /-- Port of `leaf_node_to_treekem`. -/
-@[expose]
 public
 def leafNodeToTreekem (ln: LeafNode Bytes TreeKEM.tkt): TreeKEM.TreeKEMLeaf Bytes :=
   { publicKey := ln.data.content.val }
 
 /-- Port of `update_path_to_treekem`. -/
-@[expose]
 public
 def updatePathToTreekem {l: Nat} (p: SparseUpdatePath Bytes l): TreeKEM.PathKEM Bytes l :=
   p.setPathLeaf (leafNodeToTreekem p.getPathLeaf)
@@ -93,7 +88,6 @@ def updatePathToTreekem {l: Nat} (p: SparseUpdatePath Bytes l): TreeKEM.PathKEM 
 /-! ## MLS* to UpdatePath -/
 
 /-- Port of `compress_update_path_aux`. -/
-@[expose]
 public
 def compressUpdatePathAux: {l: Nat} → SparseUpdatePath Bytes l → LeafNode Bytes TreeKEM.tkt × List (TreeKEM.UpdatePathNode Bytes)
   | _, .leaf ln => (ln, [])
@@ -104,7 +98,6 @@ def compressUpdatePathAux: {l: Nat} → SparseUpdatePath Bytes l → LeafNode By
     | some pData => (ln, nodes ++ [pData])
 
 /-- Port of `compress_update_path`. -/
-@[expose]
 public
 def compressUpdatePath {l: Nat} (p: SparseUpdatePath Bytes l): Result (TreeKEM.UpdatePath Bytes) := do
   let (leafNode, nodes) := compressUpdatePathAux p
@@ -112,7 +105,6 @@ def compressUpdatePath {l: Nat} (p: SparseUpdatePath Bytes l): Result (TreeKEM.U
   pure { leafNode, nodes }
 
 /-- Port of `mls_star_paths_to_update_path`. -/
-@[expose]
 public
 def mlsStarPathsToUpdatePath {l: Nat} (psync: PathSync Bytes TreeKEM.tkt l) (pkem: TreeKEM.PathKEM Bytes l): SparseUpdatePath Bytes l :=
   pkem.setPathLeaf psync.getPathLeaf
@@ -124,7 +116,6 @@ variable {Bytes: Type} [BytesLike Bytes] {tkt: TreeKEMTypes Bytes}
 /-! ## ratchet_tree extension (13.4.3.3) -/
 
 /-- Port of `TreeMath.Internal.log2`: the largest `k` such that `2^k ≤ x`. -/
-@[expose]
 public
 def log2 (x: Nat): Nat := Nat.log2 x
 
@@ -133,7 +124,6 @@ Port of `ratchet_tree_l`.
 Pad the list of nodes with blank nodes, so that its length is `2^(l+1) - 1`.
 Returns the padded list, together with `l`.
 -/
-@[expose]
 public
 def ratchetTreeL (nodes: List (Option (Node Bytes tkt))):
   Result ((l: Nat) × {newNodes: List (Option (Node Bytes tkt)) // newNodes.length = 2^(l+1) - 1})
@@ -157,7 +147,6 @@ def ratchetTreeL (nodes: List (Option (Node Bytes tkt))):
 Port of `ratchet_tree_to_treesync_aux`.
 MLS* requires `List.length nodes = pow2 (l+1) - 1`; otherwise, this function fails.
 -/
-@[expose]
 public
 def ratchetTreeToTreesyncAux: (l: Nat) → (position: Nat) → (nodes: List (Option (Node Bytes tkt))) →
   Result (TreeSync Bytes tkt l)
@@ -179,7 +168,6 @@ def ratchetTreeToTreesyncAux: (l: Nat) → (position: Nat) → (nodes: List (Opt
     | [] => Result.internalFailure "ratchet_tree_to_treesync_aux: wrong length"
 
 /-- Port of `ratchet_tree_to_treesync`. -/
-@[expose]
 public
 def ratchetTreeToTreesync (nodes: RatchetTree Bytes tkt): Result ((l: Nat) × TreeSync Bytes tkt l) := do
   let ⟨l, ⟨newNodes, _⟩⟩ ← ratchetTreeL nodes.val
@@ -187,7 +175,6 @@ def ratchetTreeToTreesync (nodes: RatchetTree Bytes tkt): Result ((l: Nat) × Tr
   pure ⟨l, res⟩
 
 /-- Port of `treesync_to_ratchet_tree_aux`. -/
-@[expose]
 public
 def treesyncToRatchetTreeAux {l: Nat} (t: TreeSync Bytes tkt l): Result (List (Option (Node Bytes tkt))) :=
   match t.intoLeftRightView with
@@ -200,7 +187,6 @@ def treesyncToRatchetTreeAux {l: Nat} (t: TreeSync Bytes tkt l): Result (List (O
     pure (leftRatchet ++ [parentNode] ++ rightRatchet)
 
 /-- Port of `shrink_ratchet_tree_aux`. -/
-@[expose]
 public
 def shrinkRatchetTreeAux: List (Option (Node Bytes tkt)) → Option (List (Option (Node Bytes tkt)))
   | [] => none
@@ -211,7 +197,6 @@ def shrinkRatchetTreeAux: List (Option (Node Bytes tkt)) → Option (List (Optio
     | _, some shrinkedT => some (optH :: shrinkedT)
 
 /-- Port of `shrink_ratchet_tree`. -/
-@[expose]
 public
 def shrinkRatchetTree (l: List (Option (Node Bytes tkt))): Result (RatchetTree Bytes tkt) :=
   match shrinkRatchetTreeAux l with
@@ -219,7 +204,6 @@ def shrinkRatchetTree (l: List (Option (Node Bytes tkt))): Result (RatchetTree B
   | some res => mkMlsList res "shrink_ratchet_tree" "ratchet_tree"
 
 /-- Port of `treesync_to_ratchet_tree`. -/
-@[expose]
 public
 def treesyncToRatchetTree {l: Nat} (t: TreeSync Bytes tkt l): Result (RatchetTree Bytes tkt) := do
   let preRatchetTree ← treesyncToRatchetTreeAux t

@@ -4,6 +4,7 @@ public import MLS.TreeKEM.Code.PSK
 public import MLS.Common.SymbolicProofs.Crypto.Derived.ExpandWithLabel
 public import DySlop.Lib.Label
 public import MLS.Symbolic.SymbolicProofs.MiscLemmas
+import all MLS.TreeKEM.Code.PSK
 
 /-!
 Port of `MLS.TreeKEM.Symbolic.PSK`: the labels of pre-shared keys, and the proofs of the computation of the PSK secret.
@@ -33,7 +34,6 @@ section Invariants
 variable [HasSymbolicBytes] [ExecTraceTypes]
 
 /-- Port of `expand_usage_extractedkey_derivedpsk`. -/
-@[expose]
 public
 def expandUsageExtractedkeyDerivedpsk: ExpandWithLabelUsage.Local ["derived psk"] :=
   .single (.secret (Usage.kdfExpandKey "MLS.DerivedPSK" BytesLike.empty))
@@ -157,7 +157,6 @@ grind_pattern PsksBytesInvariant_later => tr1 ≤ tr2, PsksBytesInvariant tr1 ps
 grind_pattern [grind_later] PsksBytesInvariant_later => tr1 ≤ tr2, PsksBytesInvariant tr1 psks
 
 /-- Port of `psks_label`. -/
-@[expose]
 public
 def psksLabel (tr: ProofTrace) (l: List (PreSharedKeyId Bytes × Bytes)): Label :=
   (l.map (·.2.label tr)).foldr Label.meet Label.pub

@@ -142,7 +142,6 @@ structure ConcreteCiphersuite where
   kdfHash: Hash.Algorithm
 
 /-- Port of `concrete_ciphersuite_to_hpke_ciphersuite`. -/
-@[expose]
 public
 def concreteCiphersuiteToHpkeCiphersuite (cs: ConcreteCiphersuite): HPKE.Ciphersuite :=
   { kem := cs.kem, kdf := .ofHash cs.kdfHash, aead := .ofAlgorithm cs.aead }
@@ -161,7 +160,6 @@ Port of `signature_functions`.
 Generalization of `ed25519_signature_functions` to all the signature algorithms.
 Signing is deterministic (ECDSA uses RFC 6979 nonces), hence ignores its entropy.
 -/
-@[expose]
 public
 def signatureFunctions (a: Signature.Algorithm): SignatureFunctions where
   signGenKeypairMinEntropyLength := a.secretKeyLength
@@ -185,7 +183,6 @@ def signatureFunctions (a: Signature.Algorithm): SignatureFunctions where
     Signature.verify a pk msg signature
 
 /-- Port of `available_ciphersuite_to_concrete_ciphersuite`. -/
-@[expose]
 public
 def availableCiphersuiteToConcreteCiphersuite: AvailableCiphersuite → ConcreteCiphersuite × SignatureFunctions
   | .mls_128_dhkemx25519_aes128gcm_sha256_ed25519 =>

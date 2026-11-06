@@ -2,6 +2,7 @@ module
 
 public import MLS.Bootstrap.Code.KeyPackageRef
 public import MLS.Common.SymbolicProofs.Crypto.Derived.RefHash
+import all MLS.Bootstrap.Code.KeyPackageRef
 
 /-!
 Port of `MLS.Bootstrap.Symbolic.KeyPackageRef`.

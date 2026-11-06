@@ -25,7 +25,6 @@ namespace DY
 section Strings
 
 /-- `s` without its prefix `p`, if `s` starts with `p`. -/
-@[expose]
 public
 def stripPrefix? (p s: String): Option String :=
   let rest := String.ofList (s.toList.drop p.length)
@@ -66,7 +65,6 @@ def Usage.sigKey (tag: String) (data: Bytes): Usage where
   data := some data
 
 /-- Port of `SigNonce`. -/
-@[expose]
 public
 def Usage.sigNonce: Usage where
   type := "SigNonce"
@@ -74,7 +72,6 @@ def Usage.sigNonce: Usage where
   data := none
 
 /-- Port of `PkeKey`. -/
-@[expose]
 public
 def Usage.pkeKey (tag: String) (data: Bytes): Usage where
   type := "PkeKey"
@@ -82,7 +79,6 @@ def Usage.pkeKey (tag: String) (data: Bytes): Usage where
   data := some data
 
 /-- Port of `PkeNonce`. -/
-@[expose]
 public
 def Usage.pkeNonce: Usage where
   type := "PkeNonce"
@@ -98,7 +94,6 @@ def Usage.aeadKey (tag: String) (data: Bytes): Usage where
   data := some data
 
 /-- Port of `DhKey`. -/
-@[expose]
 public
 def Usage.dhKey (tag: String) (data: Bytes): Usage where
   type := "DhKey"
@@ -134,7 +129,6 @@ def Usage.kemNonce (usg: Usage): Usage :=
   { usg with type := "KemNonce/" ++ usg.type }
 
 /-- Inverse of `Usage.kemNonce` (DY*'s `match usg with KemNonce usg -> Some usg | _ -> None`). -/
-@[expose]
 public
 def Usage.kemNonce? (usg: Usage): Option Usage :=
   (stripPrefix? "KemNonce/" usg.type).map ({ usg with type := · })
@@ -244,7 +238,6 @@ theorem Bytes.XXXHasUsage_public
   split <;> grind [Bytes.HasUsage]
 
 /-- Port of `is_secret`. -/
-@[expose]
 public
 def Bytes.IsSecret [BytesInvariants] (l: Label) (b: Bytes) (tr: ProofTrace): Prop :=
   b.Invariant tr ∧

@@ -426,7 +426,6 @@ theorem DySlop.Signature.extractSignkey.preserves_WellFormed
   grind [DySlop.Signature.vk_extractSignkey, DySlop.Signature.vk.WellFormed]
 
 /-- Port of `has_signkey_usage`. -/
-@[expose]
 public
 def DY.Bytes.SignkeyHasUsage
   [BytesInvariants]
@@ -475,7 +474,6 @@ theorem DY.Bytes.SignkeyHasUsage_later_fast
 grind_pattern [grind_later] DY.Bytes.SignkeyHasUsage_later_fast => tr1 ≤ tr2, b.SignkeyHasUsage usg tr1
 
 /-- Port of `get_signkey_label`. -/
-@[expose]
 public
 noncomputable
 def DY.Bytes.signkeyLabel
@@ -623,7 +621,6 @@ variable [BytesInvariants]
   Port of `is_verification_key`.
   DY* requires `SigKey? usg`.
 -/
-@[expose]
 public
 def IsVerificationKey (usg: Usage) (l: Label) (b: Bytes) (tr: ProofTrace): Prop :=
   b.Publishable tr ∧
@@ -634,7 +631,6 @@ def IsVerificationKey (usg: Usage) (l: Label) (b: Bytes) (tr: ProofTrace): Prop 
   Port of `is_signature_key`.
   DY* requires `SigKey? usg`.
 -/
-@[expose]
 public
 def IsSignatureKey (usg: Usage) (l: Label) (b: Bytes) (tr: ProofTrace): Prop :=
   b.IsSecret l tr ∧

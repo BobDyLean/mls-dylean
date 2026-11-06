@@ -15,7 +15,6 @@ open MLS
 variable {Bytes: Type} [CryptoBytes Bytes]
 
 /-- Port of `compute_key_package_ref`. -/
-@[expose]
 public
 def computeKeyPackageRef (kp: KeyPackage Bytes TreeKEM.tkt): Result (KeyPackageRef Bytes) := do
   let kpBytes := serializeNE (KeyPackage.mf TreeKEM.tkt) kp

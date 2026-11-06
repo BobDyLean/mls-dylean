@@ -7,6 +7,8 @@ public import MLS.TreeSync.SymbolicProofs.API.IsWellFormedInvariant
 public import MLS.TreeKEM.SymbolicProofs.API.Tree
 import all MLS.TreeKEM.SymbolicSpec.Traceful.CreateGroup
 import all MLS.TreeKEM.SymbolicSpec.EpochEvent
+import all MLS.TreeKEM.Code.API
+import all MLS.TreeSync.Code.API
 import DY.Meta.Step
 
 /-!
@@ -75,7 +77,7 @@ theorem createGroup'.proof (me: Participant) (mySignatureKeySid: Nat) (authServi
   have hleaf: IAmInTreeAt me treesync.tree 0 := by
     have := API.leafAtNat_finalizeCreate pendingCreate token 0
     simp only [API.leafAtNat] at this
-    grind [IAmInTreeAt, API.finalizeCreate, treeCreate, Tree.containsLeafIndex]
+    grind [IAmInTreeAt, Tree.containsLeafIndex]
   have hcreate := ‹API.create leafSk leafPk epochSecret groupContext = _›
   simp only [API.create, Result.bind_eq_success, Result.pure_eq_success, Prod.mk.injEq] at hcreate
   obtain ⟨⟨ks, encSecret⟩, hks, rfl, rfl⟩ := hcreate
@@ -85,8 +87,7 @@ theorem createGroup'.proof (me: Participant) (mySignatureKeySid: Nat) (authServi
     simp only [iAmInGroupPred]
     refine ⟨hth, IHaveVerifiedEveryLeafNode_finalizeCreate _ _ _ _ ‹_›, rfl, rfl, ?_, hksGood.1, ?_⟩
     · exact hleaf
-    · rw [← ‹epochSecret.label tr = Label.secret›]
-      exact hksGood.2.1
+    · grind
   step
   subst x
   have hgc := ‹GroupContext.mf.wf (Bytes.Publishable · tr) groupContext›

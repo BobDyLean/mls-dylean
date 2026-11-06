@@ -2,6 +2,7 @@ module
 
 public import MLS.Symbolic.Code.Symbolic
 public import MLS.Common.Proofs.Crypto.Derived
+import all MLS.Common.Code.Crypto.Derived
 
 /-!
 Port of `MLS.Crypto.Derived.Symbolic.RefHash`: the references computed by `refHash` are as secret as their input.

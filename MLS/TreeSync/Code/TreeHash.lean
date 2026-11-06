@@ -33,12 +33,10 @@ namespace LeafNodeTreeHashInput
 
 variable {tkt: TreeKEMTypes Bytes}
 
-@[expose]
 public
 def f: UInt32 × Option (LeafNode Bytes tkt) → LeafNodeTreeHashInput Bytes tkt :=
   fun (leafIndex, leafNode) => { leafIndex, leafNode }
 
-@[expose]
 public
 def g: LeafNodeTreeHashInput Bytes tkt → UInt32 × Option (LeafNode Bytes tkt) :=
   fun { leafIndex, leafNode } => (leafIndex, leafNode)
@@ -50,7 +48,6 @@ instance: RightInverse (g (tkt := tkt)) f := ⟨by intro _; rfl⟩
 
 end LeafNodeTreeHashInput
 
-@[expose]
 public
 def LeafNodeTreeHashInput.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (LeafNodeTreeHashInput Bytes tkt) :=
   .isomorphic (.prod .uint32BE (MlsOption.mf (LeafNode.mf tkt))) LeafNodeTreeHashInput.f LeafNodeTreeHashInput.g
@@ -80,12 +77,10 @@ namespace ParentNodeTreeHashInput
 
 variable {tkt: TreeKEMTypes Bytes}
 
-@[expose]
 public
 def f: Option (ParentNode Bytes tkt) × MlsBytes Bytes × MlsBytes Bytes → ParentNodeTreeHashInput Bytes tkt :=
   fun (parentNode, leftHash, rightHash) => { parentNode, leftHash, rightHash }
 
-@[expose]
 public
 def g: ParentNodeTreeHashInput Bytes tkt → Option (ParentNode Bytes tkt) × MlsBytes Bytes × MlsBytes Bytes :=
   fun { parentNode, leftHash, rightHash } => (parentNode, leftHash, rightHash)
@@ -97,7 +92,6 @@ instance: RightInverse (g (tkt := tkt)) f := ⟨by intro _; rfl⟩
 
 end ParentNodeTreeHashInput
 
-@[expose]
 public
 def ParentNodeTreeHashInput.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (ParentNodeTreeHashInput Bytes tkt) :=
   .isomorphic (.prod (MlsOption.mf (ParentNode.mf tkt)) (.prod MlsBytes.mf MlsBytes.mf))
@@ -155,13 +149,11 @@ instance: ∀ t, (internalType.mf tkt t).HasUniqueRepresentation
     dsimp only [internalType.mf, internalType]
     infer_instance
 
-@[expose]
 public
 def f: (t: NodeType) × internalType Bytes tkt t → TreeHashInput Bytes tkt
   | ⟨.leaf, x⟩ => .leaf x
   | ⟨.parent, x⟩ => .parent x
 
-@[expose]
 public
 def g: TreeHashInput Bytes tkt → (t: NodeType) × internalType Bytes tkt t
   | .leaf x => ⟨.leaf, x⟩
@@ -174,7 +166,6 @@ instance: RightInverse (g (tkt := tkt)) f := ⟨by intro x; cases x <;> rfl⟩
 
 end TreeHashInput
 
-@[expose]
 public
 def TreeHashInput.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (TreeHashInput Bytes tkt) :=
   .isomorphic (.sigma NodeType.mf (TreeHashInput.internalType.mf tkt)) TreeHashInput.f TreeHashInput.g
@@ -201,7 +192,6 @@ variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes}
 Port of `tree_hash`.
 Compute the tree hash of a tree.
 -/
-@[expose]
 public
 def treeHash {l: Nat} (t: TreeSync Bytes tkt l): Result Bytes :=
   match t.intoLeftRightView with

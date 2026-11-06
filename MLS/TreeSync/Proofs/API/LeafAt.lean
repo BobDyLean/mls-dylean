@@ -2,6 +2,9 @@ module
 
 public import MLS.TreeSync.Proofs.API
 public import MLS.TreeSync.Proofs.Operations
+import all MLS.Common.Code.TreeCommon
+import all MLS.TreeSync.Code.Operations
+import all MLS.TreeSync.Code.API
 
 /-!
 Port of `MLS.TreeSync.API.LeafAt`: how the `finalize_*` functions of the TreeSync API change the leaves of the tree.
@@ -40,7 +43,6 @@ variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes} {TokenT: Ty
 Port of `tree_add_only_rel`:
 the leaves of `t2` are those of `t1`, except for some blank leaves of `t1` filled with key packages.
 -/
-@[expose]
 public
 def treeAddOnlyRel {l1 l2: Nat} (t1: TreeSync Bytes tkt l1) (t2: TreeSync Bytes tkt l2): Prop :=
   ∀ li, leafAtNat t1 li = leafAtNat t2 li ∨
@@ -78,7 +80,7 @@ public
 theorem leafAtNat_finalizeWelcome {l: Nat} {t: TreeSync Bytes tkt l}
   (pend: PendingWelcome groupId t) (tokens: List (Option TokenT)) (li: Nat):
   leafAtNat (finalizeWelcome pend tokens).tree li = leafAtNat t li
-:=
+:= by
   rfl
 
 /-- Port of `leaf_at_finalize_add`. -/

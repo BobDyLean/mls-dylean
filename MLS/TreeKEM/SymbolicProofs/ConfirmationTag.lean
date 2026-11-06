@@ -4,6 +4,8 @@ public import MLS.TreeKEM.Code.API.KeySchedule
 public import MLS.TreeKEM.SymbolicProofs.PSK
 public import MLS.Common.SymbolicProofs.Crypto.Derived.ExpandWithLabel
 public import MLS.Symbolic.SymbolicProofs.MiscLemmas
+import all MLS.TreeKEM.Code.KeySchedule
+import all MLS.TreeKEM.Code.API.KeySchedule
 
 /-!
 Port of `MLS.TreeKEM.Symbolic.ConfirmationTag`: on symbolic bytes, the confirmation tag of a key schedule state
@@ -30,7 +32,6 @@ section CryptoBytes
 variable {Bytes: Type} [CryptoBytes Bytes]
 
 /-- Port of `compute_confirmation_tag_from_joiner_secret`. -/
-@[expose]
 public
 def computeConfirmationTagFromJoinerSecret (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes × Bytes))
   (groupContext: GroupContext Bytes): Result Bytes := do
@@ -39,7 +40,6 @@ def computeConfirmationTagFromJoinerSecret (joinerSecret: Bytes) (psks: List (Pr
   computeConfirmationTag confirmationKey groupContext.confirmedTranscriptHash.val
 
 /-- Port of `compute_confirmation_tag_from_epoch_secret`. -/
-@[expose]
 public
 def computeConfirmationTagFromEpochSecret (epochSecret: Bytes) (groupContext: GroupContext Bytes): Result Bytes := do
   let confirmationKey ← secretEpochToConfirmation epochSecret

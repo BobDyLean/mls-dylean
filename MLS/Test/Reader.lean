@@ -31,7 +31,6 @@ instance: FromJson UInt64 where
 
 /-! ## Crypto Basics -/
 
-@[expose]
 public
 def parseCryptoBasicsTest (json: Json): Except String CryptoBasicsTest := do
   let refHash ← json.getObjVal? "ref_hash"
@@ -86,7 +85,6 @@ def parseCryptoBasicsTest (json: Json): Except String CryptoBasicsTest := do
 
 /-! ## Tree Validation -/
 
-@[expose]
 public
 def parseTreeValidationTest (json: Json): Except String TreeValidationTest := do
   return {
@@ -99,7 +97,6 @@ def parseTreeValidationTest (json: Json): Except String TreeValidationTest := do
 
 /-! ## Tree Operations -/
 
-@[expose]
 public
 def parseTreeOperationsTest (json: Json): Except String TreeOperationsTest := do
   return {
@@ -111,7 +108,6 @@ def parseTreeOperationsTest (json: Json): Except String TreeOperationsTest := do
 
 /-! ## Secret Tree -/
 
-@[expose]
 public
 def parseSecretTreeLeaf (json: Json): Except String SecretTreeLeaf := do
   return {
@@ -122,7 +118,6 @@ def parseSecretTreeLeaf (json: Json): Except String SecretTreeLeaf := do
     applicationNonce := ← json.getObjValAs? String "application_nonce"
   }
 
-@[expose]
 public
 def parseSecretTreeTest (json: Json): Except String SecretTreeTest := do
   let senderData ← json.getObjVal? "sender_data"
@@ -140,7 +135,6 @@ def parseSecretTreeTest (json: Json): Except String SecretTreeTest := do
 
 /-! ## Message Protection -/
 
-@[expose]
 public
 def parseMessageProtectionTest (json: Json): Except String MessageProtectionTest := do
   let get (field: String): Except String String := json.getObjValAs? String field
@@ -167,7 +161,6 @@ def parseMessageProtectionTest (json: Json): Except String MessageProtectionTest
 
 /-! ## Key Schedule -/
 
-@[expose]
 public
 def parseKeyscheduleTestEpoch (json: Json): Except String (KeyscheduleTestEpochInput × KeyscheduleTestEpochOutput) := do
   let get (field: String): Except String String := json.getObjValAs? String field
@@ -197,7 +190,6 @@ def parseKeyscheduleTestEpoch (json: Json): Except String (KeyscheduleTestEpochI
     exportedSecret := ← exporter.getObjValAs? String "secret"
   })
 
-@[expose]
 public
 def parseKeyscheduleTest (json: Json): Except String KeyscheduleTest := do
   return {
@@ -209,7 +201,6 @@ def parseKeyscheduleTest (json: Json): Except String KeyscheduleTest := do
 
 /-! ## Pre-Shared Keys -/
 
-@[expose]
 public
 def parsePskTestPsk (json: Json): Except String PskTestPsk := do
   return {
@@ -218,7 +209,6 @@ def parsePskTestPsk (json: Json): Except String PskTestPsk := do
     pskNonce := ← json.getObjValAs? String "psk_nonce"
   }
 
-@[expose]
 public
 def parsePskTest (json: Json): Except String PskTest := do
   return {
@@ -229,7 +219,6 @@ def parsePskTest (json: Json): Except String PskTest := do
 
 /-! ## Transcript Hashes -/
 
-@[expose]
 public
 def parseTranscriptHashesTest (json: Json): Except String TranscriptHashesTest := do
   let get (field: String): Except String String := json.getObjValAs? String field
@@ -244,7 +233,6 @@ def parseTranscriptHashesTest (json: Json): Except String TranscriptHashesTest :
 
 /-! ## Welcome -/
 
-@[expose]
 public
 def parseWelcomeTest (json: Json): Except String WelcomeTest := do
   return {
@@ -257,7 +245,6 @@ def parseWelcomeTest (json: Json): Except String WelcomeTest := do
 
 /-! ## TreeKEM -/
 
-@[expose]
 public
 def parseTreeKEMLeafPathSecret (json: Json): Except String TreeKEMLeafPathSecret := do
   return {
@@ -265,7 +252,6 @@ def parseTreeKEMLeafPathSecret (json: Json): Except String TreeKEMLeafPathSecret
     pathSecret := ← json.getObjValAs? String "path_secret"
   }
 
-@[expose]
 public
 def parseTreeKEMLeafPrivate (json: Json): Except String TreeKEMLeafPrivate := do
   return {
@@ -275,7 +261,6 @@ def parseTreeKEMLeafPrivate (json: Json): Except String TreeKEMLeafPrivate := do
     pathSecrets := ← (← json.getObjValAs? (List Json) "path_secrets").mapM parseTreeKEMLeafPathSecret
   }
 
-@[expose]
 public
 def parseTreeKEMUpdatePath (json: Json): Except String TreeKEMUpdatePath := do
   return {
@@ -286,7 +271,6 @@ def parseTreeKEMUpdatePath (json: Json): Except String TreeKEMUpdatePath := do
     treeHashAfter := ← json.getObjValAs? String "tree_hash_after"
   }
 
-@[expose]
 public
 def parseTreeKEMTest (json: Json): Except String TreeKEMTest := do
   return {
@@ -301,7 +285,6 @@ def parseTreeKEMTest (json: Json): Except String TreeKEMTest := do
 
 /-! ## Messages -/
 
-@[expose]
 public
 def parseMessagesTest (json: Json): Except String MessagesTest := do
   let get (field: String): Except String String := json.getObjValAs? String field
@@ -327,7 +310,6 @@ def parseMessagesTest (json: Json): Except String MessagesTest := do
 
 /-! ## Final functions -/
 
-@[expose]
 public
 def getFilename: TestType → String
   | .cryptoBasics => "test_vectors/data/crypto-basics.json"
@@ -342,7 +324,6 @@ def getFilename: TestType → String
   | .treekem => "test_vectors/data/treekem.json"
   | .messages => "test_vectors/data/messages.json"
 
-@[expose]
 public
 def getTestsuite (testVectorsDir: System.FilePath) (typ: TestType): IO Testsuite := do
   let content ← IO.FS.readFile (testVectorsDir / getFilename typ)

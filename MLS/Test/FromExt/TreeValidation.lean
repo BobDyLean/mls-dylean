@@ -24,7 +24,6 @@ open MLS MLS.TreeSync MLS.TreeKEM
 open MLS.Test
 
 /-- Port of `compute_tree_hashes`. -/
-@[expose]
 public
 def computeTreeHashes [CryptoBytes ByteArray] {l: Nat} (t: TreeSync ByteArray tkt l): IO (List ByteArray) :=
   match t.intoLeftRightView with
@@ -38,13 +37,11 @@ def computeTreeHashes [CryptoBytes ByteArray] {l: Nat} (t: TreeSync ByteArray tk
 Port of `node_index_to_node_index`.
 The node index (in the array representation of the tree) of the subtree of height `l` starting at leaf `i`.
 -/
-@[expose]
 public
 def nodeIndexToNodeIndex (n: NodeIndex): Nat :=
   2 * n.position + 2^n.levels - 1
 
 /-- Port of `compute_resolutions`. -/
-@[expose]
 public
 def computeResolutions [BytesLike ByteArray] {l: Nat} (t: TreeSync ByteArray tkt l): List (List Nat) :=
   match t.intoLeftRightView with
@@ -53,7 +50,6 @@ def computeResolutions [BytesLike ByteArray] {l: Nat} (t: TreeSync ByteArray tkt
     computeResolutions left ++ [(resolution t).map nodeIndexToNodeIndex] ++ computeResolutions right
 
 /-- Port of `test_tree_validation_one`. -/
-@[expose]
 public
 def testTreeValidationOne (t: TreeValidationTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
@@ -87,7 +83,6 @@ def testTreeValidationOne (t: TreeValidationTest): IO Bool := do
     pure true
 
 /-- Port of `test_tree_validation`. -/
-@[expose]
 public
 def testTreeValidation: List TreeValidationTest → IO Nat :=
   testList "Tree Validation" testTreeValidationOne

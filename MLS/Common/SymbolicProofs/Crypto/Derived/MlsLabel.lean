@@ -19,7 +19,6 @@ open Comparse
 variable {Bytes: Type} [BytesLike Bytes] {α: Type}
 
 /-- Parse `buf` with `mf`, and strip the prefix `"MLS 1.0 "` from the label of the result. -/
-@[expose]
 public
 def parseWithMlsLabel (mf: NonExtensibleMessageFormat Bytes α) (label: α → MlsAsciiString (Bytes := Bytes)) (buf: Bytes)
   : Option (String × α)

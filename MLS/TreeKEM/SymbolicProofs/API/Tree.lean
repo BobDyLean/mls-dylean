@@ -4,6 +4,9 @@ public import MLS.TreeKEM.SymbolicProofs.Tree.Operations
 public import MLS.TreeSync.SymbolicProofs.AuthService
 public import MLS.TreeSync.SymbolicProofs.API
 import all MLS.TreeSync.SymbolicSpec.LeafNodeSignature
+import all MLS.TreeSync.Code.Operations
+import all MLS.TreeSync.Code.API
+import all MLS.TreeKEM.Code.API.Tree
 
 /-!
 Port of `MLS.TreeKEM.Symbolic.API.Tree` (except its traceful function, see `MLS.TreeKEM.SymbolicSpec.API.Tree`):
@@ -72,30 +75,9 @@ def ExtendedTreesyncInvariant {groupId: MlsBytes Bytes} (tr: ProofTrace) (me: Pa
 
 end ExtendedTreesyncInvariant
 
-/-! ## Private paths -/
-
-section Paths
-
-variable {Bytes: Type}
-
-theorem pathBlank_node {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (optSk: Option Bytes) (pNext: TreeKEMPriv Bytes l)
-  (blankLi: Nat):
-  pathBlank t li (.node optSk pNext) blankLi =
-    .node none (if (t.child li).containsLeafIndex blankLi then pathBlank (t.child li) li pNext blankLi else pNext)
-:= by
-  rw [pathBlank.eq_def]
-  grind
-
-end Paths
-
 section Proofs
 
 variable [HasSymbolicInvariants] [HasTreeKEMExecTrace]
-
-theorem TreekemPrivStatePred_node_none {l: Nat} (tr: ProofTrace) (me: Participant) (p: TreeKEMPriv Bytes l):
-  TreekemPrivStatePred tr me (.node none p) ↔ TreekemPrivStatePred tr me p
-:= by
-  simp [TreekemPrivStatePred]
 
 /-! ## Create -/
 
@@ -108,19 +90,6 @@ theorem create_proof (tr: ProofTrace) (me: Participant) (leafPrivateKey leafPubl
   h
 
 /-! ## Welcome -/
-
-/--
-Port of `create_empty_priv_proof`.
-MLS*'s implicit `i` and `li` (in the type of the path) are not needed.
--/
-theorem createEmptyPriv_proof (tr: ProofTrace) (me: Participant) (l: Nat) (leafPrivateKey: Bytes)
-  (h: IsNodeSkForLeafPk tr me (hpkePk leafPrivateKey) leafPrivateKey):
-  TreekemPrivStatePred tr me (createEmptyPriv leafPrivateKey: TreeKEMPriv Bytes l) ∧
-  (createEmptyPriv leafPrivateKey: TreeKEMPriv Bytes l).getPathLeaf = leafPrivateKey
-:= by
-  induction l with
-  | zero => exact ⟨h, rfl⟩
-  | succ l ih => simp [createEmptyPriv, TreekemPrivStatePred_node_none, Path.getPathLeaf, ih]
 
 /--
 Port of `welcome_proof`.
@@ -165,25 +134,9 @@ theorem add_proof (tr: ProofTrace) (me: Participant) {leafInd: Nat} (st: TreeKEM
   TreekemTreeStateInvariant tr me (add st lnK).1
 := by
   unfold add
-  split <;> simp_all [TreekemTreeStateInvariant, pathExtend, TreekemPrivStatePred_node_none]
+  split <;> simp_all [TreekemTreeStateInvariant, TreekemPrivStatePred_pathExtend]
 
 /-! ## Update -/
-
-/--
-Port of `path_blank_proof`.
-MLS* requires `blank_li: leaf_index l i` and `blank_li <> li`, which are not needed.
--/
-theorem pathBlank_proof (tr: ProofTrace) (me: Participant) {l: Nat} (t: TreeKEM Bytes l) (li: Nat)
-  (priv: TreeKEMPriv Bytes l) (blankLi: Nat)
-  (h: TreekemPrivStatePred tr me priv):
-  TreekemPrivStatePred tr me (pathBlank t li priv blankLi)
-:= by
-  induction priv with
-  | leaf => rw [pathBlank.eq_def]; grind
-  | node optSk pNext ih =>
-    rw [pathBlank_node, TreekemPrivStatePred_node_none]
-    simp only [TreekemPrivStatePred] at h
-    split <;> grind
 
 /-- Port of `update_myself_proof`. -/
 public
@@ -206,13 +159,6 @@ theorem updateOther_proof (tr: ProofTrace) (me: Participant) {leafInd: Nat} (st:
   pathBlank_proof tr me st.tree leafInd st.priv i h
 
 /-! ## Remove -/
-
-theorem TreekemPrivStatePred_pathTruncate (tr: ProofTrace) (me: Participant) {l: Nat} (p: TreeKEMPriv Bytes (l+1))
-  (h: TreekemPrivStatePred tr me p):
-  TreekemPrivStatePred tr me (pathTruncate p)
-:= by
-  cases p
-  exact h.1
 
 theorem truncateOne_proof (tr: ProofTrace) (me: Participant) {leafInd: Nat} (st: TreeKEMTreeState Bytes leafInd)
   (st': {res: TreeKEMTreeState Bytes leafInd // res.levels + 1 = st.levels})
@@ -307,10 +253,10 @@ theorem processCommit_proof {groupId: MlsBytes Bytes} {leafInd: Nat} (tr: ProofT
   refine ⟨hnewPriv, hcs.1, ?_⟩
   -- the path secret is decrypted at the least common ancestor of the committer and of `leafInd`
   have hlevel := getPathSecret_findLca_eq _ leafInd li priv pTk groupContext pathSecret level h2
-    (by simpa [Tree.containsLeafIndex, unAdd, unAddP_position] using hliTk)
-    (by simpa [Tree.containsLeafIndex, unAdd, unAddP_position] using hli)
+    (by simpa [Tree.containsLeafIndex] using hliTk)
+    (by simpa [Tree.containsLeafIndex] using hli)
   rw [findLca_eq_of_position_eq (unAdd (treesyncToTreekem tsTree) excludedLeaves)
-    (treeApplyPath (treesyncToTreekem tsTree) li pTk) _ _ (by simp [unAdd, unAddP_position, treeApplyPath_position])]
+    (treeApplyPath (treesyncToTreekem tsTree) li pTk) _ _ (by simp [treeApplyPath_position])]
     at hlevel
   subst hlevel
   -- the new trees are related, and their node keys are good
@@ -632,7 +578,6 @@ grind_pattern [grind_later] PrepareCreateCommitRandGood_later =>
 Port of `pending_commit_good`.
 MLS*'s conjunct `st_ts.levels == st_tk.levels` is the equality `h`, used to cast the path secrets.
 -/
-@[expose]
 public
 def PendingCommitGood {groupId: MlsBytes Bytes} {leafInd: Nat} (tr: ProofTrace) (me: Participant)
   (stTs: TreeSyncState Bytes tkt DyAsToken groupId) (stTk: TreeKEMTreeState Bytes leafInd) (tkPend: PendingCommit stTk): Prop :=
@@ -755,7 +700,7 @@ theorem createCommit_proof [HasTreesyncTreekemLinkInvariants] {groupId: MlsBytes
   have hli: tsTree.containsLeafIndex leafInd := by simpa [Tree.containsLeafIndex] using hliTk
   have hgood := proveAllTreeKeysGood tr me tsTree groupId hverif hok hph hvl hwf hinv
   have hpub := encryptPathSecrets_pub_proof me true tsTree _ leafInd tkPend.pathSecrets groupContext groupId
-    (excludedPre addedLeaves) randFinalize tr updatePath newPriv h2 rfl hp hgood hgc hrand
+    addedLeaves randFinalize tr updatePath newPriv h2 rfl hp hgood hgc hrand
   obtain ⟨hpriv, -⟩ := encryptPathSecrets_priv_proof me true tsTree _ leafInd tkPend.pathSecrets groupContext groupId
     randFinalize tr updatePath newPriv h2 hp
   have hlabel := nodeSkLabel_applyPath_eq tsTree newTree leafInd authPath me groupId hsrc hcred h1 hli

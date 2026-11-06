@@ -28,7 +28,6 @@ instance: LeftInverse TreeContext.generation TreeContext.mk := ⟨by intro _; rf
 public
 instance: RightInverse TreeContext.generation TreeContext.mk := ⟨by intro _; rfl⟩
 
-@[expose]
 public
 def TreeContext.mf {Bytes: Type} [BytesLike Bytes]: NonExtensibleMessageFormat Bytes TreeContext :=
   .isomorphic .uint32BE TreeContext.mk TreeContext.generation
@@ -42,7 +41,6 @@ theorem TreeContext.mf.wf_eq {Bytes: Type} [BytesLike Bytes] (pred: Bytes → Pr
   simp [TreeContext.mf]
 
 /-- Port of `derive_tree_secret`. -/
-@[expose]
 public
 def deriveTreeSecret (secret: Bytes) (label: String) (generation: Nat) (len: Nat): Result Bytes := do
   let generation ← mkUInt32 generation "derive_tree_secret" "generation"
@@ -54,7 +52,6 @@ Port of `leaf_kdf`.
 MLS* requires `leaf_index: leaf_index l i` (i.e. `i ≤ leafIndex < i + 2^l`);
 otherwise, the function follows the path to the leaf closest to `leafIndex`.
 -/
-@[expose]
 public
 def leafKdf (encryptionSecret: Bytes) (l i: Nat) (leafIndex: Nat): Result Bytes :=
   match l with
@@ -78,7 +75,6 @@ structure RatchetOutput (Bytes: Type) where
   key: Bytes
 
 /-- Port of `init_handshake_ratchet`. -/
-@[expose]
 public
 def initHandshakeRatchet (treeNodeSecret: Bytes): Result (RatchetState Bytes) := do
   let ratchetSecret ← expandWithLabel treeNodeSecret "handshake" (CryptoBytes.stringToBytes "") (CryptoBytes.kdfLength Bytes)
@@ -91,7 +87,6 @@ def initHandshakeRatchet (treeNodeSecret: Bytes): Result (RatchetState Bytes) :=
 Port of `init_application_ratchet`.
 TODO (as in MLS*): this is a copy-paste of init_handeshake_ratchet, factorize?
 -/
-@[expose]
 public
 def initApplicationRatchet (treeNodeSecret: Bytes): Result (RatchetState Bytes) := do
   let ratchetSecret ← expandWithLabel treeNodeSecret "application" (CryptoBytes.stringToBytes "") (CryptoBytes.kdfLength Bytes)
@@ -101,7 +96,6 @@ def initApplicationRatchet (treeNodeSecret: Bytes): Result (RatchetState Bytes) 
   }
 
 /-- Port of `ratchet_get_key`. -/
-@[expose]
 public
 def ratchetGetKey (st: RatchetState Bytes): Result (RatchetOutput Bytes) := do
   let nonce ← deriveTreeSecret st.secret "nonce" st.generation (CryptoBytes.aeadNonceLength Bytes)
@@ -112,7 +106,6 @@ def ratchetGetKey (st: RatchetState Bytes): Result (RatchetOutput Bytes) := do
   }
 
 /-- Port of `ratchet_next_state`. -/
-@[expose]
 public
 def ratchetNextState (st: RatchetState Bytes): Result (RatchetState Bytes) := do
   let newSecret ← deriveTreeSecret st.secret "secret" st.generation (CryptoBytes.kdfLength Bytes)
@@ -133,7 +126,6 @@ theorem ratchetNextState_generation (st st': RatchetState Bytes) (h: ratchetNext
 Port of `ratchet_get_generation_key`.
 MLS* requires `st.generation <= i`; otherwise, this function fails.
 -/
-@[expose]
 public
 def ratchetGetGenerationKey (st: RatchetState Bytes) (i: Nat): Result (RatchetOutput Bytes) :=
   if st.generation = i then

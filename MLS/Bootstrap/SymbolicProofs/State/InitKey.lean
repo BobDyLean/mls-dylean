@@ -62,7 +62,6 @@ theorem initKeyLabel_canFlow_pub (tr: ExecTrace) (prin: Participant) (initPk: By
   grind [initKeyLabel]
 
 /-- Port of `init_sk_to_init_key_label`. -/
-@[expose]
 public
 def initSkToInitKeyLabel (prin: Participant) (initSk: Bytes): Label :=
   initKeyLabel prin (hpkePk initSk)
@@ -81,12 +80,10 @@ structure InitKeyUsageT [BytesFunctor] where
 
 namespace InitKeyUsageT
 
-@[expose]
 public
 def f: Participant × Bytes → InitKeyUsageT :=
   fun (me, leafPublicKey) => { me, leafPublicKey }
 
-@[expose]
 public
 def g: InitKeyUsageT → Participant × Bytes :=
   fun { me, leafPublicKey } => (me, leafPublicKey)
@@ -99,7 +96,6 @@ instance: RightInverse g f := ⟨by intro _; rfl⟩
 end InitKeyUsageT
 
 /-- Port of `ps_init_key_usage_t`. -/
-@[expose]
 public
 def InitKeyUsageT.mf: NonExtensibleMessageFormat Bytes InitKeyUsageT :=
   .isomorphic (.prod .slowString .slowBytes) InitKeyUsageT.f InitKeyUsageT.g

@@ -2,6 +2,7 @@ module
 
 public import MLS.Common.Code.TreeCommon
 public import MLS.Common.Proofs.Tree
+import all MLS.Common.Code.TreeCommon
 
 /-!
 Port of `MLS.TreeCommon.Lemmas`.

@@ -3,6 +3,7 @@ module
 public import MLS.Common.SymbolicProofs.Crypto.Derived.MlsLabel
 public import MLS.Symbolic.Code.Symbolic
 public import DySlop.Lib.Crypto.Signature.Split
+import all MLS.Common.Code.Crypto.Derived
 
 /-!
 Port of `MLS.Crypto.Derived.Symbolic.SignWithLabel`: split predicate for SignWithLabel,
@@ -121,7 +122,7 @@ def SignWithLabelPred.splitParams: SplitFunction.Params where
   default _ := False
 
 /-- MLS*'s `apply_global_fun` of `split_signwithlabel_crypto_pred_params`. -/
-@[expose, reducible]
+@[reducible]
 public
 def SignWithLabelPred.applyGlobal (spred: SignPred) (x: SignWithLabelPred.splitParams.Input): Prop :=
   @SignPred.pred _ _ _ spred x.1.wf x.1.usage x.1.label x.2.1 x.2.2.1 x.2.2.2.1 x.2.2.2.2
@@ -155,7 +156,7 @@ theorem SignWithLabelPred.Local.pred_single
   Params.Locals.apply_single SignWithLabelPred.splitParams spred _ _
 
 /-- Port of `mk_mls_sign_pred` (and of `mk_global_mls_sign_pred`): the sign predicate defined by local SignWithLabel predicates. -/
-@[expose, instance_reducible]
+@[instance_reducible]
 public
 def SignWithLabelPred.ofLocal {labels: List String} (l: SignWithLabelPred.Local labels): SignPred where
   pred skUsg vk msg tr := Params.Locals.toFun SignWithLabelPred.splitParams l (⟨⟩, skUsg, vk, msg, tr)

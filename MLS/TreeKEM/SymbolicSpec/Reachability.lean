@@ -41,6 +41,7 @@ section Reachability
 variable [BaseAttackerKnowledge] [AttackerKnowledge]
 
 -- The reachability configurations are exposed, as in DyLean's examples:
+-- `#combine` compiles them into the `ReachabilityConfig` instance, and
 -- the proofs that reachable traces satisfy the invariant unfold them.
 @[expose] public section
 

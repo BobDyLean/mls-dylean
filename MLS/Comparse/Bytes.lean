@@ -16,7 +16,6 @@ open Comparse
 
 namespace ByteArray
 
-@[expose]
 public
 def splitAt (b : ByteArray) (i : Nat) : Option (ByteArray × ByteArray) :=
   if i ≤ b.size then some (b.extract 0 i, b.extract i b.size) else none

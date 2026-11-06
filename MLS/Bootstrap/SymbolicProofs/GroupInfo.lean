@@ -7,6 +7,7 @@ public import MLS.TreeSync.SymbolicProofs.LeafNodeSignature
 public import MLS.TreeSync.Proofs.Invariants.AuthService
 public import MLS.TreeSync.Proofs.TreeHash
 import all MLS.TreeKEM.SymbolicSpec.EpochEvent
+import all MLS.Bootstrap.Code.Welcome
 
 /-!
 Port of `MLS.Bootstrap.Symbolic.GroupInfo`: the signature predicate of group infos,
@@ -37,7 +38,6 @@ open MLS MLS.TreeSync MLS.TreeKEM
 /-! ## Signature invariant -/
 
 /-- Port of `group_info_label`. -/
-@[expose]
 public
 def groupInfoLabel: String := "GroupInfoTBS"
 
@@ -86,7 +86,6 @@ grind_pattern [grind_later] GroupInfoSignPredAux_le =>
   GroupInfoSignPredAux tr1 inviterId groupContext confirmationTag
 
 /-- The pred field of `group_info_sign_pred`. -/
-@[expose]
 public
 def GroupInfoTbsPred (skUsg: Usage) (groupInfoTbsBytes: Bytes) (tr: ProofTrace): Prop :=
   match GroupInfoTBS.mf.toExtensible.parse groupInfoTbsBytes with
@@ -97,7 +96,6 @@ def GroupInfoTbsPred (skUsg: Usage) (groupInfoTbsBytes: Bytes) (tr: ProofTrace):
       GroupInfoSignPredAux tr.erase inviterId groupInfoTbs.groupContext groupInfoTbs.confirmationTag.val
 
 /-- Port of `group_info_sign_pred` (with `group_info_tbs_tag_and_invariant`). -/
-@[expose]
 public
 def groupInfoSignPred: SignWithLabelPred.Local ["GroupInfoTBS"] :=
   .single { pred skUsg _vk groupInfoTbsBytes tr := GroupInfoTbsPred skUsg groupInfoTbsBytes tr }

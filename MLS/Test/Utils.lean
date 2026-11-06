@@ -21,7 +21,6 @@ namespace MLS.Test
 /-! ## Test harness -/
 
 /-- Port of `check_equal`. -/
-@[expose]
 public
 def checkEqual {a: Type} [BEq a] (name: String) (toStr: a → String) (x y: a): IO Unit :=
   if x != y then
@@ -30,13 +29,11 @@ def checkEqual {a: Type} [BEq a] (name: String) (toStr: a → String) (x y: a): 
     pure ()
 
 /-- Port of `add_exn_context`. -/
-@[expose]
 public
 def addExnContext {a: Type} (context: String) (f: Unit → IO a): IO a :=
   tryCatch (f ()) (fun ex => throw (IO.userError s!"{context}\n{ex}"))
 
 /-- Port of `test_list_aux`. -/
-@[expose]
 public
 def testListAux {a: Type} (testName: String) (test: a → IO Bool): Nat → List a → IO Nat
   | _, [] => pure 0
@@ -46,7 +43,6 @@ def testListAux {a: Type} (testName: String) (test: a → IO Bool): Nat → List
     pure ((if b then 1 else 0) + rest)
 
 /-- Port of `test_list`. -/
-@[expose]
 public
 def testList {a: Type} (testName: String) (test: a → IO Bool) (l: List a): IO Nat :=
   testListAux testName test 0 l
@@ -54,7 +50,6 @@ def testList {a: Type} (testName: String) (test: a → IO Bool) (l: List a): IO 
 /-! ## Results -/
 
 /-- Port of `extract_result`. -/
-@[expose]
 public
 def extractResult {α: Type} (x: MLS.Result α): IO α :=
   match x with
@@ -65,7 +60,6 @@ def extractResult {α: Type} (x: MLS.Result α): IO α :=
 /-! ## Ciphersuites -/
 
 /-- Port of `uint16_to_ciphersuite`. -/
-@[expose]
 public
 def uint16ToCiphersuite (x: UInt16): MLS.Result MLS.AvailableCiphersuite :=
   MLS.availableCiphersuiteFromNetwork (MLS.CipherSuite.ofUInt16 x)
@@ -77,20 +71,17 @@ structure RandState where
   internalState: Nat
 
 /-- Port of `init_rand_state`. -/
-@[expose]
 public
 def initRandState (seed: Nat): RandState :=
   { internalState := seed % 2^64 }
 
 /-- Port of `gen_rand_bits`. -/
-@[expose]
 public
 def genRandBits (st: RandState) (nBits: Nat): RandState × Nat :=
   let res := (6364136223846793005 * st.internalState + 1442695040888963407) % 2^64
   ({ internalState := res }, res / 2^(64 - nBits))
 
 /-- Port of `gen_rand_bytes`. -/
-@[expose]
 public
 def genRandBytes (rng: RandState): Nat → RandState × ByteArray
   | 0 => (rng, .empty)
@@ -100,7 +91,6 @@ def genRandBytes (rng: RandState): Nat → RandState × ByteArray
     (rng, ⟨#[head.toUInt8]⟩ ++ tail)
 
 /-- Port of `gen_rand_randomness`. -/
-@[expose]
 public
 def genRandRandomness (rng: RandState): (sizes: List Nat) → RandState × MLS.Randomness ByteArray
   | [] => (rng, MLS.mkEmptyRandomness ByteArray)
@@ -112,7 +102,6 @@ def genRandRandomness (rng: RandState): (sizes: List Nat) → RandState × MLS.R
 /-! ## Group context -/
 
 /-- Port of `gen_group_context`. -/
-@[expose]
 public
 def genGroupContext {Bytes: Type} [BytesLike Bytes] (cipherSuite: MLS.AvailableCiphersuite) (groupId: Bytes) (epoch: Nat)
   (treeHash: Bytes) (confirmedTranscriptHash: Bytes) : IO (MLS.GroupContext Bytes)
@@ -134,7 +123,6 @@ def genGroupContext {Bytes: Type} [BytesLike Bytes] (cipherSuite: MLS.AvailableC
 
 /-! ## Hexadecimal strings -/
 
-@[expose]
 public
 def hexCharToHexDigit (c: Char): IO UInt8 :=
   if '0' ≤ c ∧ c ≤ '9' then pure (c.toNat - '0'.toNat).toUInt8
@@ -143,7 +131,6 @@ def hexCharToHexDigit (c: Char): IO UInt8 :=
   else throw (IO.userError "string_to_hex_digit: digit is not in [0-9A-Fa-f]")
 
 /-- Port of `hex_list_char_to_list_u8`. -/
-@[expose]
 public
 def hexListCharToListU8: List Char → IO (List UInt8)
   | [] => pure []
@@ -155,21 +142,18 @@ def hexListCharToListU8: List Char → IO (List UInt8)
     pure ((16*d1 + d2)::bs)
 
 /-- Port of `hex_string_to_bytes`. -/
-@[expose]
 public
 def hexStringToBytes (s: String): IO ByteArray := do
   let l ← hexListCharToListU8 s.toList
   pure ⟨l.toArray⟩
 
 /-- Port of `byte_to_hex_string`. -/
-@[expose]
 public
 def byteToHexString (x: UInt8): String :=
   let hexDigit (n: Nat): Char := if n < 10 then Char.ofNat ('0'.toNat + n) else Char.ofNat ('a'.toNat + n - 10)
   String.ofList [hexDigit (x.toNat / 16), hexDigit (x.toNat % 16)]
 
 /-- Port of `bytes_to_hex_string`. -/
-@[expose]
 public
 def bytesToHexString (b: ByteArray): String :=
   String.join (b.toList.map byteToHexString)
@@ -178,12 +162,10 @@ def bytesToHexString (b: ByteArray): String :=
 
 /-! As in MLS* (`ps_prefix_to_ps_whole #bytes #bytes_like_bytes`), the `BytesLike` structure is given explicitly. -/
 
-@[expose]
 public
 def parse {a: Type} (mf: @NonExtensibleMessageFormat ByteArray bytesLikeByteArray a) (b: ByteArray): Option a :=
   @ExtensibleMessageFormat.parse ByteArray bytesLikeByteArray a (@NonExtensibleMessageFormat.toExtensible ByteArray bytesLikeByteArray a mf) b
 
-@[expose]
 public
 def serialize {a: Type} (mf: @NonExtensibleMessageFormat ByteArray bytesLikeByteArray a) (x: a): ByteArray :=
   @ExtensibleMessageFormat.serialize ByteArray bytesLikeByteArray a (@NonExtensibleMessageFormat.toExtensible ByteArray bytesLikeByteArray a mf) x

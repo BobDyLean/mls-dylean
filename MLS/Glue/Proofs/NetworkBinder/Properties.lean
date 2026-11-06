@@ -6,6 +6,7 @@ public import MLS.Glue.Code.NetworkBinder
 public import MLS.Common.Proofs.Crypto.Derived
 public import MLS.TreeSync.Code.Parsers
 public import MLS.TreeKEM.Code.Parsers
+import all MLS.Glue.Code.NetworkBinder
 
 /-!
 Port of `MLS.NetworkBinder.Properties` and `MLS.NetworkBinder.Properties.Proofs`.
@@ -28,7 +29,6 @@ Port of `path_filtering_ok`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def pathFilteringOk {TreeLeaf TreeNode PathLeaf PathNode: Type} {l: Nat}
   (t: Tree (Option TreeLeaf) (Option TreeNode) l) (li: Nat) (p: Path PathLeaf (Option PathNode) l): Bool

@@ -8,6 +8,8 @@ public import MLS.TreeSync.SymbolicProofs.Event.LeafNodeHasBeenVerified.Invarian
 import all MLS.TreeKEM.SymbolicSpec.Traceful.ProcessCommit
 import all MLS.Bootstrap.SymbolicSpec.KeyPackage
 import all MLS.TreeKEM.SymbolicSpec.EpochEvent
+import all MLS.TreeKEM.Code.API
+import all MLS.TreeSync.Code.Operations
 import DY.Meta.Step
 
 /-!
@@ -136,7 +138,6 @@ theorem JoinersAreInTree_cons {groupId groupId': MlsBytes Bytes}
     grind
 
 /-- Port of `proposal_and_sender_is_publishable`. -/
-@[expose]
 public
 def ProposalAndSenderIsPublishable (tr: ProofTrace) (p: ProposalAndSender): Prop :=
   Proposal.mf.wf (Bytes.Publishable · tr) p.proposal

@@ -175,7 +175,6 @@ grind_pattern [grind_later] TreesyncTreekemStateAllInvariants_later =>
 /-! ## Authentication of the secrets by the confirmation tag -/
 
 /-- The secrets of a key schedule state authenticated by its confirmation tag (both directions are lemmas of MLS*). -/
-@[expose]
 public
 def KeyscheduleStateKeysAreAuthenticated (st: TreeKEMKeyscheduleState Bytes): Prop :=
   KeyIsAuthenticatedByConfirmationTag .senderDataSecret st.epochKeys.confirmationTag st.epochKeys.senderDataSecret ∧

@@ -325,7 +325,6 @@ def DhUsage.default: DhUsage where
   The usage of `Dh sk1 (DhPub sk2)`,
   given the usages `usg1` of `sk1` and `usg2` of `sk2` (a case of DY*'s `get_usage`).
 -/
-@[expose]
 public
 def sharedSecretUsage [DhUsage] (usg1 usg2: Usage): Usage :=
   if usg1.type = "DhKey" then
@@ -468,7 +467,6 @@ theorem DySlop.DiffieHellman.extractDhSk.preserves_WellFormed
   grind [DySlop.DiffieHellman.dhPk_extractDhSk, DySlop.DiffieHellman.dhPk.WellFormed]
 
 /-- Port of `get_dh_label`. -/
-@[expose]
 public
 noncomputable
 def DY.Bytes.dhLabel
@@ -518,7 +516,6 @@ theorem DY.Bytes.dhLabel_later_fast
 grind_pattern [grind_later] DY.Bytes.dhLabel_later_fast => tr1 ≤ tr2, b.dhLabel tr1
 
 /-- Port of `has_dh_usage`. -/
-@[expose]
 public
 def DY.Bytes.DhHasUsage
   [BytesInvariants]

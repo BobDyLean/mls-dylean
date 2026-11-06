@@ -22,7 +22,6 @@ inductive KEM where
 deriving DecidableEq, Repr
 
 /-- RFC 9180 identifier. -/
-@[expose]
 public
 def KEM.id: KEM → UInt16
   | .dhkemP256HkdfSha256 => 0x0010
@@ -32,7 +31,6 @@ def KEM.id: KEM → UInt16
   | .dhkemX448HkdfSha512 => 0x0021
 
 /-- OpenSSL key type of the KEM keys. -/
-@[expose]
 public
 def KEM.keyType: KEM → String
   | .dhkemP256HkdfSha256 | .dhkemP384HkdfSha384 | .dhkemP521HkdfSha512 => "EC"
@@ -40,7 +38,6 @@ def KEM.keyType: KEM → String
   | .dhkemX448HkdfSha512 => "X448"
 
 /-- OpenSSL curve name (empty for X25519 and X448). -/
-@[expose]
 public
 def KEM.group: KEM → String
   | .dhkemP256HkdfSha256 => "P-256"
@@ -49,7 +46,6 @@ def KEM.group: KEM → String
   | .dhkemX25519HkdfSha256 | .dhkemX448HkdfSha512 => ""
 
 /-- `Nsk`: length of a serialized private key. -/
-@[expose]
 public
 def KEM.privateKeyLength: KEM → Nat
   | .dhkemP256HkdfSha256 => 32
@@ -59,7 +55,6 @@ def KEM.privateKeyLength: KEM → Nat
   | .dhkemX448HkdfSha512 => 56
 
 /-- `Npk` (equal to `Nenc`): length of a serialized public key. -/
-@[expose]
 public
 def KEM.publicKeyLength: KEM → Nat
   | .dhkemP256HkdfSha256 => 65
@@ -76,7 +71,6 @@ inductive KDF where
 deriving DecidableEq, Repr
 
 /-- RFC 9180 identifier. -/
-@[expose]
 public
 def KDF.id: KDF → UInt16
   | .hkdfSha256 => 0x0001
@@ -84,7 +78,6 @@ def KDF.id: KDF → UInt16
   | .hkdfSha512 => 0x0003
 
 /-- HKDF over the given hash function. -/
-@[expose]
 public
 def KDF.ofHash: Hash.Algorithm → KDF
   | .sha2_256 => .hkdfSha256
@@ -99,14 +92,12 @@ inductive AEAD where
 deriving DecidableEq, Repr
 
 /-- RFC 9180 identifier. -/
-@[expose]
 public
 def AEAD.id: AEAD → UInt16
   | .aes128Gcm => 0x0001
   | .aes256Gcm => 0x0002
   | .chacha20Poly1305 => 0x0003
 
-@[expose]
 public
 def AEAD.ofAlgorithm: OpenSSL.AEAD.Algorithm → AEAD
   | .aes128Gcm => .aes128Gcm
@@ -114,7 +105,6 @@ def AEAD.ofAlgorithm: OpenSSL.AEAD.Algorithm → AEAD
   | .chacha20Poly1305 => .chacha20Poly1305
 
 /-- `Nt`: length of the authentication tag. -/
-@[expose]
 public
 def AEAD.tagLength (_: AEAD): Nat := 16
 
@@ -138,7 +128,6 @@ public
 opaque openBaseRaw (kem kdf aead: UInt16) (keyType group: @& String) (enc skR info ad ciphertext: @& ByteArray): Option ByteArray
 
 /-- `DeriveKeyPair(ikm)`: returns `(sk, pk)`. -/
-@[expose]
 public
 def deriveKeyPair (cs: Ciphersuite) (ikm: ByteArray): Option (ByteArray × ByteArray) := do
   let skLen := cs.kem.privateKeyLength
@@ -149,7 +138,6 @@ def deriveKeyPair (cs: Ciphersuite) (ikm: ByteArray): Option (ByteArray × ByteA
 `SealBase(pkR, info, aad, pt)`, where the ephemeral key pair is derived from `ikmE` with `DeriveKeyPair`.
 Returns `(enc, ciphertext)`.
 -/
-@[expose]
 public
 def sealBase (cs: Ciphersuite) (pkR info ad plaintext ikmE: ByteArray): Option (ByteArray × ByteArray) := do
   let res ← sealBaseRaw cs.kem.id cs.kdf.id cs.aead.id pkR info ad plaintext ikmE
@@ -157,7 +145,6 @@ def sealBase (cs: Ciphersuite) (pkR info ad plaintext ikmE: ByteArray): Option (
   pure (res.extract 0 encLen, res.extract encLen res.size)
 
 /-- `OpenBase(enc, skR, info, aad, ct)`. -/
-@[expose]
 public
 def openBase (cs: Ciphersuite) (enc skR info ad ciphertext: ByteArray): Option ByteArray :=
   openBaseRaw cs.kem.id cs.kdf.id cs.aead.id cs.kem.keyType cs.kem.group enc skR info ad ciphertext

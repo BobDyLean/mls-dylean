@@ -3,6 +3,14 @@ module
 public import MLS.Glue.Code.TreeSyncTreeKEMBinder
 public import MLS.TreeSync.Proofs.API
 public import MLS.TreeKEM.Proofs.API.Tree
+import all MLS.Glue.Code.TreeSyncTreeKEMBinder
+import all MLS.Glue.Code.NetworkBinder
+import all MLS.Common.Code.TreeCommon
+import all MLS.TreeSync.Code.Operations
+import all MLS.TreeSync.Code.API
+import all MLS.TreeSync.Code.Invariants.UnmergedLeaves
+import all MLS.TreeKEM.Code.Operations
+import all MLS.TreeKEM.Code.API.Tree
 
 /-!
 Port of `MLS.TreeSyncTreeKEMBinder.Properties` and `MLS.TreeSyncTreeKEMBinder.Proofs`.
@@ -115,13 +123,11 @@ def treesyncTreekemStateRel {TokenT: Type} {groupId: MlsBytes Bytes} {leafInd: N
   (⟨stTs.levels, treesyncToTreekem stTs.tree⟩: (l: Nat) × TreeKEM Bytes l) = ⟨stTk.levels, stTk.tree⟩
 
 /-- Port of `external_pathsync_pre_pathkem_rel`. -/
-@[expose]
 public
 def externalPathsyncPrePathkemRel {l1 l2: Nat} (ps: ExternalPathSync Bytes tkt l1) (pk: PrePathKEM Bytes l2): Prop :=
   Path.Rel (fun lns lnk => lns.content.val = lnk.publicKey) (fun opns opnk => opns = opnk) ps pk
 
 /-- Port of `external_pathsync_pathsync_rel`. -/
-@[expose]
 public
 def externalPathsyncPathsyncRel {tkt: TreeKEMTypes Bytes} {l1 l2: Nat}
   (eps: ExternalPathSync Bytes tkt l1) (ps: PathSync Bytes tkt l2): Prop
@@ -135,7 +141,6 @@ def pathsyncPrePathkemRel {l1 l2: Nat} (ps: PathSync Bytes tkt l1) (pk: PrePathK
   Path.Rel (fun lns lnk => lns.data.content.val = lnk.publicKey) (fun opns opnk => opns = opnk) ps pk
 
 /-- Port of `pathsync_pathkem_rel`. -/
-@[expose]
 public
 def pathsyncPathkemRel {l1 l2: Nat} (ps: PathSync Bytes tkt l1) (pk: PathKEM Bytes l2): Prop :=
   Path.Rel (fun lns lnk => lns.data.content.val = lnk.publicKey)
@@ -153,7 +158,6 @@ def externalPathsyncPathSecretsRel {l1 l2: Nat} (psync: ExternalPathSync Bytes t
   ∃ ppk, pathSecretsToPrePathkem psecrets = .success ppk ∧ externalPathsyncPrePathkemRel psync ppk
 
 /-- Port of `pathsync_path_secrets_rel`. -/
-@[expose]
 public
 def pathsyncPathSecretsRel {l1 l2: Nat} (psync: PathSync Bytes tkt l1) (psecrets: PathSecrets Bytes l2): Prop :=
   ∃ ppk, pathSecretsToPrePathkem psecrets = .success ppk ∧ pathsyncPrePathkemRel psync ppk

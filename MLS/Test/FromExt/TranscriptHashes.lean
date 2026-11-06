@@ -16,7 +16,6 @@ open MLS MLS.TreeKEM MLS.TreeDEM
 open MLS.Test
 
 /-- Port of `test_transcript_hashes_one`. -/
-@[expose]
 public
 def testTranscriptHashesOne (t: TranscriptHashesTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
@@ -47,7 +46,6 @@ def testTranscriptHashesOne (t: TranscriptHashesTest): IO Bool := do
       throw (IO.userError "test_transcript_hashes_one: not a commit")
 
 /-- Port of `test_transcript_hashes`. -/
-@[expose]
 public
 def testTranscriptHashes: List TranscriptHashesTest → IO Nat :=
   testList "Transcript Hashes" testTranscriptHashesOne

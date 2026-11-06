@@ -53,7 +53,6 @@ open DY.PersistentLocalState (LocalStateCompromised)
 section Predicates
 
 /-- Port of `participant_init_key_is_compromised`. -/
-@[expose]
 public
 def ParticipantInitKeyIsCompromised (tr: ExecTrace) (participant: Participant) (groupContext: GroupContext Bytes): Prop :=
   ∃ confirmationTag secret,
@@ -61,7 +60,6 @@ def ParticipantInitKeyIsCompromised (tr: ExecTrace) (participant: Participant) (
       ({ ty := .initSecret, context := groupContext, confirmationTag, secret }: TreeKEMEpochSecret) tr
 
 /-- Port of `init_key_is_compromised`. -/
-@[expose]
 public
 def InitKeyIsCompromised {l: Nat} (tr: ExecTrace) (groupContext: GroupContext Bytes) (tree: TreeSync Bytes tkt l): Prop :=
   ∃ li ln participant,
@@ -70,7 +68,6 @@ def InitKeyIsCompromised {l: Nat} (tr: ExecTrace) (groupContext: GroupContext By
     ParticipantInitKeyIsCompromised tr participant groupContext
 
 /-- Port of `joiners_init_key_is_compromised`. -/
-@[expose]
 public
 def JoinersInitKeyIsCompromised (tr: ExecTrace) (joiner: KeyPackage Bytes tkt): Prop :=
   ∃ joinerId,
@@ -80,7 +77,6 @@ def JoinersInitKeyIsCompromised (tr: ExecTrace) (joiner: KeyPackage Bytes tkt): 
       LocalStateCompromised joinerId ({ leafPk, initSk }: BootstrapInitKeyState) tr
 
 /-- Port of `joiners_signature_key_is_compromised_before_i_checked_it`. -/
-@[expose]
 public
 def JoinersSignatureKeyIsCompromisedBeforeICheckedIt (tr: ExecTrace) (me: Participant) (joiner: KeyPackage Bytes tkt): Prop :=
   ∃ joinerId,
@@ -91,7 +87,6 @@ def JoinersSignatureKeyIsCompromisedBeforeICheckedIt (tr: ExecTrace) (me: Partic
       LocalStateCompromised joinerId ({ signatureSk }: TreeSyncSignatureKeyState) (tr.prefix i)
 
 /-- Port of `node_key_is_compromised`. -/
-@[expose]
 public
 def NodeKeyIsCompromised (tr: ExecTrace) (leafNode: LeafNode Bytes tkt): Prop :=
   ∃ prin,
@@ -101,7 +96,6 @@ def NodeKeyIsCompromised (tr: ExecTrace) (leafNode: LeafNode Bytes tkt): Prop :=
       LocalStateCompromised prin ({ l, path }: TreeKEMNodeKeysState) tr
 
 /-- Port of `signature_key_is_compromised_before_i_checked_leaf_node`. -/
-@[expose]
 public
 def SignatureKeyIsCompromisedBeforeICheckedLeafNode (tr: ExecTrace) (me: Participant)
   (leafNode: LeafNode Bytes tkt) (groupId: MlsBytes Bytes) (leafIndex: Nat): Prop
@@ -114,7 +108,6 @@ def SignatureKeyIsCompromisedBeforeICheckedLeafNode (tr: ExecTrace) (me: Partici
       LocalStateCompromised leafNodeId ({ signatureSk }: TreeSyncSignatureKeyState) (tr.prefix i)
 
 /-- Port of `corresponding_init_key_is_compromised`. -/
-@[expose]
 public
 def CorrespondingInitKeyIsCompromised (tr: ExecTrace) (leafNode: LeafNode Bytes tkt): Prop :=
   ∃ prin,
@@ -135,7 +128,6 @@ def CorrespondingInitKeyIsCompromised (tr: ExecTrace) (leafNode: LeafNode Bytes 
 Port of `inviter_signature_key_is_compromised_before_i_joined`.
 MLS*'s `me` is `ev.prin`.
 -/
-@[expose]
 public
 def InviterSignatureKeyIsCompromisedBeforeIJoined (tr: ExecTrace) (inviterLeafNode: LeafNode Bytes tkt) (ev: IAmInGroup):
   Prop
@@ -148,7 +140,6 @@ def InviterSignatureKeyIsCompromisedBeforeIJoined (tr: ExecTrace) (inviterLeafNo
       LocalStateCompromised inviterId ({ signatureSk }: TreeSyncSignatureKeyState) (tr.prefix i)
 
 /-- Port of `inviter_was_in_same_group_as_me`. -/
-@[expose]
 public
 def InviterWasInSameGroupAsMe (tr: ExecTrace) (inviterLeafNode: LeafNode Bytes tkt) (ev: IAmInGroup): Prop :=
   ∃ inviterId,
@@ -168,7 +159,6 @@ end Predicates
 section Publishable
 
 /-- Port of `all_psks_are_publishable`. -/
-@[expose]
 public
 def AllPsksArePublishable (tr: ProofTrace) (psks: List (PreSharedKeyId Bytes × Bytes)): Prop :=
   ∀ pskId psk, (pskId, psk) ∈ psks → psk.Publishable tr

@@ -23,7 +23,6 @@ attribute [local instance] bytesLikeByteArray
 Port of `fully_truncate_tree`.
 Truncate the tree while its right half is empty.
 -/
-@[expose]
 public
 def fullyTruncateTree: {l: Nat} → TreeSync ByteArray tkt l → (newL: Nat) × TreeSync ByteArray tkt newL
   | 0, t => ⟨0, t⟩
@@ -33,14 +32,12 @@ def fullyTruncateTree: {l: Nat} → TreeSync ByteArray tkt l → (newL: Nat) × 
     else
       ⟨_, t⟩
 
-@[expose]
 public
 def checkLeafIndex {l: Nat} (t: TreeSync ByteArray tkt l) (li: Nat) (name: String): IO Nat :=
   if t.containsLeafIndex li then pure li
   else throw (IO.userError s!"test_tree_operation_one: {name} too big")
 
 /-- Port of `test_tree_operations_one`. -/
-@[expose]
 public
 def testTreeOperationsOne (t: TreeOperationsTest): IO Bool := do
   let some treeBefore := parse (RatchetTree.mf tkt) (← hexStringToBytes t.treeBefore)
@@ -72,7 +69,6 @@ def testTreeOperationsOne (t: TreeOperationsTest): IO Bool := do
   pure true
 
 /-- Port of `test_tree_operations`. -/
-@[expose]
 public
 def testTreeOperations: List TreeOperationsTest → IO Nat :=
   testList "Tree Operations" testTreeOperationsOne

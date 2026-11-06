@@ -15,7 +15,6 @@ open MLS MLS.TreeKEM
 open MLS.Test
 
 /-- Port of `test_psk_one`. -/
-@[expose]
 public
 def testPskOne (t: PskTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
@@ -35,7 +34,6 @@ def testPskOne (t: PskTest): IO Bool := do
     pure true
 
 /-- Port of `test_psk`. -/
-@[expose]
 public
 def testPsk: List PskTest → IO Nat :=
   testList "Pre-Shared Keys" testPskOne

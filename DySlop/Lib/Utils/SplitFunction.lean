@@ -205,7 +205,6 @@ def Locals.combineTags {n: Nat} (ls: Fin n → (tags: List Tag) × Locals LocalF
   (List.ofFn (fun id => (ls id).1)).flatten
 
 /-- Combine local functions: the tag set of the result is the union of their tag sets. -/
-@[expose]
 public
 def Locals.combine {n: Nat} (ls: Fin n → (tags: List Tag) × Locals LocalFun tags): Locals LocalFun (Locals.combineTags ls) where
   list := (List.ofFn (fun id => (ls id).2.list)).flatten
@@ -485,12 +484,10 @@ def mkCombine
   let arms ← matchArms sources fun nameSource argsSource =>
     `(term| ⟨_, $(sourceIdent nameSource config.name) $argsSource*⟩)
   let internalCmd ← `(command|
-    @[expose]
     public
     def $internalStx $params*: Fin $nSources → (tags: List $tagTypeStx) × $localTypeStx tags := fun $arms:matchAlt*
   )
   let combineCmd ← `(command|
-    @[expose]
     public
     def $nameStx $params*: $localTypeStx (DySlop.SplitFunction.Locals.combineTags ($internalStx $args*)) :=
       DySlop.SplitFunction.Locals.combine ($internalStx $args*)

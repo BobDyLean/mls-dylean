@@ -17,7 +17,6 @@ open MLS.Test
 
 variable [CryptoBytes ByteArray]
 
-@[expose]
 public
 def checkLabel (label: String): IO Unit :=
   if decide (isAsciiString label) && label.length < 2^30 - 8 then
@@ -26,7 +25,6 @@ def checkLabel (label: String): IO Unit :=
     throw (IO.userError "Error: malformed label")
 
 /-- Port of `test_ref_hash`. -/
-@[expose]
 public
 def testRefHash (t: CryptoBasicsRefHash): IO Unit := do
   checkLabel t.label
@@ -35,7 +33,6 @@ def testRefHash (t: CryptoBasicsRefHash): IO Unit := do
   checkEqual "ref hash" bytesToHexString (← hexStringToBytes t.out) out
 
 /-- Port of `test_expand_with_label`. -/
-@[expose]
 public
 def testExpandWithLabel (t: CryptoBasicsExpandWithLabel): IO Unit := do
   checkLabel t.label
@@ -45,7 +42,6 @@ def testExpandWithLabel (t: CryptoBasicsExpandWithLabel): IO Unit := do
   checkEqual "expand with label" bytesToHexString (← hexStringToBytes t.out) out
 
 /-- Port of `test_derive_secret`. -/
-@[expose]
 public
 def testDeriveSecret (t: CryptoBasicsDeriveSecret): IO Unit := do
   checkLabel t.label
@@ -54,7 +50,6 @@ def testDeriveSecret (t: CryptoBasicsDeriveSecret): IO Unit := do
   checkEqual "derive secret" bytesToHexString (← hexStringToBytes t.out) out
 
 /-- Port of `test_derive_tree_secret`. -/
-@[expose]
 public
 def testDeriveTreeSecret (t: CryptoBasicsDeriveTreeSecret): IO Unit := do
   checkLabel t.label
@@ -63,7 +58,6 @@ def testDeriveTreeSecret (t: CryptoBasicsDeriveTreeSecret): IO Unit := do
   checkEqual "derive tree secret" bytesToHexString (← hexStringToBytes t.out) out
 
 /-- Port of `test_sign_with_label`. -/
-@[expose]
 public
 def testSignWithLabel (t: CryptoBasicsSignWithLabel): IO Unit := do
   let priv ← hexStringToBytes t.priv
@@ -81,7 +75,6 @@ def testSignWithLabel (t: CryptoBasicsSignWithLabel): IO Unit := do
     throw (IO.userError "test_sign_with_label: wrong signature roundtrip")
 
 /-- Port of `test_encrypt_with_label`. -/
-@[expose]
 public
 def testEncryptWithLabel (t: CryptoBasicsEncryptWithLabel): IO Unit := do
   let priv ← hexStringToBytes t.priv
@@ -105,7 +98,6 @@ namespace MLS.Test.FromExt.CryptoBasics
 open MLS MLS.Test
 
 /-- Port of `test_crypto_basics_one`. -/
-@[expose]
 public
 def testCryptoBasicsOne (t: CryptoBasicsTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
@@ -125,7 +117,6 @@ def testCryptoBasicsOne (t: CryptoBasicsTest): IO Bool := do
     pure true
 
 /-- Port of `test_crypto_basics`. -/
-@[expose]
 public
 def testCryptoBasics: List CryptoBasicsTest → IO Nat :=
   testList "Crypto Basics" testCryptoBasicsOne

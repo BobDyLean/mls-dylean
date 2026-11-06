@@ -46,7 +46,6 @@ Functions on trees use the views instead.
 -/
 
 /-- Port of `left_index`: the position of the left child of a tree at position `i`. -/
-@[expose]
 public
 def leftIndex (i: Nat): Nat :=
   i
@@ -55,7 +54,6 @@ def leftIndex (i: Nat): Nat :=
 Port of `right_index`: the position of the right child of a tree of height `l` at position `i`.
 MLS* requires `0 < l`.
 -/
-@[expose]
 public
 def rightIndex (l i: Nat): Nat :=
   i + 2^(l-1)
@@ -64,7 +62,6 @@ def rightIndex (l i: Nat): Nat :=
 Port of `is_left_leaf`: whether the leaf `li` is in the left child of a tree of height `l` at position `i`.
 MLS* requires `0 < l`.
 -/
-@[expose]
 public
 def isLeftLeaf (l i li: Nat): Bool :=
   li < i + 2^(l-1)
@@ -185,14 +182,12 @@ def Tree.right {l: Nat} (t: Tree Leaf Node (l+1)): Tree Leaf Node l :=
 /-! ## Projections of the child / sibling view -/
 
 /-- MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`); otherwise, see `Tree.intoChildSiblingView`. -/
-@[expose]
 public
 def Tree.child {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat): Tree Leaf Node l :=
   match t.intoChildSiblingView li with
   | .node _ child _ => child
 
 /-- MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`); otherwise, see `Tree.intoChildSiblingView`. -/
-@[expose]
 public
 def Tree.sibling {l: Nat} (t: Tree Leaf Node (l+1)) (li: Nat): Tree Leaf Node l :=
   match t.intoChildSiblingView li with
@@ -221,7 +216,6 @@ def leafAt {l: Nat} (t: Tree Leaf Node l) (li: Nat): Leaf :=
   | .node _ child _ => leafAt child li
 
 /-- Port of `print_tree`. -/
-@[expose]
 public
 def Tree.toString (printLeaf: Leaf → String) (printNode: Node → String) {l: Nat} (t: Tree Leaf Node l): String :=
   match t.intoLeftRightView with
@@ -230,7 +224,6 @@ def Tree.toString (printLeaf: Leaf → String) (printNode: Node → String) {l: 
     "(" ++ left.toString printLeaf printNode ++ ") " ++ printNode content ++ " (" ++ right.toString printLeaf printNode ++ ")"
 
 /-- Port of `tree_map`. -/
-@[expose]
 public
 def Tree.map {Leaf' Node': Type} (fLeaf: Leaf → Leaf') (fNode: Node → Node') {l: Nat} (t: Tree Leaf Node l):
   Tree Leaf' Node' l

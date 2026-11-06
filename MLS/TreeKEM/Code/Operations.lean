@@ -35,7 +35,6 @@ Port of `tree_add`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def treeAdd {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (lp: TreeKEMLeaf Bytes): TreeKEM Bytes l :=
   match t.intoChildSiblingView li with
@@ -51,7 +50,6 @@ Port of `tree_apply_path`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def treeApplyPath [BytesLike Bytes] {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: PathKEM Bytes l): TreeKEM Bytes l :=
   match t.intoChildSiblingView li, p with
@@ -70,7 +68,6 @@ MLS* requires `blank_li: leaf_index l i` (i.e. `t.containsLeafIndex blankLi`); o
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def pathBlank {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: TreeKEMPriv Bytes l) (blankLi: Nat): TreeKEMPriv Bytes l :=
   match t.intoChildSiblingView li, p with
@@ -83,13 +80,11 @@ def pathBlank {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: TreeKEMPriv Bytes l) (
 termination_by l
 
 /-- Port of `path_extend`. -/
-@[expose]
 public
 def pathExtend {l: Nat} (p: TreeKEMPriv Bytes l): TreeKEMPriv Bytes (l+1) :=
   .node none p
 
 /-- Port of `path_truncate`. -/
-@[expose]
 public
 def pathTruncate {l: Nat} (p: TreeKEMPriv Bytes (l+1)): TreeKEMPriv Bytes l :=
   match p with
@@ -102,20 +97,17 @@ section CryptoBytes
 variable {Bytes: Type} [CryptoBytes Bytes]
 
 /-- Port of `derive_keypair_from_path_secret`. -/
-@[expose]
 public
 def deriveKeypairFromPathSecret (pathSecret: Bytes): Result (Bytes × Bytes) := do
   let nodeSecret ← deriveSecret pathSecret "node"
   CryptoBytes.hpkeGenKeypair nodeSecret
 
 /-- Port of `derive_next_path_secret`. -/
-@[expose]
 public
 def deriveNextPathSecret (pathSecret: Bytes): Result Bytes :=
   deriveSecret pathSecret "path"
 
 /-- Port of `un_addP`. -/
-@[expose]
 public
 def unAddP {l: Nat} (t: TreeKEM Bytes l) (pred: Nat → Bool): TreeKEM Bytes l :=
   match t.intoLeftRightView with
@@ -126,13 +118,11 @@ def unAddP {l: Nat} (t: TreeKEM Bytes l) (pred: Nat → Bool): TreeKEM Bytes l :
 termination_by l
 
 /-- Port of `excluded_pre`. -/
-@[expose]
 public
 def excludedPre (l: List Nat) (i: Nat): Bool :=
   !(l.contains i)
 
 /-- Port of `un_add`. -/
-@[expose]
 public
 def unAdd {l: Nat} (t: TreeKEM Bytes l) (excludedLeaves: List Nat): TreeKEM Bytes l :=
   unAddP t (excludedPre excludedLeaves)
@@ -142,7 +132,6 @@ Port of `unmerged_leaves_resolution`.
 MLS* requires each unmerged leaf to be a non-blank leaf of `t` (`unmerged_leaf_exists t`);
 otherwise, the unmerged leaves that are not are skipped.
 -/
-@[expose]
 public
 def unmergedLeavesResolution {l: Nat} (t: TreeKEM Bytes l): List Nat → List Bytes
   | [] => []
@@ -159,7 +148,6 @@ def unmergedLeavesResolution {l: Nat} (t: TreeKEM Bytes l): List Nat → List By
 Port of `tree_resolution`.
 MLS* requires `treekem_invariant t`; otherwise, see `unmergedLeavesResolution`.
 -/
-@[expose]
 public
 def treeResolution {l: Nat} (t: TreeKEM Bytes l): List Bytes :=
   match t.intoLeftRightView with
@@ -176,7 +164,6 @@ MLS* requires `treekem_invariant t`; otherwise, the result may be wrong (see `tr
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def resolutionIndex {l: Nat} (t: TreeKEM Bytes l) (li: Nat): Result Nat :=
   match t.intoChildSiblingView li with
@@ -201,7 +188,6 @@ otherwise, the private key of the leaf is returned.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def getPrivateKey {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (pPriv: TreeKEMPriv Bytes l): Result Bytes :=
   match t.intoChildSiblingView li, pPriv with
@@ -222,7 +208,6 @@ Port of `check_update_path_ciphertexts_lengthes`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def checkUpdatePathCiphertextsLengthes {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: PathKEM Bytes l): Bool :=
   match t.intoChildSiblingView li, p with
@@ -246,7 +231,6 @@ MLS* requires `my_li: leaf_index l i` and `li: leaf_index l i`
 (i.e. `t.containsLeafIndex myLi` and `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`, and branches when it leaves the subtree containing `myLi`.
 -/
-@[expose]
 public
 def getPathSecret {l: Nat} (t: TreeKEM Bytes l) (myLi li: Nat)
   (pPriv: TreeKEMPriv Bytes l) (pUpd: PathKEM Bytes l) (groupContext: GroupContext Bytes)
@@ -286,7 +270,6 @@ MLS* requires `0 < path_node_level <= l`; otherwise, this function fails.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def pathApplyPath {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (pPriv: TreeKEMPriv Bytes l)
   (pathSecret: Bytes) (pathNodeLevel: Nat)
@@ -319,7 +302,6 @@ MLS*'s refinement on the result (`forget_path_secrets p == generate_forgotten_pa
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def generatePathSecrets {l: Nat} (t: TreeKEM Bytes l) (leafSk: Bytes) (pathSecret0: Bytes) (li: Nat)
   : Result (PathSecrets Bytes l × Bytes)
@@ -337,7 +319,6 @@ def generatePathSecrets {l: Nat} (t: TreeKEM Bytes l) (leafSk: Bytes) (pathSecre
 termination_by l
 
 /-- Port of `multi_encrypt_with_label_entropy_lengths`. -/
-@[expose]
 public
 def multiEncryptWithLabelEntropyLengths: List Bytes → List Nat
   | [] => []
@@ -348,7 +329,6 @@ Port of `multi_encrypt_with_label`.
 MLS* requires `rand: randomness bytes (multi_encrypt_with_label_entropy_lengths pks)`;
 otherwise, this function fails when there is not enough randomness.
 -/
-@[expose]
 public
 def multiEncryptWithLabel: (publicKeys: List Bytes) → (label: String) → (context: Bytes) → (plaintext: Bytes) →
   Randomness Bytes → Result (List (HpkeCiphertext Bytes))
@@ -393,7 +373,6 @@ MLS* requires `treekem_invariant t`; otherwise, see `treeResolution`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def encryptPathSecrets {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: PathSecrets Bytes l)
   (groupContext: GroupContext Bytes) (rand: Randomness Bytes)
@@ -423,7 +402,6 @@ and follows the path with its child / sibling view.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def getPathSecretOfAddedLeaf {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: PathSecrets Bytes l) (leafLi: Nat): Result Bytes :=
   match t.intoChildSiblingView li, p with
@@ -443,7 +421,6 @@ termination_by l
 Port of `get_path_secret_of_added_leaves`.
 Unlike MLS*, this function takes the tree `t` on which the path secrets were generated (see `getPathSecretOfAddedLeaf`).
 -/
-@[expose]
 public
 def getPathSecretOfAddedLeaves {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: PathSecrets Bytes l) (leavesLi: List Nat): Result (List Bytes) :=
   leavesLi.mapM (getPathSecretOfAddedLeaf t li p)
@@ -452,7 +429,6 @@ def getPathSecretOfAddedLeaves {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (p: PathS
 Port of `path_secrets_to_pre_pathkem`.
 Unlike MLS*, this function also fails when a public key is too long to be an `HpkePublicKey Bytes`.
 -/
-@[expose]
 public
 def pathSecretsToPrePathkem: {l: Nat} → PathSecrets Bytes l → Result (PrePathKEM Bytes l)
   | _, .leaf leafSk => do
@@ -468,7 +444,6 @@ def pathSecretsToPrePathkem: {l: Nat} → PathSecrets Bytes l → Result (PrePat
     pure (.node (some pk) resPNext)
 
 /-- Port of `create_empty_priv`. -/
-@[expose]
 public
 def createEmptyPriv: {l: Nat} → (leafPrivateKey: Bytes) → TreeKEMPriv Bytes l
   | 0, leafPrivateKey => .leaf leafPrivateKey
@@ -484,7 +459,6 @@ MLS* requires `leaf_ind: leaf_index l i` (i.e. `t.containsLeafIndex leafInd`); o
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def computeLeastCommonAncestorLevel {TreeLeaf TreeNode Leaf Node: Type} {l: Nat}
   (t: Tree TreeLeaf TreeNode l) (li: Nat) (p: Path Leaf Node l) (leafInd: Nat): Nat

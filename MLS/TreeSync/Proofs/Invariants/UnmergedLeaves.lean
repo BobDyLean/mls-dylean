@@ -2,6 +2,9 @@ module
 
 public import MLS.TreeSync.Code.Invariants.UnmergedLeaves
 public import MLS.TreeSync.Proofs.Operations
+import all MLS.TreeSync.Code.Invariants.UnmergedLeaves
+import all MLS.TreeSync.Code.Operations
+import all MLS.Common.Code.TreeCommon
 
 /-!
 Port of `MLS.TreeSync.Invariants.UnmergedLeaves.Proofs`.

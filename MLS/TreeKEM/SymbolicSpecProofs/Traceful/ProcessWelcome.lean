@@ -8,6 +8,8 @@ public import MLS.Bootstrap.SymbolicProofs.State.KeyPackageStore
 import all MLS.TreeKEM.SymbolicSpec.Traceful.ProcessWelcome
 import all MLS.TreeKEM.SymbolicSpec.EpochEvent
 import all MLS.Bootstrap.SymbolicSpec.State.KeyPackageStore
+import all MLS.TreeSync.Code.API
+import all MLS.TreeKEM.Code.API
 import DY.Meta.Step
 
 /-!
@@ -84,7 +86,6 @@ theorem findMyIndex'_spec {l: Nat} (t: TreeSync Bytes tkt l) (ln: LeafNode Bytes
 The path secret of the group secrets (if any) is good for the leaf public key `myLeafPk`
 (MLS*'s `match group_secrets.path_secret with …` in the precondition of `_process_welcome_treekem_proof`).
 -/
-@[expose]
 public
 def GroupSecretsPathSecretGood (tr: ProofTrace) (me: Participant) (myLeafPk: Bytes) (groupSecrets: GroupSecrets Bytes): Prop :=
   ∀ pathSecret ∈ groupSecrets.pathSecret, DecodedPathSecretGood me myLeafPk pathSecret.pathSecret.val tr

@@ -19,7 +19,6 @@ inductive Algorithm where
 deriving DecidableEq, Repr
 
 /-- OpenSSL key type. -/
-@[expose]
 public
 def Algorithm.keyType: Algorithm → String
   | .ed25519 => "ED25519"
@@ -27,7 +26,6 @@ def Algorithm.keyType: Algorithm → String
   | .ecdsaP256Sha256 | .ecdsaP384Sha384 | .ecdsaP521Sha512 => "EC"
 
 /-- OpenSSL curve name (empty for EdDSA). -/
-@[expose]
 public
 def Algorithm.group: Algorithm → String
   | .ed25519 | .ed448 => ""
@@ -36,7 +34,6 @@ def Algorithm.group: Algorithm → String
   | .ecdsaP521Sha512 => "P-521"
 
 /-- OpenSSL name of the hash function (empty for EdDSA, which hashes internally). -/
-@[expose]
 public
 def Algorithm.digest: Algorithm → String
   | .ed25519 | .ed448 => ""
@@ -44,7 +41,6 @@ def Algorithm.digest: Algorithm → String
   | .ecdsaP384Sha384 => "SHA384"
   | .ecdsaP521Sha512 => "SHA512"
 
-@[expose]
 public
 def Algorithm.secretKeyLength: Algorithm → Nat
   | .ed25519 => 32
@@ -53,7 +49,6 @@ def Algorithm.secretKeyLength: Algorithm → Nat
   | .ecdsaP384Sha384 => 48
   | .ecdsaP521Sha512 => 66
 
-@[expose]
 public
 def Algorithm.publicKeyLength: Algorithm → Nat
   | .ed25519 => 32
@@ -74,18 +69,15 @@ opaque signRaw (keyType group digest: @& String) (sk msg: @& ByteArray): Option 
 public
 opaque verifyRaw (keyType group digest: @& String) (pk msg sig: @& ByteArray): Bool
 
-@[expose]
 public
 def secretToPublic (a: Algorithm) (sk: ByteArray): Option ByteArray :=
   secretToPublicRaw a.keyType a.group sk
 
 /-- Deterministic: EdDSA is deterministic by design, ECDSA uses RFC 6979 nonces. -/
-@[expose]
 public
 def sign (a: Algorithm) (sk msg: ByteArray): Option ByteArray :=
   signRaw a.keyType a.group a.digest sk msg
 
-@[expose]
 public
 def verify (a: Algorithm) (pk msg sig: ByteArray): Bool :=
   verifyRaw a.keyType a.group a.digest pk msg sig

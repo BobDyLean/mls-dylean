@@ -7,6 +7,7 @@ public import MLS.Common.SymbolicProofs.Crypto.Derived.ExpandWithLabel
 public import MLS.Common.SymbolicProofs.Crypto.Derived.EncryptWithLabel
 public import MLS.Symbolic.SymbolicProofs.Randomness
 public import MLS.TreeKEM.Code.Parsers
+import all MLS.TreeKEM.Code.Operations
 
 /-!
 Port of `MLS.TreeKEM.Symbolic.Tree.Operations`:
@@ -25,6 +26,8 @@ Port-specific differences:
 - Lemmas about functions returning a `Result` take the result and the success hypothesis
   (MLS*'s `match … with | Success … -> … | _ -> True`).
 - `for_allP p l` is `∀ x ∈ l, p x`.
+- `create_empty_priv_proof` and `path_blank_proof` (in MLS*'s `MLS.TreeKEM.Symbolic.API.Tree`) are here,
+  with the other lemmas about the TreeKEM operations.
 - TreeKEM's `treeResolution` and `unmergedLeavesResolution` skip the unmerged leaves that are not leaves of the tree:
   the lemmas about resolutions do not need `treekem_invariant`.
 - `encrypt_path_secrets` takes the un-added tree (`unAddP tk pre` in MLS*) as argument (see `MLS.TreeKEM.Operations`):
@@ -46,7 +49,6 @@ section Usages
 variable [HasSymbolicBytes] [ExecTraceTypes] [HasTreeSyncExecTrace tkt] [HasTreeKEMExecTrace]
 
 /-- Port of `one_path_secret_usage_to_path_secret_label`. -/
-@[expose]
 public
 def onePathSecretUsageToPathSecretLabel (x: OnePathSecretUsage): Label :=
   nodeSkLabelNosig x.t x.groupId x.committerLeafIndex
@@ -59,7 +61,6 @@ def PathSecretUsage.headLabel: PathSecretUsage → Label
   | h :: _ => onePathSecretUsageToPathSecretLabel h
 
 /-- Port of `expand_usage_path_secret_path`. -/
-@[expose]
 public
 def expandUsagePathSecretPath: ExpandWithLabelUsage.Local ["path"] :=
   .single {
@@ -81,7 +82,6 @@ def expandUsagePathSecretPath: ExpandWithLabelUsage.Local ["path"] :=
   }
 
 /-- Port of `expand_usage_path_secret_node`. -/
-@[expose]
 public
 def expandUsagePathSecretNode: ExpandWithLabelUsage.Local ["node"] :=
   .single (.secret nodeKeyUsage)
@@ -93,7 +93,6 @@ section Predicates
 variable [HasSymbolicBytes] [ExecTraceTypes] [ProofTraceTypes]
 
 /-- Port of `mls_hpke_updatepathnode_pred`. -/
-@[expose]
 public
 def mlsHpkeUpdatepathnodePred: EncryptWithLabelPred.Local ["UpdatePathNode"] :=
   .single { pred _ msg _ tr := ∃ data, msg.HasUsage (Usage.kdfExpandKey "MLS.PathSecret" data) tr }
@@ -149,7 +148,6 @@ Port of `compute_path_secret_usage`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def computePathSecretUsage {l: Nat} (t: TreeSync Bytes tkt l) (groupId: MlsBytes Bytes) (li: Nat) (acc: PathSecretUsage):
   PathSecretUsage
@@ -543,7 +541,6 @@ def LeafPkIsCorrect (leafPk: Bytes) (me: Participant) (_groupId: MlsBytes Bytes)
   leafPk.HpkeSkHasUsage nodeKeyUsage tr
 
 /-- Port of `path_secret_is_correct`. -/
-@[expose]
 public
 def PathSecretIsCorrect (committer: Participant) (committerLeafPk: Bytes) (isAtRoot: Bool)
   (pathSecret: Bytes) {l: Nat} (t: TreeSync Bytes tkt l) (groupId: MlsBytes Bytes) (li: Nat) (tr: ProofTrace): Prop
@@ -557,7 +554,6 @@ def PathSecretIsCorrect (committer: Participant) (committerLeafPk: Bytes) (isAtR
 Port of `path_secrets_are_correct`.
 The leaf index of the path (implicit in MLS*) is `li`.
 -/
-@[expose]
 public
 def PathSecretsAreCorrect (me: Participant): (isAtRoot: Bool) → {l: Nat} → TreeSync Bytes tkt l → (li: Nat) →
   MlsBytes Bytes → PathSecrets Bytes l → ProofTrace → Prop
@@ -713,7 +709,6 @@ section NodeKeys
 variable [HasSymbolicInvariants] [HasTreeSyncExecTrace tkt] [HasTreeKEMExecTrace]
 
 /-- Port of `node_sk_is_correct`. -/
-@[expose]
 public
 def NodeSkIsCorrect (committer: Participant) (committerLeafPk: Bytes) (nodeSk: Bytes)
   {l: Nat} (t: TreeSync Bytes tkt l) (groupId: MlsBytes Bytes) (li: Nat) (tr: ProofTrace): Prop
@@ -827,7 +822,6 @@ variable [HasSymbolicInvariants]
 Port of `multi_encrypt_with_label_pre_weak`.
 MLS*'s local EncryptWithLabel predicate `lpred` (of the label of the encryption) is `l.pred label`.
 -/
-@[expose]
 public
 def MultiEncryptWithLabelPreWeak {labels: List String} (l: EncryptWithLabelPred.Local labels) (label: String)
   (pks: List Bytes) (context plaintext: Bytes) (rand: Randomness Bytes) (tr: ProofTrace): Prop
@@ -852,7 +846,6 @@ def MultiEncryptWithLabelPreWeak {labels: List String} (l: EncryptWithLabelPred.
   | _, _ => True
 
 /-- Port of `hpke_ciphertext_is_publishable`. -/
-@[expose]
 public
 def HpkeCiphertextIsPublishable (tr: ProofTrace) (c: HpkeCiphertext Bytes): Prop :=
   HpkeCiphertext.mf.wf (Bytes.Publishable · tr) c
@@ -885,13 +878,11 @@ theorem multiEncryptWithLabel_proof {labels: List String} (l: EncryptWithLabelPr
     · exact ih randNext resTl hrec hnext x hx
 
 /-- Port of `multi_encrypt_with_label_entropy_ghost_data`. -/
-@[expose]
 public
 def multiEncryptWithLabelEntropyGhostData (pks: List Bytes) (randLabel: Label): RandomnessGhostData :=
   pks.map fun _ => (entropyUsageForNodeKey, randLabel)
 
 /-- Port of `multi_encrypt_with_label_pre_strong_one`. -/
-@[expose]
 public
 def MultiEncryptWithLabelPreStrongOne (tr: ProofTrace) (randLabel: Label) (pk: Bytes): Prop :=
   pk.Invariant tr ∧
@@ -904,7 +895,6 @@ def MultiEncryptWithLabelPreStrongOne (tr: ProofTrace) (randLabel: Label) (pk: B
   )
 
 /-- Port of `multi_encrypt_with_label_pre_strong`. -/
-@[expose]
 public
 def MultiEncryptWithLabelPreStrong (pks: List Bytes) (context plaintext: Bytes) (rand: Randomness Bytes)
   (randLabel: Label) (tr: ProofTrace): Prop
@@ -1089,7 +1079,6 @@ section NodeKeyGoodWeak
 variable [HasSymbolicInvariants] [HasTreeSyncExecTrace tkt] [HasTreeKEMExecTrace]
 
 /-- Port of `node_key_good_weak`. -/
-@[expose]
 public
 def NodeKeyGoodWeak {l: Nat} (tr: ProofTrace) (t: TreeSync Bytes tkt l) (groupId: MlsBytes Bytes) (pk: Bytes): Prop :=
   MultiEncryptWithLabelPreStrongOne tr (nodeSkLabel t groupId) pk
@@ -1277,13 +1266,13 @@ theorem encryptPathSecretsEntropyGhostData_length {l: Nat} (ts: TreeSync Bytes t
 /-- `encryptPathSecretsEntropyGhostData_length`, with the casts of `create_commit_proof` (MLS*'s `st_ts.levels == st_tk.levels`). -/
 public
 theorem encryptPathSecretsEntropyGhostData_length_cast {l1 l2: Nat} (ts: TreeSync Bytes tkt l1) (tk: TreeKEM Bytes l2)
-  (li: Nat) (p: PathSecrets Bytes l2) (groupId: MlsBytes Bytes) (pred: Nat → Bool) (hl: l1 = l2)
+  (li: Nat) (p: PathSecrets Bytes l2) (groupId: MlsBytes Bytes) (excludedLeaves: List Nat) (hl: l1 = l2)
   (hfilter: pathFilteringOk tk li p):
-  (encryptPathSecretsEntropyGhostData ts (hl ▸ unAddP tk pred) li (hl ▸ p) groupId).length =
-    (encryptPathSecretsEntropyLengths (unAddP tk pred) li).length
+  (encryptPathSecretsEntropyGhostData ts (hl ▸ unAdd tk excludedLeaves) li (hl ▸ p) groupId).length =
+    (encryptPathSecretsEntropyLengths (unAdd tk excludedLeaves) li).length
 := by
   subst hl
-  exact encryptPathSecretsEntropyGhostData_length ts tk li p groupId pred hfilter
+  exact encryptPathSecretsEntropyGhostData_length ts tk li p groupId _ hfilter
 
 /-- Port of `path_secret_good_for_joiner`. MLS*'s `match leaf_at tree leaf_ind` is an `Option.map`. -/
 @[expose]
@@ -1419,22 +1408,25 @@ variable [HasMlsTreekemInvariants]
 
 /--
 Port of `encrypt_path_secrets_pub_proof`.
+MLS* takes the predicate `pre` of `un_addP tk pre`: here, it is the leaves excluded by `unAdd tk excludedLeaves`
+(the only way `create_commit_proof` calls it).
 MLS* requires `treekem_invariant tk` and `treekem_invariant (un_addP tk pre)`, which are not needed.
 -/
 public
 theorem encryptPathSecrets_pub_proof (me: Participant) (isAtRoot: Bool) {l: Nat}
   (ts: TreeSync Bytes tkt l) (tk: TreeKEM Bytes l) (li: Nat) (p: PathSecrets Bytes l)
-  (groupContext: GroupContext Bytes) (groupId: MlsBytes Bytes) (pre: Nat → Bool) (rand: Randomness Bytes) (tr: ProofTrace)
+  (groupContext: GroupContext Bytes) (groupId: MlsBytes Bytes) (excludedLeaves: List Nat) (rand: Randomness Bytes) (tr: ProofTrace)
   (updatePath: PathKEM Bytes l) (priv: TreeKEMPriv Bytes l)
-  (h: encryptPathSecrets (unAddP tk pre) li p groupContext rand = .success (updatePath, priv))
+  (h: encryptPathSecrets (unAdd tk excludedLeaves) li p groupContext rand = .success (updatePath, priv))
   (hrel: treesyncTreekemRel ts tk)
   (hp: PathSecretsAreCorrect me isAtRoot ts li groupId p tr)
   (hgood: AllTreeKeysGood ts groupId tr)
   (hgc: GroupContext.mf.wf (Bytes.Invariant · tr) groupContext)
-  (hrand: RandomnessHasGhostData tr rand (encryptPathSecretsEntropyGhostData ts (unAddP tk pre) li p groupId)):
+  (hrand: RandomnessHasGhostData tr rand (encryptPathSecretsEntropyGhostData ts (unAdd tk excludedLeaves) li p groupId)):
   PathkemGood updatePath tr
 := by
   subst hrel
+  unfold unAdd at h hrand
   have hctx := (pred_serializeNE_iff GroupContext.mf (Bytes.Invariant · tr) groupContext).2 (by simpa using hgc)
   induction p generalizing isAtRoot rand with
   | leaf leafIkm =>
@@ -1443,7 +1435,7 @@ theorem encryptPathSecrets_pub_proof (me: Participant) (isAtRoot: Bool) {l: Nat}
     simp only [PathkemGood, Path.mf.wf_leaf, TreeKEMLeaf.mf.wf_eq]
     exact hpkePk_publishable _ tr hinv
   | node opn pNext ih =>
-    have := unAddP_succ (treesyncToTreekem ts) li pre
+    have := unAddP_succ (treesyncToTreekem ts) li (excludedPre excludedLeaves)
     rw [child_treesyncToTreekem, sibling_treesyncToTreekem] at this
     have hgood' := (AllTreeKeysGood_succ ts groupId tr li).mp hgood
     cases opn with
@@ -1466,8 +1458,8 @@ theorem encryptPathSecrets_pub_proof (me: Participant) (isAtRoot: Bool) {l: Nat}
       obtain ⟨hrandCur, hrandNext⟩ := RandomnessHasGhostData.split tr _ rand randCur randNext _ _ hrand
         (by simp [multiEncryptWithLabelEntropyGhostData, length_multiEncryptWithLabelEntropyLengths]) hsplit
       -- the ciphertexts: the path secret is encrypted for the resolution of the sibling, whose keys are good
-      have hpks: ∀ pk ∈ treeResolution (unAddP (treesyncToTreekem (ts.sibling li)) pre), NodeKeyGoodWeak tr (ts.sibling li) groupId pk :=
-        fun pk hpk => nodeKeyGoodWeak_treeResolution (ts.sibling li) _ groupId tr hgood'.2.2 rfl pk (mem_treeResolution_unAddP _ pre pk hpk)
+      have hpks: ∀ pk ∈ treeResolution (unAddP (treesyncToTreekem (ts.sibling li)) (excludedPre excludedLeaves)), NodeKeyGoodWeak tr (ts.sibling li) groupId pk :=
+        fun pk hpk => nodeKeyGoodWeak_treeResolution (ts.sibling li) _ groupId tr hgood'.2.2 rfl pk (mem_treeResolution_unAddP _ _ pk hpk)
       have hcts' := multiEncryptWithLabel_weak_proof _ _ ps randCur (nodeSkLabel (ts.sibling li) groupId) tr ciphertexts hcts
         ⟨hpks, hrandCur, hctx, hps.1, hps.canFlow_sibling, (mlsHpkeUpdatepathnodePred_pred _ _ _).2 hps.2.2.1⟩
       -- the public key
@@ -1665,6 +1657,79 @@ theorem pathApplyPath_proof (me: Participant) {l: Nat} (t: TreeKEM Bytes l) (li:
 
 end Decrypt
 
+/-! ## Private paths -/
+
+section PrivatePaths
+
+variable {Bytes: Type}
+
+theorem pathBlank_node {l: Nat} (t: TreeKEM Bytes (l+1)) (li: Nat) (optSk: Option Bytes) (pNext: TreeKEMPriv Bytes l)
+  (blankLi: Nat):
+  pathBlank t li (.node optSk pNext) blankLi =
+    .node none (if (t.child li).containsLeafIndex blankLi then pathBlank (t.child li) li pNext blankLi else pNext)
+:= by
+  rw [pathBlank.eq_def]
+  grind
+
+end PrivatePaths
+
+section PrivatePathsProofs
+
+variable [HasSymbolicInvariants] [HasTreeKEMExecTrace]
+
+theorem TreekemPrivStatePred_node_none {l: Nat} (tr: ProofTrace) (me: Participant) (p: TreeKEMPriv Bytes l):
+  TreekemPrivStatePred tr me (.node none p) ↔ TreekemPrivStatePred tr me p
+:= by
+  simp [TreekemPrivStatePred]
+
+/--
+Port of `create_empty_priv_proof`.
+MLS*'s implicit `i` and `li` (in the type of the path) are not needed.
+-/
+public
+theorem createEmptyPriv_proof (tr: ProofTrace) (me: Participant) (l: Nat) (leafPrivateKey: Bytes)
+  (h: IsNodeSkForLeafPk tr me (hpkePk leafPrivateKey) leafPrivateKey):
+  TreekemPrivStatePred tr me (createEmptyPriv leafPrivateKey: TreeKEMPriv Bytes l) ∧
+  (createEmptyPriv leafPrivateKey: TreeKEMPriv Bytes l).getPathLeaf = leafPrivateKey
+:= by
+  induction l with
+  | zero => exact ⟨h, rfl⟩
+  | succ l ih => simp [createEmptyPriv, TreekemPrivStatePred_node_none, Path.getPathLeaf, ih]
+
+/--
+Port of `path_blank_proof`.
+MLS* requires `blank_li: leaf_index l i` and `blank_li <> li`, which are not needed.
+-/
+public
+theorem pathBlank_proof (tr: ProofTrace) (me: Participant) {l: Nat} (t: TreeKEM Bytes l) (li: Nat)
+  (priv: TreeKEMPriv Bytes l) (blankLi: Nat)
+  (h: TreekemPrivStatePred tr me priv):
+  TreekemPrivStatePred tr me (pathBlank t li priv blankLi)
+:= by
+  induction priv with
+  | leaf => rw [pathBlank.eq_def]; grind
+  | node optSk pNext ih =>
+    rw [pathBlank_node, TreekemPrivStatePred_node_none]
+    simp only [TreekemPrivStatePred] at h
+    split <;> grind
+
+public
+theorem TreekemPrivStatePred_pathExtend (tr: ProofTrace) (me: Participant) {l: Nat} (p: TreeKEMPriv Bytes l)
+  (h: TreekemPrivStatePred tr me p):
+  TreekemPrivStatePred tr me (pathExtend p)
+:= by
+  simpa [pathExtend, TreekemPrivStatePred_node_none] using h
+
+public
+theorem TreekemPrivStatePred_pathTruncate (tr: ProofTrace) (me: Participant) {l: Nat} (p: TreeKEMPriv Bytes (l+1))
+  (h: TreekemPrivStatePred tr me p):
+  TreekemPrivStatePred tr me (pathTruncate p)
+:= by
+  cases p
+  exact h.1
+
+end PrivatePathsProofs
+
 /-! ## Commit secret -/
 
 section Generic
@@ -1676,7 +1741,6 @@ Port of `is_above_treesync_root`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the predicate follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def IsAboveTreesyncRoot {l: Nat} (t: TreeSync Bytes tkt l) (li: Nat): Prop :=
   match t.intoChildSiblingView li with
@@ -1706,7 +1770,6 @@ Unlike MLS*, this function takes the tree, and follows the child / sibling view 
 (as `computeLeastCommonAncestorLevel`).
 MLS* requires `li1 =!= li2`; otherwise, this function returns `0`.
 -/
-@[expose]
 public
 def findLca {Leaf Node: Type} {l: Nat} (t: Tree Leaf Node l) (li1 li2: Nat): Nat :=
   match l, t.intoChildSiblingView li1 with

@@ -2,6 +2,8 @@ module
 
 public import MLS.TreeKEM.Code.API.Tree
 public import MLS.TreeKEM.Proofs.Invariants
+import all MLS.TreeKEM.Code.API.Tree
+import all MLS.Common.Code.TreeCommon
 
 /-!
 Proofs about `MLS.TreeKEM.API.Tree`.
@@ -250,7 +252,7 @@ theorem finalizeCreateCommit_valid {leafInd: Nat} {st: TreeKEMTreeState Bytes le
   res.Valid
 := by
   obtain ⟨newPriv, h1, hres⟩ := finalizeCreateCommit_success pending addedLeaves groupContext randomness res h
-  have := pathFilteringOk_encryptPathSecrets st.tree _ leafInd _ _ _ _ _ h1 (by simp [unAdd]) hpend
+  have := pathFilteringOk_encryptPathSecrets st.tree _ leafInd _ _ _ _ _ h1 (by simp) hpend
   unfold CreateCommitResult.Valid TreeKEMTreeState.Valid at *
   rw [hres]
   grind [treeApplyPath_position, treekemInvariant_treeApplyPath, treekemPrivInvariant_treeApplyPath, treekemPrivInvariant]

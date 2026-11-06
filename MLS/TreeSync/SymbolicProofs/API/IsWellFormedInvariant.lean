@@ -3,6 +3,8 @@ module
 public import MLS.TreeSync.SymbolicProofs.IsWellFormed
 public import MLS.TreeSync.Code.API
 public import MLS.TreeSync.Proofs.API
+import all MLS.Common.Code.TreeCommon
+import all MLS.TreeSync.Code.API
 
 /-!
 Port of `MLS.TreeSync.Symbolic.API.IsWellFormedInvariant`: well-formedness of the trees computed by the TreeSync API.
@@ -23,7 +25,7 @@ variable (pred: Bytes → Prop) [BytesCompatiblePred pred]
 public
 theorem finalizeCreate_wf {ln: LeafNode Bytes tkt} (pend: PendingCreate groupId ln) (token: TokenT)
   (h: (LeafNode.mf tkt).wf pred ln):
-  (TreeSync.mf tkt 0).wf pred (finalizeCreate pend token).tree
+  (TreeSync.mf tkt _).wf pred (finalizeCreate pend token).tree
 := by
   simp [finalizeCreate, treeCreate, Tree.mf.wf_zero, MlsOption.mf.wf_eq, h]
 

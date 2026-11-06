@@ -19,7 +19,6 @@ open MLS
 variable {Bytes: Type} [CryptoBytes Bytes]
 
 /-- Port of `create_from_epoch_secret`. -/
-@[expose]
 public
 def createFromEpochSecret (epochSecret: Bytes) (groupContext: GroupContext Bytes):
   Result (TreeKEMKeyscheduleState Bytes × Bytes)
@@ -48,7 +47,6 @@ def createFromEpochSecret (epochSecret: Bytes) (groupContext: GroupContext Bytes
   }, encryptionSecret)
 
 /-- Port of `create_from_joiner_secret`. -/
-@[expose]
 public
 def createFromJoinerSecret (joinerSecret: Bytes) (psks: List (PreSharedKeyId Bytes × Bytes)) (groupContext: GroupContext Bytes):
   Result (TreeKEMKeyscheduleState Bytes × Bytes)
@@ -63,7 +61,6 @@ structure SecretsForWelcome (Bytes: Type) where
   welcomeSecret: Bytes
 
 /-- Port of `commit`. -/
-@[expose]
 public
 def commit (st: TreeKEMKeyscheduleState Bytes) (optCommitSecret: Option Bytes)
   (psks: List (PreSharedKeyId Bytes × Bytes)) (newGroupContext: GroupContext Bytes)
@@ -79,7 +76,6 @@ def commit (st: TreeKEMKeyscheduleState Bytes) (optCommitSecret: Option Bytes)
   })
 
 /-- Port of `export`. -/
-@[expose]
 public
 def «export» (st: TreeKEMKeyscheduleState Bytes) (label: String) (context: Bytes) (len: Nat): Result Bytes :=
   mlsExporter st.epochKeys.exporterSecret label context len

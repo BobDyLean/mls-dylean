@@ -5,6 +5,8 @@ public import MLS.TreeSync.Proofs.ParentHash
 public import MLS.TreeSync.Proofs.Operations
 public import MLS.Common.Proofs.TreeCommon
 public import MLS.Symbolic.Code.Symbolic
+import all MLS.TreeSync.Code.Operations
+import all MLS.Common.Code.TreeCommon
 
 /-!
 Port of `MLS.TreeSync.Symbolic.IsWellFormed`: well-formedness of the results of the TreeSync operations.

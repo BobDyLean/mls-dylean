@@ -2,6 +2,7 @@ module
 
 public import MLS.TreeSync.Code.ParentHash
 public import MLS.TreeSync.Proofs.TreeHash
+import all MLS.TreeSync.Code.ParentHash
 
 /-!
 Port of `MLS.TreeSync.ParentHash.Proofs`.
@@ -25,7 +26,6 @@ variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes}
 Port of `get_parent_hash_input`.
 MLS* requires `parent_hash: mls_bytes bytes`; otherwise, this function fails.
 -/
-@[expose]
 public
 def getParentHashInput {l: Nat}
   (content: tkt.NodeContent) (parentHash: Bytes) (originalSibling: TreeSync Bytes tkt l)
@@ -63,7 +63,6 @@ Injectivity theorem for the parent-hash computation, very similar to `tree_hash_
 
 This function computes the pair of bytes, its specification is `computeParentHashInj_spec`.
 -/
-@[expose]
 public
 def computeParentHashInj {l1 l2: Nat}
   (content1: tkt.NodeContent) (parentHash1: Bytes) (originalSibling1: TreeSync Bytes tkt l1)

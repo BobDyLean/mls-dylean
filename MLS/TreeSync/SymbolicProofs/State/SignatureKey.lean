@@ -61,7 +61,6 @@ theorem signatureKeyLabel_canFlow_pub (tr: ExecTrace) (prin: Participant) (signa
   grind [signatureKeyLabel]
 
 /-- Port of `signature_sk_to_signature_key_label`. -/
-@[expose]
 public
 def signatureSkToSignatureKeyLabel (prin: Participant) (signatureSk: Bytes): Label :=
   signatureKeyLabel prin (DySlop.Signature.vk signatureSk)

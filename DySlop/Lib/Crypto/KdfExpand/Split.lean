@@ -61,13 +61,11 @@ public
 abbrev KdfExpandUsage.Local (tags: List String) := Locals (fun _: String => KdfExpandUsage) tags
 
 /-- Port of `mk_global_kdf_expand_usage_get_usage`. -/
-@[expose]
 public
 def KdfExpandUsage.Local.getUsage {tags: List String} (l: KdfExpandUsage.Local tags) (prkUsage: Usage) (info: Bytes): Usage :=
   SplitFunction.Params.Locals.toFun KdfExpandUsage.getUsageParams l (prkUsage, info)
 
 /-- Port of `mk_global_kdf_expand_usage_get_label`. -/
-@[expose]
 public
 def KdfExpandUsage.Local.getLabel {tags: List String} (l: KdfExpandUsage.Local tags) (prkUsage: Usage) (prkLabel: Label) (info: Bytes): Label :=
   SplitFunction.Params.Locals.toFun KdfExpandUsage.getLabelParams l (prkUsage, prkLabel, info)
@@ -145,7 +143,7 @@ where
       (prkUsage, prkLabel, info) prkUsage.tag (prkUsage, prkLabel, info) (by simp [h_type]) h_tag
 
 /-- Port of `mk_kdf_expand_usage`. -/
-@[expose, instance_reducible]
+@[instance_reducible]
 public
 def KdfExpandUsage.ofLocal {tags: List String} (l: KdfExpandUsage.Local tags): KdfExpandUsage where
   getUsage := l.getUsage

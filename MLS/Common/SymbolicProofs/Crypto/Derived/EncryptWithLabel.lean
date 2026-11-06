@@ -3,6 +3,7 @@ module
 public import MLS.Common.SymbolicProofs.Crypto.Derived.MlsLabel
 public import MLS.Symbolic.Code.Symbolic
 public import DySlop.Lib.HPKE
+import all MLS.Common.Code.Crypto.Derived
 
 /-!
 Port of `MLS.Crypto.Derived.Symbolic.EncryptWithLabel`: split HPKE predicate for EncryptWithLabel,
@@ -148,7 +149,7 @@ def EncryptWithLabelPred.splitParams: SplitFunction.Params where
   default _ := False
 
 /-- MLS*'s `apply_global_fun` of `split_encryptwithlabel_crypto_pred_params`. -/
-@[expose, reducible]
+@[reducible]
 public
 def EncryptWithLabelPred.applyGlobal (hpred: HpkePred) (x: EncryptWithLabelPred.splitParams.Input): Prop :=
   @HpkePred.pred _ _ _ hpred x.1.wf x.1.usage x.1.label x.2.1 x.2.2.1 x.2.2.2.1 x.2.2.2.2.1 x.2.2.2.2.2
@@ -182,7 +183,7 @@ theorem EncryptWithLabelPred.Local.pred_single
   Params.Locals.apply_single EncryptWithLabelPred.splitParams lpred _ _
 
 /-- Port of `mk_hpke_mls_pred` (and of `mk_global_hpke_mls_pred`): the HPKE predicate defined by local EncryptWithLabel predicates. -/
-@[expose, instance_reducible]
+@[instance_reducible]
 public
 def EncryptWithLabelPred.ofLocal {labels: List String} (l: EncryptWithLabelPred.Local labels): HpkePred where
   pred usage msg info ad tr := Params.Locals.toFun EncryptWithLabelPred.splitParams l (⟨⟩, usage, msg, info, ad, tr)

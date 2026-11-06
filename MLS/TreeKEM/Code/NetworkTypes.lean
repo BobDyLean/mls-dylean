@@ -49,12 +49,10 @@ structure HpkeCiphertext (Bytes: Type) [BytesLike Bytes] where
   kemOutput: MlsBytes Bytes
   ciphertext: MlsBytes Bytes
 
-@[expose]
 public
 def HpkeCiphertext.f: MlsBytes Bytes × MlsBytes Bytes → HpkeCiphertext Bytes :=
   fun (kemOutput, ciphertext) => { kemOutput, ciphertext }
 
-@[expose]
 public
 def HpkeCiphertext.g: HpkeCiphertext Bytes → MlsBytes Bytes × MlsBytes Bytes :=
   fun { kemOutput, ciphertext } => (kemOutput, ciphertext)
@@ -64,7 +62,6 @@ instance: LeftInverse (HpkeCiphertext.g (Bytes := Bytes)) HpkeCiphertext.f := �
 public
 instance: RightInverse (HpkeCiphertext.g (Bytes := Bytes)) HpkeCiphertext.f := ⟨by intro _; rfl⟩
 
-@[expose]
 public
 def HpkeCiphertext.mf: NonExtensibleMessageFormat Bytes (HpkeCiphertext Bytes) :=
   .isomorphic (.prod MlsBytes.mf MlsBytes.mf) HpkeCiphertext.f HpkeCiphertext.g
@@ -92,12 +89,10 @@ structure UpdatePathNode (Bytes: Type) [BytesLike Bytes] where
   encryptionKey: HpkePublicKey Bytes
   encryptedPathSecret: MlsList (HpkeCiphertext.mf (Bytes := Bytes))
 
-@[expose]
 public
 def UpdatePathNode.f: HpkePublicKey Bytes × MlsList (HpkeCiphertext.mf (Bytes := Bytes)) → UpdatePathNode Bytes :=
   fun (encryptionKey, encryptedPathSecret) => { encryptionKey, encryptedPathSecret }
 
-@[expose]
 public
 def UpdatePathNode.g: UpdatePathNode Bytes → HpkePublicKey Bytes × MlsList (HpkeCiphertext.mf (Bytes := Bytes)) :=
   fun { encryptionKey, encryptedPathSecret } => (encryptionKey, encryptedPathSecret)
@@ -107,7 +102,6 @@ instance: LeftInverse (UpdatePathNode.g (Bytes := Bytes)) UpdatePathNode.f := �
 public
 instance: RightInverse (UpdatePathNode.g (Bytes := Bytes)) UpdatePathNode.f := ⟨by intro _; rfl⟩
 
-@[expose]
 public
 def UpdatePathNode.mf: NonExtensibleMessageFormat Bytes (UpdatePathNode Bytes) :=
   .isomorphic (.prod HpkePublicKey.mf (MlsList.mf HpkeCiphertext.mf)) UpdatePathNode.f UpdatePathNode.g
@@ -135,12 +129,10 @@ structure UpdatePath (Bytes: Type) [BytesLike Bytes] where
   leafNode: LeafNode Bytes tkt
   nodes: MlsList (UpdatePathNode.mf (Bytes := Bytes))
 
-@[expose]
 public
 def UpdatePath.f: LeafNode Bytes tkt × MlsList (UpdatePathNode.mf (Bytes := Bytes)) → UpdatePath Bytes :=
   fun (leafNode, nodes) => { leafNode, nodes }
 
-@[expose]
 public
 def UpdatePath.g: UpdatePath Bytes → LeafNode Bytes tkt × MlsList (UpdatePathNode.mf (Bytes := Bytes)) :=
   fun { leafNode, nodes } => (leafNode, nodes)
@@ -150,7 +142,6 @@ instance: LeftInverse (UpdatePath.g (Bytes := Bytes)) UpdatePath.f := ⟨by intr
 public
 instance: RightInverse (UpdatePath.g (Bytes := Bytes)) UpdatePath.f := ⟨by intro _; rfl⟩
 
-@[expose]
 public
 def UpdatePath.mf: NonExtensibleMessageFormat Bytes (UpdatePath Bytes) :=
   .isomorphic (.prod (LeafNode.mf tkt) (MlsList.mf UpdatePathNode.mf)) UpdatePath.f UpdatePath.g
@@ -181,7 +172,6 @@ inductive PskType where
   | resumption
 deriving DecidableEq
 
-@[expose]
 public
 def PskType.ofUInt8 (n: UInt8): Option PskType :=
   match n with
@@ -189,7 +179,6 @@ def PskType.ofUInt8 (n: UInt8): Option PskType :=
   | 2 => some .resumption
   | _ => none
 
-@[expose]
 public
 def PskType.toUInt8: PskType → UInt8
   | .external => 1
@@ -203,7 +192,6 @@ public
 instance: SubsetRightInverse PskType.toUInt8 PskType.ofUInt8 where
   right_inv x := by cases x <;> rfl
 
-@[expose]
 public
 def PskType.mf: NonExtensibleMessageFormat Bytes PskType :=
   .subsetIsomorphic .uint8 PskType.ofUInt8 PskType.toUInt8
@@ -232,7 +220,6 @@ inductive ResumptionPskUsage where
   | branch
 deriving DecidableEq
 
-@[expose]
 public
 def ResumptionPskUsage.ofUInt8 (n: UInt8): Option ResumptionPskUsage :=
   match n with
@@ -241,7 +228,6 @@ def ResumptionPskUsage.ofUInt8 (n: UInt8): Option ResumptionPskUsage :=
   | 3 => some .branch
   | _ => none
 
-@[expose]
 public
 def ResumptionPskUsage.toUInt8: ResumptionPskUsage → UInt8
   | .application => 1
@@ -256,7 +242,6 @@ public
 instance: SubsetRightInverse ResumptionPskUsage.toUInt8 ResumptionPskUsage.ofUInt8 where
   right_inv x := by cases x <;> rfl
 
-@[expose]
 public
 def ResumptionPskUsage.mf: NonExtensibleMessageFormat Bytes ResumptionPskUsage :=
   .subsetIsomorphic .uint8 ResumptionPskUsage.ofUInt8 ResumptionPskUsage.toUInt8
@@ -315,13 +300,11 @@ instance: ∀ t, (internalType.mf (Bytes := Bytes) t).HasUniqueRepresentation
     dsimp only [internalType.mf, internalType]
     infer_instance
 
-@[expose]
 public
 def f: (t: PskType) × internalType Bytes t → PreSharedKeyId Bytes
   | ⟨.external, (pskId, pskNonce)⟩ => .external pskId pskNonce
   | ⟨.resumption, (usage, pskGroupId, pskEpoch, pskNonce)⟩ => .resumption usage pskGroupId pskEpoch pskNonce
 
-@[expose]
 public
 def g: PreSharedKeyId Bytes → (t: PskType) × internalType Bytes t
   | .external pskId pskNonce => ⟨.external, (pskId, pskNonce)⟩
@@ -334,7 +317,6 @@ instance: RightInverse (g (Bytes := Bytes)) f := ⟨by intro x; cases x <;> rfl�
 
 end PreSharedKeyId
 
-@[expose]
 public
 def PreSharedKeyId.mf: NonExtensibleMessageFormat Bytes (PreSharedKeyId Bytes) :=
   .isomorphic (.sigma PskType.mf PreSharedKeyId.internalType.mf) PreSharedKeyId.f PreSharedKeyId.g
@@ -364,12 +346,10 @@ structure PskLabel (Bytes: Type) [BytesLike Bytes] where
   index: UInt16
   count: UInt16
 
-@[expose]
 public
 def PskLabel.f: PreSharedKeyId Bytes × UInt16 × UInt16 → PskLabel Bytes :=
   fun (id, index, count) => { id, index, count }
 
-@[expose]
 public
 def PskLabel.g: PskLabel Bytes → PreSharedKeyId Bytes × UInt16 × UInt16 :=
   fun { id, index, count } => (id, index, count)
@@ -379,7 +359,6 @@ instance: LeftInverse (PskLabel.g (Bytes := Bytes)) PskLabel.f := ⟨by intro _;
 public
 instance: RightInverse (PskLabel.g (Bytes := Bytes)) PskLabel.f := ⟨by intro _; rfl⟩
 
-@[expose]
 public
 def PskLabel.mf: NonExtensibleMessageFormat Bytes (PskLabel Bytes) :=
   .isomorphic (.prod PreSharedKeyId.mf (.prod .uint16BE .uint16BE)) PskLabel.f PskLabel.g

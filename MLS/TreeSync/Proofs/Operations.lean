@@ -3,6 +3,7 @@ module
 public import MLS.Common.Proofs.Crypto.Derived
 public import MLS.Common.Proofs.TreeCommon
 public import MLS.TreeSync.Code.Operations
+import all MLS.TreeSync.Code.Operations
 
 /-!
 Port of `MLS.TreeSync.Operations.Lemmas`, and lemmas unfolding the operations of `MLS.TreeSync.Operations`.

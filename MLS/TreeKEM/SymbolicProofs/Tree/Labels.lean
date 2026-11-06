@@ -10,6 +10,7 @@ public import DySlop.Lib.Label
 public import DySlop.Lib.Event
 import all MLS.TreeSync.SymbolicSpec.LeafNodeSignature
 import all MLS.TreeSync.SymbolicSpec.Event.LeafNodeHasBeenVerified
+import all MLS.TreeSync.Code.Invariants.ParentHash
 
 /-!
 Port of `MLS.TreeKEM.Symbolic.Tree.Labels`:
@@ -61,12 +62,10 @@ namespace OnePathSecretUsage
 public
 abbrev Raw := ((l: Nat) × TreeSync Bytes tkt l) × MlsBytes Bytes × Nat
 
-@[expose]
 public
 def f: Raw → OnePathSecretUsage :=
   fun (⟨l, t⟩, groupId, committerLeafIndex) => { l, t, groupId, committerLeafIndex }
 
-@[expose]
 public
 def g: OnePathSecretUsage → Raw :=
   fun { l, t, groupId, committerLeafIndex } => (⟨l, t⟩, groupId, committerLeafIndex)
@@ -79,7 +78,6 @@ instance: RightInverse g f := ⟨by intro _; rfl⟩
 end OnePathSecretUsage
 
 /-- Port of `ps_one_path_secret_usage`. -/
-@[expose]
 public
 def OnePathSecretUsage.mf: NonExtensibleMessageFormat Bytes OnePathSecretUsage :=
   .isomorphic (.prod (.sigma .slowNat (TreeSync.mf tkt)) (.prod MlsBytes.mf .slowNat)) OnePathSecretUsage.f OnePathSecretUsage.g
@@ -97,7 +95,6 @@ public
 abbrev PathSecretUsage := List OnePathSecretUsage
 
 /-- Port of `parseable_serializeable_path_secret_usage`. -/
-@[expose]
 public
 def PathSecretUsage.mf: NonExtensibleMessageFormat Bytes PathSecretUsage :=
   .slowList OnePathSecretUsage.mf
@@ -108,7 +105,6 @@ instance: PathSecretUsage.mf.IsNonAmbiguous := by
   infer_instance
 
 /-- Parse the path secret usages in the data of a usage (MLS*'s `parse path_secret_usage (KdfExpandKey?.data prk_usage)`). -/
-@[expose]
 public
 def PathSecretUsage.ofUsage (usg: Usage): Option PathSecretUsage :=
   usg.data.bind PathSecretUsage.mf.toExtensible.parse
@@ -166,7 +162,6 @@ section Labels
 variable [HasSymbolicBytes] [ExecTraceTypes] [HasTreeSyncExecTrace tkt] [HasTreeKEMExecTrace]
 
 /-- Port of `principal_leaf_node_has_been_verified_label`. -/
-@[expose]
 public
 def principalLeafNodeHasBeenVerifiedLabel (leafNode: LeafNode Bytes tkt) (groupId: MlsBytes Bytes) (leafIndex: Nat)
   (prin: Participant): Label
@@ -174,13 +169,11 @@ def principalLeafNodeHasBeenVerifiedLabel (leafNode: LeafNode Bytes tkt) (groupI
   ProtocolEvent.label ({ prin, leafNode, groupId, leafIndex }: LeafNodeHasBeenVerified tkt)
 
 /-- Port of `leaf_node_has_been_verified_label`. -/
-@[expose]
 public
 def leafNodeHasBeenVerifiedLabel (leafNode: LeafNode Bytes tkt) (groupId: MlsBytes Bytes) (leafIndex: Nat): Label :=
   Label.bigJoin (principalLeafNodeHasBeenVerifiedLabel leafNode groupId leafIndex)
 
 /-- Port of `guarded_signature_key_label`. -/
-@[expose]
 public
 def guardedSignatureKeyLabel (leafNode: LeafNode Bytes tkt) (groupId: MlsBytes Bytes) (leafIndex: Nat): Label :=
   match credentialToPrincipal leafNode.data.credential with
@@ -196,7 +189,6 @@ end Labels
 Port of `get_node_content`.
 MLS* requires `node_not_blank t`; otherwise, the empty bytestring is returned.
 -/
-@[expose]
 public
 def getNodeContent [HasSymbolicBytes] {l: Nat} (t: TreeSync Bytes tkt l): Bytes :=
   match t.intoLeftRightView with
@@ -395,7 +387,6 @@ Port of `all_tree_keys_good`.
 MLS* states `node_key_good` on the non-blank leaves and nodes by matching on their content;
 here, it is stated with `nodeNotBlank`.
 -/
-@[expose]
 public
 def AllTreeKeysGood {l: Nat} (t: TreeSync Bytes tkt l) (groupId: MlsBytes Bytes) (tr: ProofTrace): Prop :=
   (nodeNotBlank t → NodeKeyGood tr t groupId) ∧

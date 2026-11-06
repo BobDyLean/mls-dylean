@@ -17,7 +17,6 @@ open MLS.Test
 attribute [local instance] bytesLikeByteArray
 
 /-- Port of `check_mls_welcome`. -/
-@[expose]
 public
 def checkMlsWelcome (mlsWelcome: String): IO Unit := do
   let mlsWelcome ← hexStringToBytes mlsWelcome
@@ -30,7 +29,6 @@ def checkMlsWelcome (mlsWelcome: String): IO Unit := do
     checkEqual "mls_welcome" bytesToHexString mlsWelcome (serialize MlsMessage.mf x)
 
 /-- Port of `check_mls_group_info`. -/
-@[expose]
 public
 def checkMlsGroupInfo (mlsGroupInfo: String): IO Unit := do
   let mlsGroupInfo ← hexStringToBytes mlsGroupInfo
@@ -43,7 +41,6 @@ def checkMlsGroupInfo (mlsGroupInfo: String): IO Unit := do
     checkEqual "mls_group_info" bytesToHexString mlsGroupInfo (serialize MlsMessage.mf x)
 
 /-- Port of `check_mls_key_package`. -/
-@[expose]
 public
 def checkMlsKeyPackage (mlsKeyPackage: String): IO Unit := do
   let mlsKeyPackage ← hexStringToBytes mlsKeyPackage
@@ -56,7 +53,6 @@ def checkMlsKeyPackage (mlsKeyPackage: String): IO Unit := do
     checkEqual "mls_key_package" bytesToHexString mlsKeyPackage (serialize MlsMessage.mf x)
 
 /-- Port of `check_ratchet_tree`. -/
-@[expose]
 public
 def checkRatchetTree (ratchetTree: String): IO Unit := do
   let ratchetTree ← hexStringToBytes ratchetTree
@@ -66,7 +62,6 @@ def checkRatchetTree (ratchetTree: String): IO Unit := do
     checkEqual "ratchet_tree" bytesToHexString ratchetTree (serialize (RatchetTree.mf tkt) x)
 
 /-- Port of `check_group_secrets`. -/
-@[expose]
 public
 def checkGroupSecrets (groupSecrets: String): IO Unit := do
   let groupSecrets ← hexStringToBytes groupSecrets
@@ -76,7 +71,6 @@ def checkGroupSecrets (groupSecrets: String): IO Unit := do
     checkEqual "group_secrets" bytesToHexString groupSecrets (serialize GroupSecrets.mf x)
 
 /-- Port of `check_add_proposal`. -/
-@[expose]
 public
 def checkAddProposal (addProposal: String): IO Unit := do
   let addProposal ← hexStringToBytes addProposal
@@ -86,7 +80,6 @@ def checkAddProposal (addProposal: String): IO Unit := do
     checkEqual "add" bytesToHexString addProposal (serialize Add.mf x)
 
 /-- Port of `check_update_proposal`. -/
-@[expose]
 public
 def checkUpdateProposal (updateProposal: String): IO Unit := do
   let updateProposal ← hexStringToBytes updateProposal
@@ -96,7 +89,6 @@ def checkUpdateProposal (updateProposal: String): IO Unit := do
     checkEqual "update" bytesToHexString updateProposal (serialize Update.mf x)
 
 /-- Port of `check_remove_proposal`. -/
-@[expose]
 public
 def checkRemoveProposal (removeProposal: String): IO Unit := do
   let removeProposal ← hexStringToBytes removeProposal
@@ -106,7 +98,6 @@ def checkRemoveProposal (removeProposal: String): IO Unit := do
     checkEqual "remove" bytesToHexString removeProposal (serialize Remove.mf x)
 
 /-- Port of `check_pre_shared_key_proposal`. -/
-@[expose]
 public
 def checkPreSharedKeyProposal (preSharedKeyProposal: String): IO Unit := do
   let preSharedKeyProposal ← hexStringToBytes preSharedKeyProposal
@@ -116,7 +107,6 @@ def checkPreSharedKeyProposal (preSharedKeyProposal: String): IO Unit := do
     checkEqual "pre_shared_key" bytesToHexString preSharedKeyProposal (serialize PreSharedKey.mf x)
 
 /-- Port of `check_reinit_proposal`. -/
-@[expose]
 public
 def checkReinitProposal (reinitProposal: String): IO Unit := do
   let reinitProposal ← hexStringToBytes reinitProposal
@@ -126,7 +116,6 @@ def checkReinitProposal (reinitProposal: String): IO Unit := do
     checkEqual "reinit" bytesToHexString reinitProposal (serialize Reinit.mf x)
 
 /-- Port of `check_external_init_proposal`. -/
-@[expose]
 public
 def checkExternalInitProposal (externalInitProposal: String): IO Unit := do
   let externalInitProposal ← hexStringToBytes externalInitProposal
@@ -136,7 +125,6 @@ def checkExternalInitProposal (externalInitProposal: String): IO Unit := do
     checkEqual "external_init" bytesToHexString externalInitProposal (serialize ExternalInit.mf x)
 
 /-- Port of `check_group_context_extensions_proposal`. -/
-@[expose]
 public
 def checkGroupContextExtensionsProposal (groupContextExtensionsProposal: String): IO Unit := do
   let groupContextExtensionsProposal ← hexStringToBytes groupContextExtensionsProposal
@@ -146,7 +134,6 @@ def checkGroupContextExtensionsProposal (groupContextExtensionsProposal: String)
     checkEqual "group_context_extensions" bytesToHexString groupContextExtensionsProposal (serialize GroupContextExtensions.mf x)
 
 /-- Port of `check_commit`. -/
-@[expose]
 public
 def checkCommit (commit: String): IO Unit := do
   let commit ← hexStringToBytes commit
@@ -156,7 +143,6 @@ def checkCommit (commit: String): IO Unit := do
     checkEqual "commit" bytesToHexString commit (serialize Commit.mf x)
 
 /-- Port of `check_public_message_application`. -/
-@[expose]
 public
 def checkPublicMessageApplication (publicMessage: String): IO Unit := do
   let publicMessage ← hexStringToBytes publicMessage
@@ -171,7 +157,6 @@ def checkPublicMessageApplication (publicMessage: String): IO Unit := do
     checkEqual "public_message_application" bytesToHexString publicMessage (serialize MlsMessage.mf x)
 
 /-- Port of `check_public_message_proposal`. -/
-@[expose]
 public
 def checkPublicMessageProposal (publicMessage: String): IO Unit := do
   let publicMessage ← hexStringToBytes publicMessage
@@ -186,7 +171,6 @@ def checkPublicMessageProposal (publicMessage: String): IO Unit := do
     checkEqual "public_message_proposal" bytesToHexString publicMessage (serialize MlsMessage.mf x)
 
 /-- Port of `check_public_message_commit`. -/
-@[expose]
 public
 def checkPublicMessageCommit (publicMessage: String): IO Unit := do
   let publicMessage ← hexStringToBytes publicMessage
@@ -201,7 +185,6 @@ def checkPublicMessageCommit (publicMessage: String): IO Unit := do
     checkEqual "public_message_commit" bytesToHexString publicMessage (serialize MlsMessage.mf x)
 
 /-- Port of `check_private_message`. -/
-@[expose]
 public
 def checkPrivateMessage (privateMessage: String): IO Unit := do
   let privateMessage ← hexStringToBytes privateMessage
@@ -214,7 +197,6 @@ def checkPrivateMessage (privateMessage: String): IO Unit := do
     checkEqual "private_message" bytesToHexString privateMessage (serialize MlsMessage.mf x)
 
 /-- Port of `test_messages_one`. -/
-@[expose]
 public
 def testMessagesOne (t: MessagesTest): IO Bool := do
   checkMlsWelcome t.mlsWelcome
@@ -237,7 +219,6 @@ def testMessagesOne (t: MessagesTest): IO Bool := do
   pure true
 
 /-- Port of `test_messages`. -/
-@[expose]
 public
 def testMessages: List MessagesTest → IO Nat :=
   testList "Messages" testMessagesOne

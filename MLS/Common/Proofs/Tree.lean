@@ -1,6 +1,7 @@
 module
 
 public import MLS.Common.Code.Tree
+import all MLS.Common.Code.Tree
 
 /-!
 Port of `MLS.Tree.Lemmas`, and reasoning lemmas about the views of `MLS.Tree`.

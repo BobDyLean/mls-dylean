@@ -70,7 +70,6 @@ Port of `as_add_update`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def asAddUpdate {l: Nat} (t: ASTokens TokenT l) (li: Nat) (token: TokenT): ASTokens TokenT l :=
   treeChangePath t li (some token) ()
@@ -80,19 +79,16 @@ Port of `as_remove`.
 MLS* requires `li: leaf_index l i` (i.e. `t.containsLeafIndex li`);
 otherwise, the function follows the path to the leaf closest to `li`.
 -/
-@[expose]
 public
 def asRemove {l: Nat} (t: ASTokens TokenT l) (li: Nat): ASTokens TokenT l :=
   treeChangePath t li none ()
 
 /-- Port of `as_truncate`. -/
-@[expose]
 public
 def asTruncate {l: Nat} (t: ASTokens TokenT (l+1)): ASTokens TokenT l :=
   t.left
 
 /-- Port of `as_extend`. -/
-@[expose]
 public
 def asExtend {l: Nat} (t: ASTokens TokenT l): ASTokens TokenT (l+1) :=
   (LeftRightView.node () t (mkBlankTreeGeneral l (t.position + 2^l) none ())).pack
@@ -115,7 +111,6 @@ Port of `all_credentials_ok`.
 The authentication service invariant:
 Every non-blank leaf is associated with a token that attests its identity was validated by the AS.
 -/
-@[expose]
 public
 def allCredentialsOk (asp: ASParameters Bytes TokenT) {l: Nat} (ts: TreeSync Bytes tkt l) (ast: ASTokens TokenT l): Prop :=
   match ts.intoLeftRightView, ast.intoLeftRightView with

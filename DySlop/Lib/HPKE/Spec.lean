@@ -82,7 +82,6 @@ instance LabeledExpandInfo.ps: ParseableSerializeable LabeledExpandInfo := .make
   `LabeledExpand(prk, label, info, L) = Expand(prk, labeled_info, L)`.
   DY* requires `len <> 0`.
 -/
-@[expose]
 public
 def labeledExpand (prk: Bytes) (label: String) (info: Bytes) (len: UInt16): Bytes :=
   DySlop.KdfExpand.kdfExpand prk (serialize ({ len, label, info }: LabeledExpandInfo)) len.toNat
@@ -94,7 +93,6 @@ def hpkePk (sk: Bytes): Bytes :=
   DySlop.Kem.kemPk sk
 
 /-- Port of `hpke_enc`. -/
-@[expose]
 public
 def hpkeEnc (pkR entropy plaintext info ad: Bytes): Bytes × Bytes :=
   let (enc, sharedSecret) := DySlop.Kem.kemEncap pkR entropy
@@ -104,7 +102,6 @@ def hpkeEnc (pkR entropy plaintext info ad: Bytes): Bytes × Bytes :=
   (enc, cipher)
 
 /-- Port of `hpke_dec`. -/
-@[expose]
 public
 def hpkeDec (skR: Bytes) (encCiphertext: Bytes × Bytes) (info ad: Bytes): Option Bytes :=
   match DySlop.Kem.kemDecap skR encCiphertext.1 with

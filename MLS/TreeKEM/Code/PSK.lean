@@ -18,7 +18,6 @@ variable {Bytes: Type} [CryptoBytes Bytes]
 Port of `compute_psk_secret_step`.
 Compute psk_secret[i+1] given psk[i], psk_label[i] and psk_secret[i]
 -/
-@[expose]
 public
 def computePskSecretStep (label: PskLabel Bytes) (psk: Bytes) (prevPskSecret: Bytes): Result Bytes := do
   let pskExtracted ← CryptoBytes.kdfExtract zeroVector psk
@@ -31,7 +30,6 @@ Port of `compute_psk_secret_aux`.
 Compute psk_secret[n] given psk_secret[ind]
 MLS* requires `ind <= List.Tot.length l`; otherwise, this function returns `pskSecretInd`.
 -/
-@[expose]
 public
 def computePskSecretAux (l: List (PreSharedKeyId Bytes × Bytes)) (ind: Nat) (pskSecretInd: Bytes): Result Bytes :=
   if h: ind < l.length then do
@@ -46,7 +44,6 @@ def computePskSecretAux (l: List (PreSharedKeyId Bytes × Bytes)) (ind: Nat) (ps
 termination_by l.length - ind
 
 /-- Port of `compute_psk_secret`. -/
-@[expose]
 public
 def computePskSecret (l: List (PreSharedKeyId Bytes × Bytes)): Result Bytes :=
   computePskSecretAux l 0 zeroVector

@@ -19,7 +19,6 @@ open Comparse
 variable {Bytes: Type} [BytesLike Bytes]
 
 /-- Port of `find_extension_index`. -/
-@[expose]
 public
 def findExtensionIndex (t: ExtensionType): List (Extension Bytes) → Option Nat
   | [] => none
@@ -32,7 +31,6 @@ def findExtensionIndex (t: ExtensionType): List (Extension Bytes) → Option Nat
       | none => none
 
 /-- Port of `get_extension`. -/
-@[expose]
 public
 def getExtension (t: ExtensionType) (extensions: List (Extension Bytes)): Option Bytes :=
   match findExtensionIndex t extensions with
@@ -40,7 +38,6 @@ def getExtension (t: ExtensionType) (extensions: List (Extension Bytes)): Option
   | some i => extensions[i]?.map (·.extensionData.val)
 
 /-- Port of `set_extension`. -/
-@[expose]
 public
 def setExtension (t: ExtensionType) (extensions: List (Extension Bytes)) (data: Bytes):
   Result (MlsList (Extension.mf (Bytes := Bytes)))
@@ -60,7 +57,6 @@ def emptyExtensions: MlsList (Extension.mf (Bytes := Bytes)) :=
   ⟨[], by simp [BytesLike.empty_length, mlsNatPred]⟩
 
 /-- Port of `get_extension_list`. -/
-@[expose]
 public
 def getExtensionList (extensions: List (Extension Bytes)): List ExtensionType :=
   extensions.map (·.extensionType)
@@ -68,7 +64,6 @@ def getExtensionList (extensions: List (Extension Bytes)): List ExtensionType :=
 /-! ## Helper functions -/
 
 /-- Port of `mk_get_extension`. -/
-@[expose]
 public
 def mkGetExtension {a: Type} (extType: ExtensionType) (mf: NonExtensibleMessageFormat Bytes a)
   (extensions: List (Extension Bytes)): Option a
@@ -78,7 +73,6 @@ def mkGetExtension {a: Type} (extType: ExtensionType) (mf: NonExtensibleMessageF
   | some res => mf.toExtensible.parse res
 
 /-- Port of `mk_set_extension`. -/
-@[expose]
 public
 def mkSetExtension {a: Type} (extType: ExtensionType) (mf: NonExtensibleMessageFormat Bytes a)
   (extensions: List (Extension Bytes)) (extContent: a): Result (MlsList (Extension.mf (Bytes := Bytes)))

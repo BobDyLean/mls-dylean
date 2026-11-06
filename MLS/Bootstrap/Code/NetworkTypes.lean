@@ -42,12 +42,10 @@ public
 abbrev Raw (Bytes: Type) [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) :=
   ProtocolVersion × CipherSuite × HpkePublicKey Bytes × LeafNode Bytes tkt × MlsList (Extension.mf (Bytes := Bytes))
 
-@[expose]
 public
 def f: Raw Bytes tkt → KeyPackageTBS Bytes tkt :=
   fun (version, cipherSuite, initKey, leafNode, extensions) => { version, cipherSuite, initKey, leafNode, extensions }
 
-@[expose]
 public
 def g: KeyPackageTBS Bytes tkt → Raw Bytes tkt :=
   fun { version, cipherSuite, initKey, leafNode, extensions } => (version, cipherSuite, initKey, leafNode, extensions)
@@ -59,7 +57,6 @@ instance: RightInverse (g (tkt := tkt)) f := ⟨by intro _; rfl⟩
 
 end KeyPackageTBS
 
-@[expose]
 public
 def KeyPackageTBS.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (KeyPackageTBS Bytes tkt) :=
   .isomorphic
@@ -97,12 +94,10 @@ namespace KeyPackage
 
 variable {tkt: TreeKEMTypes Bytes}
 
-@[expose]
 public
 def f: KeyPackageTBS Bytes tkt × MlsBytes Bytes → KeyPackage Bytes tkt :=
   fun (tbs, signature) => { tbs, signature }
 
-@[expose]
 public
 def g: KeyPackage Bytes tkt → KeyPackageTBS Bytes tkt × MlsBytes Bytes :=
   fun { tbs, signature } => (tbs, signature)
@@ -114,7 +109,6 @@ instance: RightInverse (g (tkt := tkt)) f := ⟨by intro _; rfl⟩
 
 end KeyPackage
 
-@[expose]
 public
 def KeyPackage.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (KeyPackage Bytes tkt) :=
   .isomorphic (.prod (KeyPackageTBS.mf tkt) MlsBytes.mf) KeyPackage.f KeyPackage.g
@@ -139,7 +133,6 @@ HashReference KeyPackageRef;
 public
 abbrev KeyPackageRef (Bytes: Type) [BytesLike Bytes] := MlsBytes Bytes
 
-@[expose]
 public
 def KeyPackageRef.mf: NonExtensibleMessageFormat Bytes (KeyPackageRef Bytes) := MlsBytes.mf
 deriving NonExtensibleMessageFormat.IsNonAmbiguous, NonExtensibleMessageFormat.HasUniqueRepresentation, NonExtensibleMessageFormat.ParseConsumes
@@ -174,12 +167,10 @@ public
 abbrev Raw (Bytes: Type) [BytesLike Bytes] :=
   GroupContext Bytes × MlsList (Extension.mf (Bytes := Bytes)) × Mac Bytes × UInt32
 
-@[expose]
 public
 def f: Raw Bytes → GroupInfoTBS Bytes :=
   fun (groupContext, extensions, confirmationTag, signer) => { groupContext, extensions, confirmationTag, signer }
 
-@[expose]
 public
 def g: GroupInfoTBS Bytes → Raw Bytes :=
   fun { groupContext, extensions, confirmationTag, signer } => (groupContext, extensions, confirmationTag, signer)
@@ -191,7 +182,6 @@ instance: RightInverse (g (Bytes := Bytes)) f := ⟨by intro _; rfl⟩
 
 end GroupInfoTBS
 
-@[expose]
 public
 def GroupInfoTBS.mf: NonExtensibleMessageFormat Bytes (GroupInfoTBS Bytes) :=
   .isomorphic
@@ -223,12 +213,10 @@ structure GroupInfo (Bytes: Type) [BytesLike Bytes] where
   tbs: GroupInfoTBS Bytes
   signature: MlsBytes Bytes
 
-@[expose]
 public
 def GroupInfo.f: GroupInfoTBS Bytes × MlsBytes Bytes → GroupInfo Bytes :=
   fun (tbs, signature) => { tbs, signature }
 
-@[expose]
 public
 def GroupInfo.g: GroupInfo Bytes → GroupInfoTBS Bytes × MlsBytes Bytes :=
   fun { tbs, signature } => (tbs, signature)
@@ -238,7 +226,6 @@ instance: LeftInverse (GroupInfo.g (Bytes := Bytes)) GroupInfo.f := ⟨by intro 
 public
 instance: RightInverse (GroupInfo.g (Bytes := Bytes)) GroupInfo.f := ⟨by intro _; rfl⟩
 
-@[expose]
 public
 def GroupInfo.mf: NonExtensibleMessageFormat Bytes (GroupInfo Bytes) :=
   .isomorphic (.prod GroupInfoTBS.mf MlsBytes.mf) GroupInfo.f GroupInfo.g
@@ -262,12 +249,10 @@ public
 structure PathSecret (Bytes: Type) [BytesLike Bytes] where
   pathSecret: MlsBytes Bytes
 
-@[expose]
 public
 def PathSecret.f: MlsBytes Bytes → PathSecret Bytes :=
   PathSecret.mk
 
-@[expose]
 public
 def PathSecret.g: PathSecret Bytes → MlsBytes Bytes :=
   PathSecret.pathSecret
@@ -277,7 +262,6 @@ instance: LeftInverse (PathSecret.g (Bytes := Bytes)) PathSecret.f := ⟨by intr
 public
 instance: RightInverse (PathSecret.g (Bytes := Bytes)) PathSecret.f := ⟨by intro _; rfl⟩
 
-@[expose]
 public
 def PathSecret.mf: NonExtensibleMessageFormat Bytes (PathSecret Bytes) :=
   .isomorphic MlsBytes.mf PathSecret.f PathSecret.g
@@ -309,12 +293,10 @@ public
 abbrev Raw (Bytes: Type) [BytesLike Bytes] :=
   MlsBytes Bytes × Option (PathSecret Bytes) × MlsList (PreSharedKeyId.mf (Bytes := Bytes))
 
-@[expose]
 public
 def f: Raw Bytes → GroupSecrets Bytes :=
   fun (joinerSecret, pathSecret, psks) => { joinerSecret, pathSecret, psks }
 
-@[expose]
 public
 def g: GroupSecrets Bytes → Raw Bytes :=
   fun { joinerSecret, pathSecret, psks } => (joinerSecret, pathSecret, psks)
@@ -326,7 +308,6 @@ instance: RightInverse (g (Bytes := Bytes)) f := ⟨by intro _; rfl⟩
 
 end GroupSecrets
 
-@[expose]
 public
 def GroupSecrets.mf: NonExtensibleMessageFormat Bytes (GroupSecrets Bytes) :=
   .isomorphic
@@ -355,12 +336,10 @@ structure EncryptedGroupSecrets (Bytes: Type) [BytesLike Bytes] where
   newMember: KeyPackageRef Bytes
   encryptedGroupSecrets: HpkeCiphertext Bytes
 
-@[expose]
 public
 def EncryptedGroupSecrets.f: KeyPackageRef Bytes × HpkeCiphertext Bytes → EncryptedGroupSecrets Bytes :=
   fun (newMember, encryptedGroupSecrets) => { newMember, encryptedGroupSecrets }
 
-@[expose]
 public
 def EncryptedGroupSecrets.g: EncryptedGroupSecrets Bytes → KeyPackageRef Bytes × HpkeCiphertext Bytes :=
   fun { newMember, encryptedGroupSecrets } => (newMember, encryptedGroupSecrets)
@@ -370,7 +349,6 @@ instance: LeftInverse (EncryptedGroupSecrets.g (Bytes := Bytes)) EncryptedGroupS
 public
 instance: RightInverse (EncryptedGroupSecrets.g (Bytes := Bytes)) EncryptedGroupSecrets.f := ⟨by intro _; rfl⟩
 
-@[expose]
 public
 def EncryptedGroupSecrets.mf: NonExtensibleMessageFormat Bytes (EncryptedGroupSecrets Bytes) :=
   .isomorphic (.prod KeyPackageRef.mf HpkeCiphertext.mf) EncryptedGroupSecrets.f EncryptedGroupSecrets.g
@@ -404,12 +382,10 @@ public
 abbrev Raw (Bytes: Type) [BytesLike Bytes] :=
   CipherSuite × MlsList (EncryptedGroupSecrets.mf (Bytes := Bytes)) × MlsBytes Bytes
 
-@[expose]
 public
 def f: Raw Bytes → Welcome Bytes :=
   fun (cipherSuite, secrets, encryptedGroupInfo) => { cipherSuite, secrets, encryptedGroupInfo }
 
-@[expose]
 public
 def g: Welcome Bytes → Raw Bytes :=
   fun { cipherSuite, secrets, encryptedGroupInfo } => (cipherSuite, secrets, encryptedGroupInfo)
@@ -421,7 +397,6 @@ instance: RightInverse (g (Bytes := Bytes)) f := ⟨by intro _; rfl⟩
 
 end Welcome
 
-@[expose]
 public
 def Welcome.mf: NonExtensibleMessageFormat Bytes (Welcome Bytes) :=
   .isomorphic

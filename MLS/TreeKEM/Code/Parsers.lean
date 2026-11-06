@@ -21,12 +21,10 @@ variable {Bytes: Type} [BytesLike Bytes]
 
 namespace TreeKEMLeaf
 
-@[expose]
 public
 def f (publicKey: Bytes): TreeKEMLeaf Bytes :=
   { publicKey }
 
-@[expose]
 public
 def g (x: TreeKEMLeaf Bytes): Bytes :=
   x.publicKey
@@ -39,7 +37,6 @@ instance: RightInverse (g (Bytes := Bytes)) f := ⟨by intro _; rfl⟩
 end TreeKEMLeaf
 
 /-- Port of `ps_treekem_leaf`. -/
-@[expose]
 public
 def TreeKEMLeaf.mf: NonExtensibleMessageFormat Bytes (TreeKEMLeaf Bytes) :=
   .isomorphic .slowBytes TreeKEMLeaf.f TreeKEMLeaf.g
@@ -54,12 +51,10 @@ theorem TreeKEMLeaf.mf.wf_eq (pred: Bytes → Prop) [BytesCompatiblePred pred] (
 
 namespace TreeKEMNode
 
-@[expose]
 public
 def f: Bytes × List Nat → TreeKEMNode Bytes :=
   fun (publicKey, unmergedLeaves) => { publicKey, unmergedLeaves }
 
-@[expose]
 public
 def g: TreeKEMNode Bytes → Bytes × List Nat :=
   fun { publicKey, unmergedLeaves } => (publicKey, unmergedLeaves)
@@ -72,7 +67,6 @@ instance: RightInverse (g (Bytes := Bytes)) f := ⟨by intro _; rfl⟩
 end TreeKEMNode
 
 /-- Port of `ps_treekem_node`. -/
-@[expose]
 public
 def TreeKEMNode.mf: NonExtensibleMessageFormat Bytes (TreeKEMNode Bytes) :=
   .isomorphic (.prod .slowBytes (.slowList .slowNat)) TreeKEMNode.f TreeKEMNode.g

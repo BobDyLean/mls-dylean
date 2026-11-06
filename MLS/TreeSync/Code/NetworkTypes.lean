@@ -52,7 +52,6 @@ inductive LeafNodeSource where
   | commit
 deriving DecidableEq
 
-@[expose]
 public
 def LeafNodeSource.ofUInt8 (n: UInt8): Option LeafNodeSource :=
   match n with
@@ -61,7 +60,6 @@ def LeafNodeSource.ofUInt8 (n: UInt8): Option LeafNodeSource :=
   | 3 => some .commit
   | _ => none
 
-@[expose]
 public
 def LeafNodeSource.toUInt8: LeafNodeSource → UInt8
   | .keyPackage => 1
@@ -76,7 +74,6 @@ public
 instance: SubsetRightInverse LeafNodeSource.toUInt8 LeafNodeSource.ofUInt8 where
   right_inv x := by cases x <;> rfl
 
-@[expose]
 public
 def LeafNodeSource.mf: NonExtensibleMessageFormat Bytes LeafNodeSource :=
   .subsetIsomorphic .uint8 LeafNodeSource.ofUInt8 LeafNodeSource.toUInt8
@@ -108,7 +105,6 @@ structure Capabilities (Bytes: Type) [BytesLike Bytes] where
   proposals: MlsList (ProposalType.mf (Bytes := Bytes))
   credentials: MlsList (CredentialType.mf (Bytes := Bytes))
 
-@[expose]
 public
 def Capabilities.f:
   MlsList (ProtocolVersion.mf (Bytes := Bytes)) × MlsList (CipherSuite.mf (Bytes := Bytes)) ×
@@ -119,7 +115,6 @@ def Capabilities.f:
   fun (versions, ciphersuites, extensions, proposals, credentials) =>
     { versions, ciphersuites, extensions, proposals, credentials }
 
-@[expose]
 public
 def Capabilities.g:
   Capabilities Bytes
@@ -135,7 +130,6 @@ instance: LeftInverse (Capabilities.g (Bytes := Bytes)) Capabilities.f := ⟨by 
 public
 instance: RightInverse (Capabilities.g (Bytes := Bytes)) Capabilities.f := ⟨by intro _; rfl⟩
 
-@[expose]
 public
 def Capabilities.mf: NonExtensibleMessageFormat Bytes (Capabilities Bytes) :=
   .isomorphic
@@ -164,12 +158,10 @@ structure Lifetime where
   notBefore: UInt64
   notAfter: UInt64
 
-@[expose]
 public
 def Lifetime.f: UInt64 × UInt64 → Lifetime :=
   fun (notBefore, notAfter) => { notBefore, notAfter }
 
-@[expose]
 public
 def Lifetime.g: Lifetime → UInt64 × UInt64 :=
   fun { notBefore, notAfter } => (notBefore, notAfter)
@@ -179,7 +171,6 @@ instance: LeftInverse Lifetime.g Lifetime.f := ⟨by intro _; rfl⟩
 public
 instance: RightInverse Lifetime.g Lifetime.f := ⟨by intro _; rfl⟩
 
-@[expose]
 public
 def Lifetime.mf: NonExtensibleMessageFormat Bytes Lifetime :=
   .isomorphic (.prod .uint64BE .uint64BE) Lifetime.f Lifetime.g
@@ -241,13 +232,11 @@ abbrev Raw (Bytes: Type) [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) :=
     (StaticOption (source == .keyPackage) Lifetime × StaticOption (source == .commit) (MlsBytes Bytes) ×
      MlsList (Extension.mf (Bytes := Bytes))))
 
-@[expose]
 public
 def f: Raw Bytes tkt → LeafNodeData Bytes tkt :=
   fun (content, signatureKey, credential, capabilities, ⟨source, lifetime, parentHash, extensions⟩) =>
     { content, signatureKey, credential, capabilities, source, lifetime, parentHash, extensions }
 
-@[expose]
 public
 def g: LeafNodeData Bytes tkt → Raw Bytes tkt :=
   fun { content, signatureKey, credential, capabilities, source, lifetime, parentHash, extensions } =>
@@ -260,7 +249,6 @@ instance: RightInverse (g (tkt := tkt)) f := ⟨by intro _; rfl⟩
 
 end LeafNodeData
 
-@[expose]
 public
 def LeafNodeData.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (LeafNodeData Bytes tkt) :=
   .isomorphic
@@ -290,12 +278,10 @@ namespace LeafNode
 
 variable {tkt: TreeKEMTypes Bytes}
 
-@[expose]
 public
 def f: LeafNodeData Bytes tkt × MlsBytes Bytes → LeafNode Bytes tkt :=
   fun (data, signature) => { data, signature }
 
-@[expose]
 public
 def g: LeafNode Bytes tkt → LeafNodeData Bytes tkt × MlsBytes Bytes :=
   fun { data, signature } => (data, signature)
@@ -373,12 +359,10 @@ abbrev Raw (Bytes: Type) [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) :=
     (StaticOption (data.source == .update || data.source == .commit) (MlsBytes Bytes) ×
      StaticOption (data.source == .update || data.source == .commit) UInt32)
 
-@[expose]
 public
 def f: Raw Bytes tkt → LeafNodeTBS Bytes tkt :=
   fun ⟨data, groupId, leafIndex⟩ => { data, groupId, leafIndex }
 
-@[expose]
 public
 def g: LeafNodeTBS Bytes tkt → Raw Bytes tkt :=
   fun { data, groupId, leafIndex } => ⟨data, groupId, leafIndex⟩
@@ -390,7 +374,6 @@ instance: RightInverse (g (tkt := tkt)) f := ⟨by intro _; rfl⟩
 
 end LeafNodeTBS
 
-@[expose]
 public
 def LeafNodeTBS.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (LeafNodeTBS Bytes tkt) :=
   .isomorphic
@@ -429,12 +412,10 @@ namespace ParentNode
 
 variable {tkt: TreeKEMTypes Bytes}
 
-@[expose]
 public
 def f: tkt.NodeContent × MlsBytes Bytes × MlsList (NonExtensibleMessageFormat.uint32BE (Bytes := Bytes)) → ParentNode Bytes tkt :=
   fun (content, parentHash, unmergedLeaves) => { content, parentHash, unmergedLeaves }
 
-@[expose]
 public
 def g: ParentNode Bytes tkt → tkt.NodeContent × MlsBytes Bytes × MlsList (NonExtensibleMessageFormat.uint32BE (Bytes := Bytes)) :=
   fun { content, parentHash, unmergedLeaves } => (content, parentHash, unmergedLeaves)
@@ -446,7 +427,6 @@ instance: RightInverse (g (tkt := tkt)) f := ⟨by intro _; rfl⟩
 
 end ParentNode
 
-@[expose]
 public
 def ParentNode.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (ParentNode Bytes tkt) :=
   .isomorphic (.prod tkt.mfNodeContent (.prod MlsBytes.mf (MlsList.mf .uint32BE))) ParentNode.f ParentNode.g
@@ -477,7 +457,6 @@ inductive NodeType where
   | parent
 deriving DecidableEq
 
-@[expose]
 public
 def NodeType.ofUInt8 (n: UInt8): Option NodeType :=
   match n with
@@ -485,7 +464,6 @@ def NodeType.ofUInt8 (n: UInt8): Option NodeType :=
   | 2 => some .parent
   | _ => none
 
-@[expose]
 public
 def NodeType.toUInt8: NodeType → UInt8
   | .leaf => 1
@@ -499,7 +477,6 @@ public
 instance: SubsetRightInverse NodeType.toUInt8 NodeType.ofUInt8 where
   right_inv x := by cases x <;> rfl
 
-@[expose]
 public
 def NodeType.mf: NonExtensibleMessageFormat Bytes NodeType :=
   .subsetIsomorphic .uint8 NodeType.ofUInt8 NodeType.toUInt8
@@ -556,13 +533,11 @@ instance: ∀ t, (internalType.mf tkt t).HasUniqueRepresentation
     dsimp only [internalType.mf, internalType]
     infer_instance
 
-@[expose]
 public
 def f: (t: NodeType) × internalType Bytes tkt t → Node Bytes tkt
   | ⟨.leaf, x⟩ => .leaf x
   | ⟨.parent, x⟩ => .parent x
 
-@[expose]
 public
 def g: Node Bytes tkt → (t: NodeType) × internalType Bytes tkt t
   | .leaf x => ⟨.leaf, x⟩
@@ -575,7 +550,6 @@ instance: RightInverse (g (tkt := tkt)) f := ⟨by intro x; cases x <;> rfl⟩
 
 end Node
 
-@[expose]
 public
 def Node.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (Node Bytes tkt) :=
   .isomorphic (.sigma NodeType.mf (Node.internalType.mf tkt)) Node.f Node.g
@@ -599,7 +573,6 @@ public
 abbrev RatchetTree (Bytes: Type) [BytesLike Bytes] (tkt: TreeKEMTypes Bytes) :=
   MlsList (MlsOption.mf (Node.mf tkt))
 
-@[expose]
 public
 def RatchetTree.mf (tkt: TreeKEMTypes Bytes): NonExtensibleMessageFormat Bytes (RatchetTree Bytes tkt) :=
   MlsList.mf (MlsOption.mf (Node.mf tkt))

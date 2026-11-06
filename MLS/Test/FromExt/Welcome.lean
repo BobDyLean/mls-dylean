@@ -17,7 +17,6 @@ open MLS MLS.TreeKEM MLS.TreeDEM MLS.Bootstrap
 open MLS.Test
 
 /-- Port of `test_welcome_one`. -/
-@[expose]
 public
 def testWelcomeOne (t: WelcomeTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
@@ -60,7 +59,6 @@ def testWelcomeOne (t: WelcomeTest): IO Bool := do
     pure true
 
 /-- Port of `test_welcome`. -/
-@[expose]
 public
 def testWelcome: List WelcomeTest → IO Nat :=
   testList "Welcome" testWelcomeOne

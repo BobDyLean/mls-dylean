@@ -2,6 +2,7 @@ module
 
 public import MLS.TreeKEM.Code.API
 public import MLS.TreeKEM.Proofs.API.Tree
+import all MLS.TreeKEM.Code.API
 
 /-!
 Proofs about `MLS.TreeKEM.API`.
@@ -21,7 +22,6 @@ variable {Bytes: Type}
 /-! ## Predicates -/
 
 /-- The refinements of `treekem_state` (those of its `tree_state`). -/
-@[expose]
 public
 def _root_.MLS.TreeKEM.TreeKEMState.Valid {leafInd: Nat} (st: TreeKEMState Bytes leafInd): Prop :=
   st.treeState.Valid
@@ -30,14 +30,12 @@ def _root_.MLS.TreeKEM.TreeKEMState.Valid {leafInd: Nat} (st: TreeKEMState Bytes
 The refinements of `full_commit_args`: `commit_leaf_ind < pow2 st.levels`, `commit_leaf_ind <> leaf_ind`,
 `path_filtering_ok st.tree path` and `~(List.Tot.memP leaf_ind excluded_leaves)`.
 -/
-@[expose]
 public
 def FullCommitArgs.Valid [CryptoBytes Bytes] {leafInd: Nat} {st: TreeKEMTreeState Bytes leafInd} (args: FullCommitArgs st): Prop :=
   st.tree.containsLeafIndex args.commitLeafInd ∧ args.commitLeafInd ≠ leafInd ∧
   pathFilteringOk st.tree args.commitLeafInd args.path ∧ leafInd ∉ args.excludedLeaves
 
 /-- The refinements of `pending_process_commit` (those of its `next_tree_state`). -/
-@[expose]
 public
 def PendingProcessCommit.Valid {leafInd: Nat} {st: TreeKEMState Bytes leafInd} (pend: PendingProcessCommit st): Prop :=
   pend.nextTreeState.Valid
@@ -49,19 +47,16 @@ def PendingCreateCommit.Valid [CryptoBytes Bytes] {leafInd: Nat} {st: TreeKEMSta
   pend.pend.Valid
 
 /-- The refinements of `pending_create_commit_2` (those of its `new_state`). -/
-@[expose]
 public
 def PendingCreateCommit2.Valid {leafInd: Nat} (pend: PendingCreateCommit2 Bytes leafInd): Prop :=
   pend.newState.Valid
 
 /-- The refinement `path_filtering_ok st.tree_state.tree update_path` of `continue_create_commit_result`. -/
-@[expose]
 public
 def ContinueCreateCommitResult.Valid [CryptoBytes Bytes] {leafInd: Nat} {st: TreeKEMState Bytes leafInd} (res: ContinueCreateCommitResult st): Prop :=
   pathFilteringOk st.treeState.tree leafInd res.updatePath
 
 /-- The refinements of `create_commit_result` (those of its `new_state`). -/
-@[expose]
 public
 def CreateCommitResult.Valid {leafInd: Nat} (res: CreateCommitResult Bytes leafInd): Prop :=
   res.newState.Valid

@@ -40,7 +40,6 @@ def keyPackageStoreValueToKeyPackage (value: KeyPackageStoreValuePost): KeyPacka
   value.keyPackage
 
 /-- Port of `key_package_store_elem_is_mine`. -/
-@[expose]
 public
 def KeyPackageStoreElemIsMine (me: Participant) (x: KeyPackageStoreElemPre): Prop :=
   credentialToPrincipal x.value.keyPackage.tbs.leafNode.data.credential = some me

@@ -351,7 +351,6 @@ theorem DySlop.Pke.extractSk.preserves_WellFormed
   grind [DySlop.Pke.pk_extractSk, DySlop.Pke.pk.WellFormed]
 
 /-- Port of `get_sk_label`. -/
-@[expose]
 public
 noncomputable
 def DY.Bytes.skLabel
@@ -399,7 +398,6 @@ theorem DY.Bytes.skLabel_later_fast
 grind_pattern [grind_later] DY.Bytes.skLabel_later_fast => tr1 ≤ tr2, b.skLabel tr1
 
 /-- Port of `has_sk_usage`. -/
-@[expose]
 public
 def DY.Bytes.SkHasUsage
   [GetUsage] [GetLabel]
@@ -678,7 +676,6 @@ variable [BytesInvariants]
   Port of `is_encryption_key`.
   DY* requires `PkeKey? usg`.
 -/
-@[expose]
 public
 def IsEncryptionKey (usg: Usage) (l: Label) (b: Bytes) (tr: ProofTrace): Prop :=
   b.Publishable tr ∧
@@ -689,7 +686,6 @@ def IsEncryptionKey (usg: Usage) (l: Label) (b: Bytes) (tr: ProofTrace): Prop :=
   Port of `is_decryption_key`.
   DY* requires `PkeKey? usg`.
 -/
-@[expose]
 public
 def IsDecryptionKey (usg: Usage) (l: Label) (b: Bytes) (tr: ProofTrace): Prop :=
   b.IsSecret l tr ∧

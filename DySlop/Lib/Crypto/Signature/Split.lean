@@ -63,7 +63,6 @@ public
 abbrev SignPred.Local (tags: List String) := SignPred.splitParams.Local tags
 
 /-- The sign predicate defined by local sign predicates. -/
-@[expose]
 public
 def SignPred.Local.pred {tags: List String} (l: SignPred.Local tags)
   [BytesWellFormed] [GetUsage] [GetLabel]
@@ -104,7 +103,7 @@ where
     exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 skUsg (vk, msg) tr _ (SplitPredicate.usageTag_eq_some h_type rfl) h_tag
 
 /-- Port of `mk_sign_predicate`. -/
-@[expose, instance_reducible]
+@[instance_reducible]
 public
 def SignPred.ofLocal {tags: List String} (l: SignPred.Local tags): SignPred where
   pred := l.pred

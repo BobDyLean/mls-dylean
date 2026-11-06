@@ -10,6 +10,7 @@ public import DySlop.Lib.Event
 public import MLS.TreeSync.SymbolicProofs.State.Tree
 public import MLS.TreeSync.SymbolicProofs.State.GroupManager
 public import MLS.TreeSync.SymbolicProofs.State.KeyPackageManager
+import all MLS.TreeSync.Code.Operations
 import all MLS.TreeSync.SymbolicSpec.API
 import all MLS.TreeSync.SymbolicSpec.LeafNodeSignature
 import DY.Meta.Step

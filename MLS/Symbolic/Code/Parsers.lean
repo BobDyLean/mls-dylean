@@ -23,12 +23,10 @@ variable {Bytes: Type} [BytesLike Bytes] {Leaf Node: Type}
 
 namespace BareTree
 
-@[expose]
 public
 def leafF (x: Leaf): BareTree Leaf Node 0 :=
   .leaf x
 
-@[expose]
 public
 def leafG: BareTree Leaf Node 0 → Leaf
   | .leaf x => x
@@ -39,12 +37,10 @@ public
 instance: RightInverse (leafG (Leaf := Leaf) (Node := Node)) leafF := ⟨by intro x; cases x; rfl⟩
 
 /-- Port of `tree_internal_node` (with its fields `left`, `data`, `right`, in this order). -/
-@[expose]
 public
 def nodeF {l: Nat}: BareTree Leaf Node l × Node × BareTree Leaf Node l → BareTree Leaf Node (l+1) :=
   fun (left, data, right) => .node data left right
 
-@[expose]
 public
 def nodeG {l: Nat}: BareTree Leaf Node (l+1) → BareTree Leaf Node l × Node × BareTree Leaf Node l
   | .node data left right => (left, data, right)
@@ -122,12 +118,10 @@ end BareTree.mf
 
 namespace Tree
 
-@[expose]
 public
 def f {l: Nat}: Nat × BareTree Leaf Node l → Tree Leaf Node l :=
   fun (position, bareTree) => { position, bareTree }
 
-@[expose]
 public
 def g {l: Nat}: Tree Leaf Node l → Nat × BareTree Leaf Node l :=
   fun { position, bareTree } => (position, bareTree)
@@ -240,12 +234,10 @@ end Tree.mf
 
 namespace Path
 
-@[expose]
 public
 def leafF (x: Leaf): Path Leaf Node 0 :=
   .leaf x
 
-@[expose]
 public
 def leafG: Path Leaf Node 0 → Leaf
   | .leaf x => x
@@ -256,12 +248,10 @@ public
 instance: RightInverse (leafG (Leaf := Leaf) (Node := Node)) leafF := ⟨by intro x; cases x; rfl⟩
 
 /-- Port of `path_internal_node` (with its fields `data`, `next`, in this order). -/
-@[expose]
 public
 def nodeF {l: Nat}: Node × Path Leaf Node l → Path Leaf Node (l+1) :=
   fun (data, next) => .node data next
 
-@[expose]
 public
 def nodeG {l: Nat}: Path Leaf Node (l+1) → Node × Path Leaf Node l
   | .node data next => (data, next)
@@ -274,7 +264,6 @@ instance {l: Nat}: RightInverse (nodeG (Leaf := Leaf) (Node := Node) (l := l)) n
 end Path
 
 /-- Port of `ps_path`. -/
-@[expose]
 public
 def Path.mf (mfLeaf: NonExtensibleMessageFormat Bytes Leaf) (mfNode: NonExtensibleMessageFormat Bytes Node):
   (l: Nat) → NonExtensibleMessageFormat Bytes (Path Leaf Node l)

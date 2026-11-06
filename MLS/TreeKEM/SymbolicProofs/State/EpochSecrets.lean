@@ -84,7 +84,6 @@ section GroupLabels
 variable [HasSymbolicBytes] [ExecTraceTypes]
 
 /-- Port of `mk_tree_secret_label_aux`. -/
-@[expose]
 public
 def mkTreeSecretLabelAux {l: Nat} (mkLabel: Participant → GroupContext Bytes → Label)
   (groupContext: GroupContext Bytes) (t: TreeSync Bytes tkt l) (li: Nat): Label :=
@@ -96,7 +95,6 @@ def mkTreeSecretLabelAux {l: Nat} (mkLabel: Participant → GroupContext Bytes �
     | some prin => mkLabel prin groupContext
 
 /-- Port of `mk_tree_secret_label`. -/
-@[expose]
 public
 def mkTreeSecretLabel {l: Nat} (mkLabel: Participant → GroupContext Bytes → Label)
   (groupContext: GroupContext Bytes) (t: TreeSync Bytes tkt l): Label :=
@@ -109,14 +107,12 @@ def TreeHashFullTreeRel (tHash: Bytes) (ft: OneTreeSync Bytes tkt): Prop :=
   TreeHasHash ft.2 tHash
 
 /-- Port of `mk_group_secret_label_aux`. -/
-@[expose]
 public
 def mkGroupSecretLabelAux (mkLabel: Participant → GroupContext Bytes → Label)
   (groupContext: GroupContext Bytes) (ft: OneTreeSync Bytes tkt): Label :=
   (Label.ofProp (TreeHashFullTreeRel groupContext.treeHash.val ft)).meet (mkTreeSecretLabel mkLabel groupContext ft.2)
 
 /-- Port of `mk_group_secret_label`. -/
-@[expose]
 public
 def mkGroupSecretLabel (mkLabel: Participant → GroupContext Bytes → Label) (groupContext: GroupContext Bytes): Label :=
   Label.bigJoin (mkGroupSecretLabelAux mkLabel groupContext)
@@ -175,7 +171,6 @@ def IAmInGroupContextWithWitness {l: Nat} (me: Participant) (groupContext: Group
   TreeHashFullTreeRel groupContext.treeHash.val ⟨l, t⟩ ∧ IAmInTreeAt me t li
 
 /-- Port of `i_am_in_group_context`. -/
-@[expose]
 public
 def IAmInGroupContext (me: Participant) (groupContext: GroupContext Bytes): Prop :=
   ∃ (l: Nat) (t: TreeSync Bytes tkt l) (li: Nat), IAmInGroupContextWithWitness me groupContext t li

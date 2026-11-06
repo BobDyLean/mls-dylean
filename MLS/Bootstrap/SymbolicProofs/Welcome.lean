@@ -10,6 +10,7 @@ public import MLS.Symbolic.SymbolicProofs.Randomness
 public import DySlop.Lib.Crypto.AEAD.Split
 public import MLS.TreeKEM.SymbolicProofs.KeySchedule
 import all MLS.Bootstrap.SymbolicSpec.KeyPackage
+import all MLS.Bootstrap.Code.Welcome
 
 /-!
 Port of `MLS.Bootstrap.Symbolic.Welcome`: the HPKE predicate of the group secrets of a Welcome message,
@@ -23,6 +24,9 @@ Port-specific differences:
 - Lemmas about functions returning a `Result` take the result and the success hypothesis
   (MLS*'s `match … with | Success … -> … | _ -> True`).
 - `for_allP p l` is `∀ x ∈ l, p x`.
+- `expand_usage_welcome_key`, `expand_usage_welcome_nonce`, their `has_mls_expandwithlabel_usage` invariants
+  (`HasBootstrapCryptoInvariants.welcomeKey` / `welcomeNonce`), `welcome_secret_to_key_proof` and
+  `welcome_secret_to_nonce_proof` are in MLS*'s `MLS.TreeKEM.Symbolic.KeySchedule`: they are here, next to their only use.
 - MLS* uses `Some?.v (key_package_to_principal key_package)` and requires `Some? (key_package_to_principal key_package)`:
   the lemmas take the principal `prin` with a hypothesis `keyPackageToPrincipal keyPackage = some prin`.
 -/
@@ -42,7 +46,6 @@ variable [HasSymbolicBytes] [ExecTraceTypes] [ProofTraceTypes]
 variable [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT TreeKEMNodeKeysState)]
 
 /-- The pred field of `mls_hpke_welcome_pred`. -/
-@[expose]
 public
 def WelcomeHpkePred [BytesWellFormed] [GetUsage] [GetLabel] (usgData msg: Bytes) (tr: ProofTrace): Prop :=
   match InitKeyUsageT.mf.toExtensible.parse usgData, GroupSecrets.mf.toExtensible.parse msg with
@@ -57,7 +60,6 @@ def WelcomeHpkePred [BytesWellFormed] [GetUsage] [GetLabel] (usgData msg: Bytes)
   | _, _ => False
 
 /-- Port of `mls_hpke_welcome_pred`. -/
-@[expose]
 public
 def mlsHpkeWelcomePred: EncryptWithLabelPred.Local ["Welcome"] :=
   .single { pred usgData msg _context tr := WelcomeHpkePred usgData msg tr }
@@ -79,12 +81,27 @@ theorem mlsHpkeWelcomePredProof
 
 end Predicates
 
+section Usages
+
+variable [HasSymbolicBytes] [ExecTraceTypes]
+
+/-- Port of `expand_usage_welcome_key`. -/
+public
+def expandUsageWelcomeKey: ExpandWithLabelUsage.Local ["key"] :=
+  .single (.secret (Usage.aeadKey "MLS.Bootstrap.WelcomeKey" BytesLike.empty))
+
+/-- Port of `expand_usage_welcome_nonce`. -/
+public
+def expandUsageWelcomeNonce: ExpandWithLabelUsage.Local ["nonce"] :=
+  .single (.public Usage.nothing)
+
+end Usages
+
 section AeadPredicate
 
 variable [HasSymbolicBytes] [ExecTraceTypes] [ProofTraceTypes]
 
 /-- The pred field of `aead_group_info_pred`. -/
-@[expose]
 public
 def AeadGroupInfoPred [BytesWellFormed] [GetUsage] [GetLabel] (msg: Bytes) (tr: ProofTrace): Prop :=
   match GroupInfo.mf.toExtensible.parse msg with
@@ -92,7 +109,6 @@ def AeadGroupInfoPred [BytesWellFormed] [GetUsage] [GetLabel] (msg: Bytes) (tr: 
   | some groupInfo => ((serializeNE GroupContext.mf groupInfo.tbs.groupContext).label tr).canFlow Label.pub tr.erase
 
 /-- Port of `aead_group_info_pred`. -/
-@[expose]
 public
 def aeadGroupInfoPred: AeadPred.Local ["MLS.Bootstrap.WelcomeKey"] :=
   .single { pred _keyUsg _key _nonce msg _ad tr := AeadGroupInfoPred msg tr }
@@ -130,12 +146,16 @@ public
 class HasBootstrapCryptoInvariants: Prop where
   [encryptWelcome: EncryptWithLabelPred.Has "MLS.InitHpkeKey" mlsHpkeWelcomePred]
   [aeadGroupInfo: AeadPred.Has aeadGroupInfoPred]
+  [welcomeKey: ExpandWithLabelUsage.Has "MLS.Bootstrap.WelcomeSecret" expandUsageWelcomeKey]
+  [welcomeNonce: ExpandWithLabelUsage.Has "MLS.Bootstrap.WelcomeSecret" expandUsageWelcomeNonce]
   [hpkeKdfExpand: KdfExpand.KdfExpandUsage.Has HPKE.kdfExpandUsage]
   [hpkeAead: AeadPred.Has HPKE.aeadPred]
   [keySchedule: HasMlsKeyscheduleInvariants]
 
 attribute [scoped instance] HasBootstrapCryptoInvariants.encryptWelcome
 attribute [scoped instance] HasBootstrapCryptoInvariants.aeadGroupInfo
+attribute [scoped instance] HasBootstrapCryptoInvariants.welcomeKey
+attribute [scoped instance] HasBootstrapCryptoInvariants.welcomeNonce
 attribute [scoped instance] HasBootstrapCryptoInvariants.hpkeKdfExpand
 attribute [scoped instance] HasBootstrapCryptoInvariants.hpkeAead
 attribute [scoped instance] HasBootstrapCryptoInvariants.keySchedule
@@ -540,6 +560,33 @@ section GroupInfo
 variable [HasSymbolicInvariants] [HasTreeKEMExecTrace]
 variable [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT TreeSyncSignatureKeyState)]
 variable [HasBootstrapCryptoInvariants]
+
+/-- Port of `welcome_secret_to_key_proof`. -/
+theorem welcomeSecretToKey_proof (tr: ProofTrace) (welcomeSecret: Bytes) (welcomeKey: Bytes)
+  (h: welcomeSecretToKey welcomeSecret = .success welcomeKey)
+  (hinv: welcomeSecret.Invariant tr)
+  (husg: welcomeSecret.HasUsage (Usage.kdfExpandKey "MLS.Bootstrap.WelcomeSecret" BytesLike.empty) tr):
+  welcomeKey.Invariant tr ∧
+  welcomeKey.HasUsage (Usage.aeadKey "MLS.Bootstrap.WelcomeKey" BytesLike.empty) tr ∧
+  (welcomeKey.label tr).equivalent (welcomeSecret.label tr) tr.erase
+:= by
+  have := expandWithLabel.Invariant expandUsageWelcomeKey "MLS.Bootstrap.WelcomeSecret" tr welcomeSecret _ "key" _ _
+    welcomeKey h hinv (BytesCompatiblePred.pred_empty (pred := (Bytes.Invariant · tr))) husg rfl rfl (by simp)
+  simpa [expandUsageWelcomeKey, ExpandWithLabelUsage.Local.getUsage_single,
+    ExpandWithLabelUsage.Local.getLabel_single, ExpandWithLabelUsage.secret] using this
+
+/-- Port of `welcome_secret_to_nonce_proof`. -/
+theorem welcomeSecretToNonce_proof (tr: ProofTrace) (welcomeSecret: Bytes) (welcomeNonce: Bytes)
+  (h: welcomeSecretToNonce welcomeSecret = .success welcomeNonce)
+  (hinv: welcomeSecret.Invariant tr)
+  (husg: welcomeSecret.HasUsage (Usage.kdfExpandKey "MLS.Bootstrap.WelcomeSecret" BytesLike.empty) tr):
+  welcomeNonce.Publishable tr
+:= by
+  obtain ⟨hn, -, hlab⟩ := expandWithLabel.Invariant expandUsageWelcomeNonce "MLS.Bootstrap.WelcomeSecret" tr welcomeSecret
+    _ "nonce" _ _ welcomeNonce h hinv (BytesCompatiblePred.pred_empty (pred := (Bytes.Invariant · tr))) husg rfl rfl
+    (by simp)
+  simp only [expandUsageWelcomeNonce, ExpandWithLabelUsage.Local.getLabel_single, ExpandWithLabelUsage.public] at hlab
+  exact ⟨hn, hlab.1⟩
 
 /-- The AEAD predicate on the key of the group info of a Welcome message. -/
 theorem aeadPred_welcomeKey (key nonce msg ad: Bytes) (tr: ProofTrace):

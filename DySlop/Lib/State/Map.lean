@@ -164,7 +164,6 @@ grind_pattern [grind_later] MapPred.pred_later => tr1 ≤ tr2, MapPred.pred tr1 
 variable {K V: Type} [MapTypes K V] [ExecTraceTypes.Has (Compromise.ExecEntryT (Map K V))] [MapPred K V]
 
 /-- Port of `map_invariant` (with `map_elem_invariant`). -/
-@[expose]
 public
 def MapPred.Invariant (tr: ProofTrace) (prin: Participant) (m: Map K V): Prop :=
   ∀ x ∈ m.keyValues, MapPred.pred tr prin x.key x.value

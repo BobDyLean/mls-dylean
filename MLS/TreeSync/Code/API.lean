@@ -32,7 +32,6 @@ section CryptoBytes
 variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes} {TokenT: Type} {groupId: MlsBytes Bytes}
 
 /-- Port of `state_update_tree`. -/
-@[expose]
 public
 def stateUpdateTree {l: Nat} (_st: TreeSyncState Bytes tkt TokenT groupId) (newTree: TreeSync Bytes tkt l) (newTokens: ASTokens TokenT l):
   TreeSyncState Bytes tkt TokenT groupId
@@ -51,7 +50,6 @@ structure PendingCreate (groupId: MlsBytes Bytes) (ln: LeafNode Bytes tkt) where
   asInput: ASInput Bytes
 
 /-- Port of `prepare_create`. -/
-@[expose]
 public
 def prepareCreate (groupId: MlsBytes Bytes) (ln: LeafNode Bytes tkt): Result (PendingCreate groupId ln) :=
   if !leafIsValid ln groupId 0 then
@@ -62,7 +60,6 @@ def prepareCreate (groupId: MlsBytes Bytes) (ln: LeafNode Bytes tkt): Result (Pe
     }
 
 /-- Port of `finalize_create`. -/
-@[expose]
 public
 def finalizeCreate {ln: LeafNode Bytes tkt} (_pend: PendingCreate groupId ln) (token: TokenT): TreeSyncState Bytes tkt TokenT groupId :=
   {
@@ -79,7 +76,6 @@ structure PendingWelcome {l: Nat} (groupId: MlsBytes Bytes) (t: TreeSync Bytes t
   asInputs: List (Option (ASInput Bytes))
 
 /-- Port of `prepare_welcome`. -/
-@[expose]
 public
 def prepareWelcome {l: Nat} (groupId: MlsBytes Bytes) (t: TreeSync Bytes tkt l): Result (PendingWelcome groupId t) :=
   if !unmergedLeavesOk t then
@@ -99,7 +95,6 @@ end CryptoBytes
 Port of `tokens_from_list`.
 MLS* requires `List.length tokens == pow2 l`; otherwise, the missing tokens are `none`.
 -/
-@[expose]
 public
 def tokensFromList {TokenT: Type}: (l i: Nat) → List (Option TokenT) → ASTokens TokenT l
   | 0, i, tokens => (LeftRightView.leaf (tokens.headD none) i).pack
@@ -115,7 +110,6 @@ variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes} {TokenT: Ty
 Port of `finalize_welcome`.
 MLS* requires `List.Tot.length tokens == pow2 l`; otherwise, see `tokensFromList`.
 -/
-@[expose]
 public
 def finalizeWelcome {l: Nat} {t: TreeSync Bytes tkt l} (_pend: PendingWelcome groupId t) (tokens: List (Option TokenT)):
   TreeSyncState Bytes tkt TokenT groupId
@@ -135,7 +129,6 @@ structure PendingAdd (st: TreeSyncState Bytes tkt TokenT groupId) (ln: LeafNode 
   asInput: ASInput Bytes
 
 /-- Port of `prepare_add`. -/
-@[expose]
 public
 def prepareAdd (st: TreeSyncState Bytes tkt TokenT groupId) (ln: LeafNode Bytes tkt): Result (PendingAdd st ln) :=
   if !(ln.data.source == .keyPackage) then
@@ -158,7 +151,6 @@ def prepareAdd (st: TreeSyncState Bytes tkt TokenT groupId) (ln: LeafNode Bytes 
       | none => Result.internalFailure "prepare_add: no empty leaf in the extended tree"
 
 /-- Port of `finalize_add`. -/
-@[expose]
 public
 def finalizeAdd {st: TreeSyncState Bytes tkt TokenT groupId} {ln: LeafNode Bytes tkt}
   (_pend: PendingAdd st ln) (token: TokenT): Result (TreeSyncState Bytes tkt TokenT groupId × Nat)
@@ -188,7 +180,6 @@ structure PendingUpdate (st: TreeSyncState Bytes tkt TokenT groupId) (ln: LeafNo
 Port of `prepare_update`.
 MLS* requires `li: treesync_index st` (i.e. `st.tree.containsLeafIndex li`); otherwise, this function fails.
 -/
-@[expose]
 public
 def prepareUpdate (st: TreeSyncState Bytes tkt TokenT groupId) (ln: LeafNode Bytes tkt) (li: Nat): Result (PendingUpdate st ln li) :=
   if !(ln.data.source == .update) then
@@ -207,7 +198,6 @@ def prepareUpdate (st: TreeSyncState Bytes tkt TokenT groupId) (ln: LeafNode Byt
       }
 
 /-- Port of `finalize_update`. -/
-@[expose]
 public
 def finalizeUpdate {st: TreeSyncState Bytes tkt TokenT groupId} {ln: LeafNode Bytes tkt} {li: Nat}
   (_pend: PendingUpdate st ln li) (token: TokenT): TreeSyncState Bytes tkt TokenT groupId
@@ -224,7 +214,6 @@ structure PendingRemove (st: TreeSyncState Bytes tkt TokenT groupId) (li: Nat): 
 Port of `prepare_remove`.
 MLS* requires `li: treesync_index st` (i.e. `st.tree.containsLeafIndex li`); otherwise, this function fails.
 -/
-@[expose]
 public
 def prepareRemove (st: TreeSyncState Bytes tkt TokenT groupId) (li: Nat): Result (PendingRemove st li) :=
   if !st.tree.containsLeafIndex li then
@@ -235,7 +224,6 @@ def prepareRemove (st: TreeSyncState Bytes tkt TokenT groupId) (li: Nat): Result
     pure {}
 
 /-- Port of `fully_truncate_state`. -/
-@[expose]
 public
 def fullyTruncateState (st: TreeSyncState Bytes tkt TokenT groupId): TreeSyncState Bytes tkt TokenT groupId :=
   match st with
@@ -252,7 +240,6 @@ def fullyTruncateState (st: TreeSyncState Bytes tkt TokenT groupId): TreeSyncSta
 termination_by st.levels
 
 /-- Port of `finalize_remove`. -/
-@[expose]
 public
 def finalizeRemove {st: TreeSyncState Bytes tkt TokenT groupId} {li: Nat} (_pend: PendingRemove st li):
   TreeSyncState Bytes tkt TokenT groupId
@@ -273,7 +260,6 @@ structure PendingCommit (st: TreeSyncState Bytes tkt TokenT groupId) (li: Nat) (
 Port of `prepare_commit`.
 MLS* requires `li: treesync_index st` (i.e. `st.tree.containsLeafIndex li`); otherwise, this function fails.
 -/
-@[expose]
 public
 def prepareCommit (st: TreeSyncState Bytes tkt TokenT groupId) (li: Nat) (p: PathSync Bytes tkt st.levels):
   Result (PendingCommit st li p)
@@ -292,7 +278,6 @@ def prepareCommit (st: TreeSyncState Bytes tkt TokenT groupId) (li: Nat) (p: Pat
       }
 
 /-- Port of `finalize_commit`. -/
-@[expose]
 public
 def finalizeCommit {st: TreeSyncState Bytes tkt TokenT groupId} {li: Nat} {p: PathSync Bytes tkt st.levels}
   (_pend: PendingCommit st li p) (token: TokenT): Result (TreeSyncState Bytes tkt TokenT groupId)
@@ -308,7 +293,6 @@ def finalizeCommit {st: TreeSyncState Bytes tkt TokenT groupId} {li: Nat} {p: Pa
 Port of `authenticate_external_path`.
 MLS* requires `(get_path_leaf p).source == LNS_update`; otherwise, see `externalPathToPath`.
 -/
-@[expose]
 public
 def authenticateExternalPath (st: TreeSyncState Bytes tkt TokenT groupId) (li: Nat)
   (p: ExternalPathSync Bytes tkt st.levels) (signKey: Bytes) (signNonce: Bytes)
@@ -325,7 +309,6 @@ def computeTreeHash (st: TreeSyncState Bytes tkt TokenT groupId): Result Bytes :
   treeHash st.tree
 
 /-- Port of `compute_provisional_tree_hash`. -/
-@[expose]
 public
 def computeProvisionalTreeHash (st: TreeSyncState Bytes tkt TokenT groupId) (li: Nat) (p: PathSync Bytes tkt st.levels):
   Result Bytes

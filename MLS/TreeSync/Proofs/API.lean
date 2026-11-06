@@ -6,6 +6,10 @@ public import MLS.TreeSync.Proofs.Invariants.AuthService
 public import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves
 public import MLS.TreeSync.Proofs.Invariants.ParentHash
 public import MLS.TreeSync.Proofs.Invariants.ValidLeaves
+import all MLS.TreeSync.Code.API
+import all MLS.TreeSync.Code.Operations
+import all MLS.TreeSync.Code.Invariants.AuthService
+import all MLS.Common.Code.TreeCommon
 
 /-!
 Proofs about `MLS.TreeSync.API`.

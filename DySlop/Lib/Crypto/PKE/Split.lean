@@ -63,7 +63,6 @@ public
 abbrev PkePred.Local (tags: List String) := PkePred.splitParams.Local tags
 
 /-- The PKE predicate defined by local PKE predicates. -/
-@[expose]
 public
 def PkePred.Local.pred {tags: List String} (l: PkePred.Local tags)
   [BytesWellFormed] [GetUsage] [GetLabel]
@@ -104,7 +103,7 @@ where
     exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 skUsg (pk, msg) tr _ (SplitPredicate.usageTag_eq_some h_type rfl) h_tag
 
 /-- Port of `mk_pke_predicate`. -/
-@[expose, instance_reducible]
+@[instance_reducible]
 public
 def PkePred.ofLocal {tags: List String} (l: PkePred.Local tags): PkePred where
   pred := l.pred

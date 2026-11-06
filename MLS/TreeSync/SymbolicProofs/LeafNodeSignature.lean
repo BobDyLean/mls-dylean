@@ -7,7 +7,10 @@ public import MLS.TreeSync.Proofs.ParentHashGuarantees
 public import MLS.TreeSync.Proofs.API
 public import MLS.TreeSync.Proofs.Invariants.ValidLeaves
 public import MLS.Common.SymbolicProofs.Crypto.Derived.SignWithLabel
+import all MLS.TreeSync.Code.Operations
+import all MLS.TreeSync.Code.Invariants.AuthService
 import all MLS.TreeSync.SymbolicSpec.LeafNodeSignature
+import all MLS.TreeSync.Code.Invariants.ParentHash
 
 /-!
 Port of the predicates and proofs of `MLS.TreeSync.Symbolic.LeafNodeSignature`:
@@ -137,7 +140,6 @@ variable [ExecTraceTypes.Has (ProtocolEvent.ExecEntryT (GroupHasTreeEvent tkt))]
 /--
 The part of `leaf_node_sign_pred` depending on the source of the leaf node.
 -/
-@[expose]
 public
 def LeafNodeSignPredSource (prin: Participant) (tr: ExecTrace) (lnTbsBytes: Bytes) (lnTbs: LeafNodeTBS Bytes tkt): Prop :=
   if h: lnTbs.data.source = .commit then
@@ -164,7 +166,6 @@ the leaf attests the existence of a tree list,
 that is parent-hash linked and goes up to the root,
 furthermore one event "GroupHasTreeEvent" was triggered for each of these trees.
 -/
-@[expose]
 public
 def LeafNodeTbsPred (skUsg: Usage) (lnTbsBytes: Bytes) (tr: ProofTrace): Prop :=
   match (LeafNodeTBS.mf tkt).toExtensible.parse lnTbsBytes with
@@ -176,7 +177,6 @@ def LeafNodeTbsPred (skUsg: Usage) (lnTbsBytes: Bytes) (tr: ProofTrace): Prop :=
       LeafNodeSignPredSource tkt prin tr.erase lnTbsBytes lnTbs
 
 /-- Port of `leaf_node_sign_pred` (with `leaf_node_tbs_tag_and_invariant`). -/
-@[expose]
 public
 def leafNodeSignPred: SignWithLabelPred.Local ["LeafNodeTBS"] :=
   .single { pred skUsg _vk lnTbsBytes tr := LeafNodeTbsPred tkt skUsg lnTbsBytes tr }

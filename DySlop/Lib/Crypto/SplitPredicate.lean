@@ -35,7 +35,7 @@ structure PredInstances where
   DY*'s `get_usage` for key usages of type `keyType` (e.g. `sk_usage:usage{SigKey? sk_usage}`):
   the tag of the usage, or `none` for usages of another type.
 -/
-@[expose, reducible]
+@[reducible]
 public
 def usageTag (keyType: String) (usg: Usage): Option String :=
   if usg.type = keyType then some usg.tag else none
@@ -103,7 +103,6 @@ public
 abbrev Local (tags: List String) := Locals (fun _: String => C.LocalPred) tags
 
 /-- The predicate defined by local cryptographic predicates. -/
-@[expose]
 public
 def Local.pred {C: Params} {tags: List String} (l: C.Local tags)
   [BytesWellFormed] [GetUsage] [GetLabel]

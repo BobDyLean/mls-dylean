@@ -5,6 +5,8 @@ public import MLS.Common.Proofs.Crypto.Derived
 public import MLS.Common.Proofs.TreeCommon
 public import MLS.TreeKEM.Code.Operations
 public import MLS.Glue.Proofs.NetworkBinder.Properties
+import all MLS.TreeKEM.Code.Operations
+import all MLS.Common.Code.TreeCommon
 
 /-!
 Port of `MLS.TreeKEM.Invariants` and `MLS.TreeKEM.Invariants.Proofs`.
@@ -37,7 +39,6 @@ def unmergedLeafExists {l: Nat} (t: TreeKEM Bytes l) (li: Nat): Prop :=
   t.containsLeafIndex li ∧ (leafAt t li).isSome
 
 /-- Port of `treekem_invariant`. -/
-@[expose]
 public
 def treekemInvariant {l: Nat} (t: TreeKEM Bytes l): Prop :=
   match t.intoLeftRightView with
@@ -149,6 +150,13 @@ theorem unAddP_position {l: Nat} (t: TreeKEM Bytes l) (pred: Nat → Bool):
   (unAddP t pred).position = t.position
 := by
   induction t using Tree.leftRightInduction <;> unfold unAddP <;> simp_all
+
+@[simp]
+public
+theorem unAdd_position {l: Nat} (t: TreeKEM Bytes l) (excludedLeaves: List Nat):
+  (unAdd t excludedLeaves).position = t.position
+:= by
+  simp [unAdd]
 
 /-- Port of `leaf_at_tree_add`. -/
 theorem leafAt_treeAdd {l: Nat} (t: TreeKEM Bytes l) (li: Nat) (lp: TreeKEMLeaf Bytes) (li': Nat)

@@ -65,7 +65,6 @@ public
 abbrev AeadPred.Local (tags: List String) := AeadPred.splitParams.Local tags
 
 /-- The AEAD predicate defined by local AEAD predicates. -/
-@[expose]
 public
 def AeadPred.Local.pred {tags: List String} (l: AeadPred.Local tags)
   [BytesWellFormed] [GetUsage] [GetLabel]
@@ -106,7 +105,7 @@ where
     exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 keyUsg (key, nonce, msg, ad) tr _ (SplitPredicate.usageTag_eq_some h_type rfl) h_tag
 
 /-- Port of `mk_aead_predicate`. -/
-@[expose, instance_reducible]
+@[instance_reducible]
 public
 def AeadPred.ofLocal {tags: List String} (l: AeadPred.Local tags): AeadPred where
   pred := l.pred

@@ -2,7 +2,6 @@ module
 
 public import MLS.TreeKEM.Code.KeySchedule
 public import MLS.TreeDEM.Code.Message.Transcript
-public import MLS.Bootstrap.Code.Welcome
 public import MLS.Bootstrap.SymbolicProofs.KeyPackage
 public import MLS.TreeSync.SymbolicProofs.LeafNodeSignature
 public import MLS.TreeKEM.SymbolicSpec.Traceful.ExecTrace
@@ -11,6 +10,7 @@ public import MLS.TreeKEM.SymbolicProofs.State.EpochSecrets
 public import MLS.TreeKEM.SymbolicProofs.State.OnePSKStore
 public import MLS.Common.SymbolicProofs.Crypto.Derived.ExpandWithLabel
 public import DySlop.Lib.Crypto.MAC.Split
+import all MLS.TreeKEM.Code.KeySchedule
 
 /-!
 Port of `MLS.TreeKEM.Symbolic.KeySchedule`: the usages and labels of the key schedule,
@@ -86,7 +86,6 @@ def proposalsToKeyPackages: List (Proposal Bytes) → List (KeyPackage Bytes tkt
   | _ :: t => proposalsToKeyPackages t
 
 /-- Port of `tx_hash_contains_joiners_with_witness`. -/
-@[expose]
 public
 def TxHashContainsJoinersWithWitness (confirmedTranscriptHash: Bytes) (joiners: List (KeyPackage Bytes tkt))
   (witness: Commit Bytes × List (Proposal Bytes)): Prop :=
@@ -95,7 +94,6 @@ def TxHashContainsJoinersWithWitness (confirmedTranscriptHash: Bytes) (joiners: 
   joiners = proposalsToKeyPackages witness.2
 
 /-- Port of `tx_hash_contains_joiners`. -/
-@[expose]
 public
 def TxHashContainsJoiners (confirmedTranscriptHash: Bytes) (joiners: List (KeyPackage Bytes tkt)): Prop :=
   ∃ witness, TxHashContainsJoinersWithWitness confirmedTranscriptHash joiners witness
@@ -112,7 +110,6 @@ theorem TxHashContainsJoiners.intro (confirmedTranscriptHash: Bytes) (joiners: L
   ⟨(commit, proposals), hcommit, hproposals, hjoiners⟩
 
 /-- Port of `compute_confirmed_transcript_hash_inj`. -/
-@[expose]
 public
 def computeConfirmedTranscriptHashInj (txHashInput1: ConfirmedTranscriptHashInput Bytes) (interimTranscriptHash1: Bytes)
   (txHashInput2: ConfirmedTranscriptHashInput Bytes) (interimTranscriptHash2: Bytes): Bytes × Bytes :=
@@ -144,7 +141,6 @@ theorem computeConfirmedTranscriptHashInj_spec (txHashInput1: ConfirmedTranscrip
   grind [computeConfirmedTranscriptHash_eq_success, computeConfirmedTranscriptHashInj, isHashCollision, concat_inj]
 
 /-- Port of `commit_is_last_in_tx_hash_aux_lemma`. -/
-@[expose]
 public
 def commitIsLastInTxHashAuxInj (witness1 witness2: ConfirmedTranscriptHashInput Bytes × Bytes): Bytes × Bytes :=
   computeConfirmedTranscriptHashInj witness1.1 witness1.2 witness2.1 witness2.2
@@ -160,7 +156,6 @@ theorem commitIsLastInTxHashAuxInj_spec (commit1 commit2: Commit Bytes) (confirm
   grind [CommitIsLastInTxHashAux, commitIsLastInTxHashAuxInj, computeConfirmedTranscriptHashInj_spec]
 
 /-- Port of `proposal_or_ref_rel_lemma`. -/
-@[expose]
 public
 def proposalOrRefRelInj (por: ProposalOrRef Bytes) (p1 p2: Proposal Bytes): Bytes × Bytes :=
   match por with
@@ -176,7 +171,6 @@ theorem proposalOrRefRelInj_spec (por: ProposalOrRef Bytes) (p1 p2: Proposal Byt
   cases por <;> grind [ProposalOrRefRel, proposalOrRefRelInj, makeProposalRefInj_spec]
 
 /-- Port of `proposal_or_refs_rel_lemma`. -/
-@[expose]
 public
 def proposalOrRefsRelInj: List (ProposalOrRef Bytes) → List (Proposal Bytes) → List (Proposal Bytes) → Bytes × Bytes
   | hpor :: tpor, h1 :: t1, h2 :: t2 =>
@@ -230,7 +224,6 @@ variable [HasSymbolicBytes] [ExecTraceTypes] [HasTreeKEMExecTrace]
 variable [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT TreeSyncSignatureKeyState)]
 
 /-- Port of `confirmed_transcript_hash_to_init_label_aux`. -/
-@[expose]
 public
 def confirmedTranscriptHashToInitLabelAux (confirmedTranscriptHash: Bytes)
   (witness: Commit Bytes × List (Proposal Bytes)): Label :=
@@ -241,7 +234,6 @@ def confirmedTranscriptHashToInitLabelAux (confirmedTranscriptHash: Bytes)
     (((proposalsToKeyPackages witness.2).map keyPackageToInitLabel).foldr Label.join Label.secret)
 
 /-- Port of `confirmed_transcript_hash_to_init_label`. -/
-@[expose]
 public
 def confirmedTranscriptHashToInitLabel (confirmedTranscriptHash: Bytes): Label :=
   Label.bigJoin (confirmedTranscriptHashToInitLabelAux confirmedTranscriptHash)
@@ -287,7 +279,6 @@ variable [HasSymbolicBytes] [ExecTraceTypes] [HasTreeKEMExecTrace]
 variable [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT TreeSyncSignatureKeyState)]
 
 /-- Port of `expand_usage_extractedkey_joiner`. -/
-@[expose]
 public
 def expandUsageExtractedkeyJoiner: ExpandWithLabelUsage.Local ["joiner"] :=
   .single {
@@ -301,7 +292,6 @@ def expandUsageExtractedkeyJoiner: ExpandWithLabelUsage.Local ["joiner"] :=
   }
 
 /-- Port of `expand_usage_extractedkey_epoch`. -/
-@[expose]
 public
 def expandUsageExtractedkeyEpoch: ExpandWithLabelUsage.Local ["epoch"] :=
   .single {
@@ -311,13 +301,11 @@ def expandUsageExtractedkeyEpoch: ExpandWithLabelUsage.Local ["epoch"] :=
   }
 
 /-- The group context of the usage data of a secret (MLS*'s `let KdfExpandKey _ data = prk_usage in parse … data`). -/
-@[expose]
 public
 def usageGroupContext (usg: Usage): Option (GroupContext Bytes) :=
   usg.data.bind GroupContext.mf.toExtensible.parse
 
 /-- Port of `mk_epoch_expandwithlabel_usage`. -/
-@[expose]
 public
 def mkEpochExpandwithlabelUsage (ty: EpochSecretType): ExpandWithLabelUsage where
   getUsage prkUsage _ _ :=
@@ -332,79 +320,56 @@ def mkEpochExpandwithlabelUsage (ty: EpochSecretType): ExpandWithLabelUsage wher
     split <;> grind
 
 /-- Port of `expand_usage_extractedkey_welcome`. -/
-@[expose]
 public
 def expandUsageExtractedkeyWelcome: ExpandWithLabelUsage.Local ["welcome"] :=
   .single (.secret (Usage.kdfExpandKey "MLS.Bootstrap.WelcomeSecret" BytesLike.empty))
 
-/-- Port of `expand_usage_welcome_key`. -/
-@[expose]
-public
-def expandUsageWelcomeKey: ExpandWithLabelUsage.Local ["key"] :=
-  .single (.secret (Usage.aeadKey "MLS.Bootstrap.WelcomeKey" BytesLike.empty))
-
-/-- Port of `expand_usage_welcome_nonce`. -/
-@[expose]
-public
-def expandUsageWelcomeNonce: ExpandWithLabelUsage.Local ["nonce"] :=
-  .single (.public Usage.nothing)
-
 /-- Port of `expand_usage_epoch_senderdata`. -/
-@[expose]
 public
 def expandUsageEpochSenderdata: ExpandWithLabelUsage.Local ["sender data"] :=
   .single (mkEpochExpandwithlabelUsage .senderDataSecret)
 
 /-- Port of `expand_usage_epoch_encryption`. -/
-@[expose]
 public
 def expandUsageEpochEncryption: ExpandWithLabelUsage.Local ["encryption"] :=
   .single (mkEpochExpandwithlabelUsage .encryptionSecret)
 
 /-- Port of `expand_usage_epoch_exporter`. -/
-@[expose]
 public
 def expandUsageEpochExporter: ExpandWithLabelUsage.Local ["exporter"] :=
   .single (mkEpochExpandwithlabelUsage .exporterSecret)
 
 /-- Port of `expand_usage_epoch_external`. -/
-@[expose]
 public
 def expandUsageEpochExternal: ExpandWithLabelUsage.Local ["external"] :=
   .single (mkEpochExpandwithlabelUsage .externalSecret)
 
 /-- Port of `expand_usage_epoch_confirmation`. -/
-@[expose]
 public
 def expandUsageEpochConfirmation: ExpandWithLabelUsage.Local ["confirm"] :=
   .single (mkEpochExpandwithlabelUsage .confirmationKey)
 
 /-- Port of `expand_usage_epoch_membership`. -/
-@[expose]
 public
 def expandUsageEpochMembership: ExpandWithLabelUsage.Local ["membership"] :=
   .single (mkEpochExpandwithlabelUsage .membershipKey)
 
 /-- Port of `expand_usage_epoch_resumption`. -/
-@[expose]
 public
 def expandUsageEpochResumption: ExpandWithLabelUsage.Local ["resumption"] :=
   .single (mkEpochExpandwithlabelUsage .resumptionPsk)
 
 /-- Port of `expand_usage_epoch_authentication`. -/
-@[expose]
 public
 def expandUsageEpochAuthentication: ExpandWithLabelUsage.Local ["authentication"] :=
   .single (mkEpochExpandwithlabelUsage .epochAuthenticator)
 
 /-- Port of `expand_usage_epoch_init`. -/
-@[expose]
 public
 def expandUsageEpochInit: ExpandWithLabelUsage.Local ["init"] :=
   .single (mkEpochExpandwithlabelUsage .initSecret)
 
 /-- Port of `expand_usage_confirmation_tag`. -/
-@[expose]
 public
 def expandUsageConfirmationTag: KdfExpandUsage.Local ["MLS.TreeKEM.ConfirmationKey"] :=
   .single {
@@ -420,7 +385,6 @@ section MacPredicate
 variable [HasSymbolicBytes] [ExecTraceTypes] [ProofTraceTypes]
 
 /-- Port of `confirmation_mac_pred`. -/
-@[expose]
 public
 def confirmationMacPred: MacPred.Local ["MLS.TreeKEM.ConfirmationKey"] :=
   .single { pred _ _ _ _ := True }
@@ -446,8 +410,6 @@ public
 class HasMlsKeyscheduleInvariants: Prop where
   [joiner: ExpandWithLabelUsage.Has "KDF.ExtractedKey" expandUsageExtractedkeyJoiner]
   [welcome: ExpandWithLabelUsage.Has "KDF.ExtractedKey" expandUsageExtractedkeyWelcome]
-  [welcomeKey: ExpandWithLabelUsage.Has "MLS.Bootstrap.WelcomeSecret" expandUsageWelcomeKey]
-  [welcomeNonce: ExpandWithLabelUsage.Has "MLS.Bootstrap.WelcomeSecret" expandUsageWelcomeNonce]
   [epoch: ExpandWithLabelUsage.Has "KDF.ExtractedKey" expandUsageExtractedkeyEpoch]
   [epochSenderdata: ExpandWithLabelUsage.Has "MLS.TreeKEM.EpochSecret" expandUsageEpochSenderdata]
   [epochEncryption: ExpandWithLabelUsage.Has "MLS.TreeKEM.EpochSecret" expandUsageEpochEncryption]
@@ -463,8 +425,6 @@ class HasMlsKeyscheduleInvariants: Prop where
 
 attribute [scoped instance] HasMlsKeyscheduleInvariants.joiner
 attribute [scoped instance] HasMlsKeyscheduleInvariants.welcome
-attribute [scoped instance] HasMlsKeyscheduleInvariants.welcomeKey
-attribute [scoped instance] HasMlsKeyscheduleInvariants.welcomeNonce
 attribute [scoped instance] HasMlsKeyscheduleInvariants.epoch
 attribute [scoped instance] HasMlsKeyscheduleInvariants.epochSenderdata
 attribute [scoped instance] HasMlsKeyscheduleInvariants.epochEncryption
@@ -505,7 +465,6 @@ def secretEpochToX (ty: EpochSecretType): Bytes → Result Bytes :=
   | .epochAuthenticator => secretEpochToAuthentication
 
 /-- Port of `secret_epoch_to_X_string`. -/
-@[expose]
 public
 def secretEpochToXString (ty: EpochSecretType): String :=
   match ty with
@@ -624,35 +583,6 @@ theorem secretJoinerToWelcome_proof (tr: ProofTrace) (joinerSecret: Bytes) (psks
   simp only [expandUsageExtractedkeyWelcome, ExpandWithLabelUsage.Local.getUsage_single,
     ExpandWithLabelUsage.Local.getLabel_single, ExpandWithLabelUsage.secret, DySlop.KdfExtract.kdfExtract.label] at husg hlab
   grind [Label.canFlow]
-
-/-- Port of `welcome_secret_to_key_proof`. -/
-public
-theorem welcomeSecretToKey_proof (tr: ProofTrace) (welcomeSecret: Bytes) (welcomeKey: Bytes)
-  (h: welcomeSecretToKey welcomeSecret = .success welcomeKey)
-  (hinv: welcomeSecret.Invariant tr)
-  (husg: welcomeSecret.HasUsage (Usage.kdfExpandKey "MLS.Bootstrap.WelcomeSecret" BytesLike.empty) tr):
-  welcomeKey.Invariant tr ∧
-  welcomeKey.HasUsage (Usage.aeadKey "MLS.Bootstrap.WelcomeKey" BytesLike.empty) tr ∧
-  (welcomeKey.label tr).equivalent (welcomeSecret.label tr) tr.erase
-:= by
-  have := expandWithLabel.Invariant expandUsageWelcomeKey "MLS.Bootstrap.WelcomeSecret" tr welcomeSecret _ "key" _ _
-    welcomeKey h hinv (BytesCompatiblePred.pred_empty (pred := (Bytes.Invariant · tr))) husg rfl rfl (by simp)
-  simpa [expandUsageWelcomeKey, ExpandWithLabelUsage.Local.getUsage_single,
-    ExpandWithLabelUsage.Local.getLabel_single, ExpandWithLabelUsage.secret] using this
-
-/-- Port of `welcome_secret_to_nonce_proof`. -/
-public
-theorem welcomeSecretToNonce_proof (tr: ProofTrace) (welcomeSecret: Bytes) (welcomeNonce: Bytes)
-  (h: welcomeSecretToNonce welcomeSecret = .success welcomeNonce)
-  (hinv: welcomeSecret.Invariant tr)
-  (husg: welcomeSecret.HasUsage (Usage.kdfExpandKey "MLS.Bootstrap.WelcomeSecret" BytesLike.empty) tr):
-  welcomeNonce.Publishable tr
-:= by
-  obtain ⟨hn, -, hlab⟩ := expandWithLabel.Invariant expandUsageWelcomeNonce "MLS.Bootstrap.WelcomeSecret" tr welcomeSecret
-    _ "nonce" _ _ welcomeNonce h hinv (BytesCompatiblePred.pred_empty (pred := (Bytes.Invariant · tr))) husg rfl rfl
-    (by simp)
-  simp only [expandUsageWelcomeNonce, ExpandWithLabelUsage.Local.getLabel_single, ExpandWithLabelUsage.public] at hlab
-  exact ⟨hn, hlab.1⟩
 
 /-- Port of `secret_joiner_to_epoch_proof`. -/
 public

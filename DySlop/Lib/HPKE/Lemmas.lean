@@ -22,6 +22,7 @@ module
 public import DySlop.Lib.HPKE.Spec
 public import DySlop.Lib.Crypto.KdfExpand.Split
 public import DySlop.Lib.Crypto.AEAD.Split
+import all DySlop.Lib.HPKE.Spec
 
 open DY DY.Comparse
 open DySlop.SplitFunction DySlop.KdfExpand DySlop.Aead
@@ -88,7 +89,6 @@ instance AeadUsageData.ps: ParseableSerializeable AeadUsageData := .make <|
     (fun { hpkeUsg, info } => ⟨hpkeUsg, info⟩)
 
 /-- The usage of the shared secret, for the HPKE usage `usg`. -/
-@[expose]
 public
 def sharedSecretUsage (usg: String × Bytes): Usage :=
   Usage.kdfExpandKey "DY.Lib.HPKE" (serialize ({ usageTag := usg.1, usageData := usg.2 }: InternalUsage))
@@ -145,7 +145,6 @@ theorem kdfExpandLocalUsage_getLabel (prkUsage: Usage) (prkLabel: Label) (info: 
 := rfl
 
 /-- Port of `hpke_kdf_expand_tag_and_usage`. -/
-@[expose]
 public
 def kdfExpandUsage: KdfExpandUsage.Local ["DY.Lib.HPKE"] :=
   .single kdfExpandLocalUsage
@@ -177,7 +176,6 @@ theorem aeadLocalPred_pred [HpkePred] [BytesWellFormed] [GetUsage] [GetLabel]
 := rfl
 
 /-- Port of `hpke_aead_tag_and_pred`. -/
-@[expose]
 public
 def aeadPred [HpkePred]: AeadPred.Local ["DY.Lib.HPKE"] :=
   .single aeadLocalPred

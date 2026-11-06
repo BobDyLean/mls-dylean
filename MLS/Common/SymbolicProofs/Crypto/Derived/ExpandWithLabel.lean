@@ -3,6 +3,7 @@ module
 public import MLS.Common.SymbolicProofs.Crypto.Derived.MlsLabel
 public import MLS.Symbolic.Code.Symbolic
 public import DySlop.Lib.Crypto.KdfExpand.Split
+import all MLS.Common.Proofs.Crypto.Derived
 
 /-!
 Port of `MLS.Crypto.Derived.Symbolic.ExpandWithLabel`: split KDF.Expand usages for ExpandWithLabel,
@@ -41,7 +42,6 @@ structure ExpandWithLabelUsage where
       (getLabel prkUsage prkLabel context length).canFlow prkLabel tr
 
 /-- Port of `default_expandwithlabel_crypto_usage`. -/
-@[expose]
 public
 def ExpandWithLabelUsage.default: ExpandWithLabelUsage where
   getUsage _ _ _ := Usage.nothing
@@ -181,7 +181,7 @@ theorem ExpandWithLabelUsage.Local.getLabel_single {label: String} (lusg: Expand
   Params.Locals.apply_single ExpandWithLabelUsage.getLabelParams lusg _ _
 
 /-- Port of `mk_kdf_expand_mls_usage`: the KDF.Expand usage defined by local ExpandWithLabel usages. -/
-@[expose, instance_reducible]
+@[instance_reducible]
 public
 def ExpandWithLabelUsage.ofLocal {labels: List String} (l: ExpandWithLabelUsage.Local labels): KdfExpandUsage where
   getUsage prkUsage info := Params.Locals.toFun ExpandWithLabelUsage.getUsageParams l (prkUsage, info)
@@ -206,7 +206,6 @@ def ExpandWithLabelUsage.ofLocal {labels: List String} (l: ExpandWithLabelUsage.
   Port of `has_expandwithlabel_usage`:
   the KDF.Expand usage `kusg` coincides with the local ExpandWithLabel usages `l` on their labels.
 -/
-@[expose]
 public
 def ExpandWithLabelUsage.HasLocal (kusg: KdfExpandUsage) {labels: List String} (l: ExpandWithLabelUsage.Local labels): Prop :=
   ExpandWithLabelUsage.getUsageParams.HasLocal (fun x => kusg.getUsage x.1 x.2) l ∧

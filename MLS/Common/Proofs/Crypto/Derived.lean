@@ -3,6 +3,7 @@ module
 public import MLS.Common.Code.Crypto.Derived
 public import MLS.Common.Proofs.Result
 public import MLS.Common.Proofs.Crypto.HashCollision
+import all MLS.Common.Code.Crypto.Derived
 
 /-!
 Lemmas about the functions of `MLS.Crypto.Derived`.
@@ -131,7 +132,6 @@ theorem refHash_eq_success (label: String) (value: Bytes) (res: Bytes):
 Port of `ref_hash_inj`.
 It returns the serialized hash inputs: they are equal when the inputs are equal (MLS* returns `(empty, empty)` in this case).
 -/
-@[expose]
 public
 def refHashInj (label1: String) (value1: Bytes) (label2: String) (value2: Bytes): Bytes × Bytes :=
   match mkMlsAsciiString label1 "ref_hash" "label", mkMlsBytes value1 "ref_hash" "value",
@@ -150,7 +150,6 @@ theorem refHashInj_spec (label1: String) (value1: Bytes) (label2: String) (value
   grind [refHash_eq_success, refHashInj, isHashCollision, mkMlsAsciiString_eq_success, mkMlsBytes_eq_success]
 
 /-- Port of `make_proposal_ref_inj`. -/
-@[expose]
 public
 def makeProposalRefInj (proposal1 proposal2: Bytes): Bytes × Bytes :=
   refHashInj "MLS 1.0 Proposal Reference" proposal1 "MLS 1.0 Proposal Reference" proposal2

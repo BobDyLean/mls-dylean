@@ -22,7 +22,6 @@ section CryptoBytes
 variable [CryptoBytes ByteArray]
 
 /-- Port of `gen_epoch_output`. -/
-@[expose]
 public
 def genEpochOutput (groupId: String) (lastInitSecret: String) (epoch: Nat) (inp: KeyscheduleTestEpochInput):
   IO KeyscheduleTestEpochOutput
@@ -69,7 +68,6 @@ def genEpochOutput (groupId: String) (lastInitSecret: String) (epoch: Nat) (inp:
   }
 
 /-- Port of `gen_list_epoch_output_aux`. -/
-@[expose]
 public
 def genListEpochOutputAux (groupId: String) (lastInitSecret: String) (epoch: Nat):
   List KeyscheduleTestEpochInput → IO (List KeyscheduleTestEpochOutput)
@@ -80,7 +78,6 @@ def genListEpochOutputAux (groupId: String) (lastInitSecret: String) (epoch: Nat
     pure (outputHead::outputTail)
 
 /-- Port of `gen_list_epoch_output`. -/
-@[expose]
 public
 def genListEpochOutput (groupId: String) (initialInitSecret: String) (l: List KeyscheduleTestEpochInput):
   IO (List KeyscheduleTestEpochOutput)
@@ -90,7 +87,6 @@ def genListEpochOutput (groupId: String) (initialInitSecret: String) (l: List Ke
 end CryptoBytes
 
 /-- Port of `test_keyschedule_one`. -/
-@[expose]
 public
 def testKeyscheduleOne (t: KeyscheduleTest): IO Bool := do
   match uint16ToCiphersuite t.cipherSuite with
@@ -127,7 +123,6 @@ def testKeyscheduleOne (t: KeyscheduleTest): IO Bool := do
     pure true
 
 /-- Port of `test_keyschedule`. -/
-@[expose]
 public
 def testKeyschedule: List KeyscheduleTest → IO Nat :=
   testList "KeySchedule" testKeyscheduleOne

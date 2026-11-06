@@ -48,10 +48,8 @@ end ExtensibleMessageFormat.list
 
 namespace NonExtensibleMessageFormat.bitVecBE
 
-@[expose]
 public
 def f0: Unit → BitVec (8*0) := fun _ => 0#0
-@[expose]
 public
 def g0: BitVec (8*0) → Unit := fun _ => ()
 
@@ -60,12 +58,10 @@ instance: LeftInverse g0 f0 := ⟨by intro _; rfl⟩
 public
 instance: RightInverse g0 f0 := ⟨by intro x; exact BitVec.eq_nil x |>.symm⟩
 
-@[expose]
 public
 def f (w: Nat): UInt8 × BitVec (8*w) → BitVec (8*(w+1)) :=
   fun (hi, lo) => BitVec.ofNat _ (hi.toNat * 2^(8*w) + lo.toNat)
 
-@[expose]
 public
 def g (w: Nat): BitVec (8*(w+1)) → UInt8 × BitVec (8*w) :=
   fun x => (UInt8.ofNat (x.toNat / 2^(8*w)), BitVec.ofNat _ (x.toNat % 2^(8*w)))
@@ -96,7 +92,6 @@ end NonExtensibleMessageFormat.bitVecBE
 Big-endian encoding of bit vectors, as `ps_nat_lbytes` in Comparse (F*) with DY*'s `from_nat`.
 DyLean's `bitVec` is little-endian, hence cannot be used for MLS.
 -/
-@[expose]
 public
 def NonExtensibleMessageFormat.bitVecBE: (w: Nat) → NonExtensibleMessageFormat Bytes (BitVec (8*w))
   | 0 => isomorphic unit bitVecBE.f0 bitVecBE.g0
@@ -139,7 +134,6 @@ public local instance: @RightInverse UInt16 (BitVec (8*2)) UInt16.toBitVec UInt1
   right_inv := by simp [Function.RightInverse, Function.LeftInverse]
 
 /-- Big-endian `uint16`. -/
-@[expose]
 public
 def NonExtensibleMessageFormat.uint16BE: NonExtensibleMessageFormat Bytes UInt16 :=
   isomorphic (bitVecBE 2) UInt16.ofBitVec UInt16.toBitVec
@@ -159,7 +153,6 @@ public local instance: @RightInverse UInt32 (BitVec (8*4)) UInt32.toBitVec UInt3
   right_inv := by simp [Function.RightInverse, Function.LeftInverse]
 
 /-- Big-endian `uint32`. -/
-@[expose]
 public
 def NonExtensibleMessageFormat.uint32BE: NonExtensibleMessageFormat Bytes UInt32 :=
   isomorphic (bitVecBE 4) UInt32.ofBitVec UInt32.toBitVec
@@ -179,7 +172,6 @@ public local instance: @RightInverse UInt64 (BitVec (8*8)) UInt64.toBitVec UInt6
   right_inv := by simp [Function.RightInverse, Function.LeftInverse]
 
 /-- Big-endian `uint64`. -/
-@[expose]
 public
 def NonExtensibleMessageFormat.uint64BE: NonExtensibleMessageFormat Bytes UInt64 :=
   isomorphic (bitVecBE 8) UInt64.ofBitVec UInt64.toBitVec
@@ -194,7 +186,6 @@ theorem NonExtensibleMessageFormat.uint64BE.wf_eq (pred: Bytes → Prop) [BytesC
 
 /-! ## Empty -/
 
-@[expose]
 public
 def NonExtensibleMessageFormat.empty: NonExtensibleMessageFormat Bytes Empty where
   parse _ := none
@@ -234,12 +225,10 @@ public
 abbrev Raw (pre: Nat → Prop) (mf: ExtensibleMessageFormat Bytes a) :=
   (n: {n: Nat // pre n}) × {x: a // BytesLike.length (mf.serialize x) = n.val}
 
-@[expose]
 public
 def f (x: Raw pre mf): {x: a // pre (BytesLike.length (mf.serialize x))} :=
   ⟨x.snd.val, by grind⟩
 
-@[expose]
 public
 def g (x: {x: a // pre (BytesLike.length (mf.serialize x))}): Raw pre mf :=
   ⟨⟨BytesLike.length (mf.serialize x.val), x.property⟩, ⟨x.val, rfl⟩⟩
@@ -275,7 +264,6 @@ end NonExtensibleMessageFormat.lengthPrefix
 Port of `length_prefix_ps_whole`:
 serialize `x` with the (extensible) format `mf`, and prefix it with its length.
 -/
-@[expose]
 public
 def NonExtensibleMessageFormat.lengthPrefix
   {a: Type}
@@ -345,12 +333,10 @@ abbrev QuicNat := {n: Nat // n < 2^62}
 namespace NonExtensibleMessageFormat.quicNat
 
 /-- The first byte is split into 2 bits (the log of the length) and 6 bits (the most significant bits of the integer). -/
-@[expose]
 public
 def firstByte.f (x: UInt8): Fin 4 × Fin 64 :=
   (⟨x.toNat / 64, by grind⟩, ⟨x.toNat % 64, by grind⟩)
 
-@[expose]
 public
 def firstByte.g (x: Fin 4 × Fin 64): UInt8 :=
   UInt8.ofNat (x.1.val * 64 + x.2.val)
@@ -367,14 +353,12 @@ instance: RightInverse firstByte.g firstByte.f where
     simp only [firstByte.f, firstByte.g]
     grind
 
-@[expose]
 public
 def firstByte: NonExtensibleMessageFormat Bytes (Fin 4 × Fin 64) :=
   isomorphic uint8 firstByte.f firstByte.g
 deriving IsNonAmbiguous, HasUniqueRepresentation, ParseConsumes
 
 /-- Number of bytes following the first byte. -/
-@[expose]
 public
 def remLen: Fin 4 → Nat
   | 0 => 0
@@ -383,7 +367,6 @@ def remLen: Fin 4 → Nat
   | 3 => 7
 
 /-- Minimal value that must be encoded with a given length, to ensure unique representation. -/
-@[expose]
 public
 def minVal: Fin 4 → Nat
   | 0 => 0
@@ -391,7 +374,6 @@ def minVal: Fin 4 → Nat
   | 2 => 2^14
   | 3 => 2^30
 
-@[expose]
 public
 def logLen (n: Nat): Fin 4 :=
   if n < 2^6 then 0 else if n < 2^14 then 1 else if n < 2^30 then 2 else 3
@@ -409,7 +391,6 @@ theorem logLen_unique (n: Nat) (l: Fin 4) (h1: minVal l ≤ n) (h2: n < 2^(6 + 8
 public
 abbrev Raw := (fb: Fin 4 × Fin 64) × BitVec (8 * remLen fb.1)
 
-@[expose]
 public
 def f (x: Raw): Option QuicNat :=
   let n := x.1.2.val * 2^(8 * remLen x.1.1) + x.2.toNat
@@ -418,7 +399,6 @@ def f (x: Raw): Option QuicNat :=
   else
     none
 
-@[expose]
 public
 def g (n: QuicNat): Raw :=
   ⟨(logLen n.val, ⟨n.val / 2^(8 * remLen (logLen n.val)), by
@@ -465,7 +445,6 @@ instance: SubsetLeftInverse g f where
 end NonExtensibleMessageFormat.quicNat
 
 /-- Port of `ps_quic_nat`. -/
-@[expose]
 public
 def NonExtensibleMessageFormat.quicNat: NonExtensibleMessageFormat Bytes QuicNat :=
   subsetIsomorphic (sigma quicNat.firstByte (fun fb => bitVecBE (quicNat.remLen fb.1))) quicNat.f quicNat.g
@@ -483,11 +462,9 @@ theorem NonExtensibleMessageFormat.quicNat.wf_eq (pred: Bytes → Prop) [BytesCo
 
 namespace NonExtensibleMessageFormat.slowList
 
-@[expose]
 public
 def lenF (n: Nat): {_n: Nat // True} := ⟨n, trivial⟩
 
-@[expose]
 public
 def lenG (n: {_n: Nat // True}): Nat := n.val
 
@@ -497,7 +474,6 @@ public
 instance: RightInverse lenG lenF := ⟨by intro _; rfl⟩
 
 /-- The length of the list, in unary (`slowNat`). -/
-@[expose]
 public
 def lenMf: NonExtensibleMessageFormat Bytes {_n: Nat // True} :=
   isomorphic slowNat lenF lenG
@@ -505,12 +481,10 @@ deriving IsNonAmbiguous, HasUniqueRepresentation, ParseConsumes
 
 variable {a: Type} {mf: NonExtensibleMessageFormat Bytes a} [mf.ParseConsumes]
 
-@[expose]
 public
 def f (x: {l: List a // (fun _ => True) (BytesLike.length ((ExtensibleMessageFormat.list mf).serialize l))}): List a :=
   x.val
 
-@[expose]
 public
 def g (l: List a): {l: List a // (fun _ => True) (BytesLike.length ((ExtensibleMessageFormat.list mf).serialize l))} :=
   ⟨l, trivial⟩
@@ -526,7 +500,6 @@ end NonExtensibleMessageFormat.slowList
 Lists prefixed by their length (in bytes, encoded with `slowNat`),
 the non-extensible format of lists used by the symbolic states (port of Comparse's `ps_list`).
 -/
-@[expose]
 public
 def NonExtensibleMessageFormat.slowList {a: Type} (mf: NonExtensibleMessageFormat Bytes a) [mf.ParseConsumes]:
   NonExtensibleMessageFormat Bytes (List a)

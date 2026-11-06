@@ -171,13 +171,11 @@ variable [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT
 variable [ExecTraceTypes.Has (PersistentLocalState.CompromisableState.ExecEntryT BootstrapInitKeyState)]
 
 /-- Port of `principal_key_package_has_been_verified_label`. -/
-@[expose]
 public
 def principalKeyPackageHasBeenVerifiedLabel (keyPackage: KeyPackage Bytes TreeKEM.tkt) (prin: Participant): Label :=
   ProtocolEvent.label ({ prin, keyPackage }: KeyPackageHasBeenVerified)
 
 /-- Port of `key_package_has_been_verified_label`. -/
-@[expose]
 public
 def keyPackageHasBeenVerifiedLabel (keyPackage: KeyPackage Bytes TreeKEM.tkt): Label :=
   Label.bigJoin (principalKeyPackageHasBeenVerifiedLabel keyPackage)

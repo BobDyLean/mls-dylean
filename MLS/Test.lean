@@ -39,7 +39,6 @@ open MLS.Test.FromExt.MessageProtection
 open MLS.Test.FromExt.TranscriptHashes
 
 /-- Port of `run_tests`. -/
-@[expose]
 public
 def runTests {a: Type} (testVectorsDir: System.FilePath) (name: String) (ty: TestType)
   (extractTestsuite: Testsuite → Option (List a)) (runTest: List a → IO Nat)
@@ -53,73 +52,61 @@ def runTests {a: Type} (testVectorsDir: System.FilePath) (name: String) (ty: Tes
     IO.println s!"{name}: success! ({nRun}/{testsuite.length})"
 
 /-- Port of `run_crypto_basics_tests`. -/
-@[expose]
 public
 def runCryptoBasicsTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Crypto Basics" .cryptoBasics (fun | .cryptoBasicsTest l => some l | _ => none) testCryptoBasics
 
 /-- Port of `run_tree_validation_tests`. -/
-@[expose]
 public
 def runTreeValidationTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Tree Validation" .treeValidation (fun | .treeValidationTest l => some l | _ => none) testTreeValidation
 
 /-- Port of `run_tree_operations_tests`. -/
-@[expose]
 public
 def runTreeOperationsTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Tree Operations" .treeOperations (fun | .treeOperationsTest l => some l | _ => none) testTreeOperations
 
 /-- Port of `run_secret_tree_tests`. -/
-@[expose]
 public
 def runSecretTreeTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Secret Tree" .secretTree (fun | .secretTreeTest l => some l | _ => none) testSecretTree
 
 /-- Port of `run_message_protection_tests`. -/
-@[expose]
 public
 def runMessageProtectionTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Message Protection" .messageProtection (fun | .messageProtectionTest l => some l | _ => none) testMessageProtection
 
 /-- Port of `run_transcript_hashes_tests`. -/
-@[expose]
 public
 def runTranscriptHashesTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Transcript Hashes" .transcriptHashes (fun | .transcriptHashesTest l => some l | _ => none) testTranscriptHashes
 
 /-- Port of `run_keyschedule_tests`. -/
-@[expose]
 public
 def runKeyscheduleTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Key Schedule" .keySchedule (fun | .keyScheduleTest l => some l | _ => none) testKeyschedule
 
 /-- Port of `run_psk_tests`. -/
-@[expose]
 public
 def runPskTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Pre-Shared Keys" .preSharedKeys (fun | .preSharedKeysTest l => some l | _ => none) testPsk
 
 /-- Port of `run_welcome_tests`. -/
-@[expose]
 public
 def runWelcomeTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Welcome" .welcome (fun | .welcomeTest l => some l | _ => none) testWelcome
 
 /-- Port of `run_treekem_tests`. -/
-@[expose]
 public
 def runTreekemTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "TreeKEM" .treekem (fun | .treekemTest l => some l | _ => none) testTreekem
 
 /-- Port of `run_messages_tests`. -/
-@[expose]
 public
 def runMessagesTests (testVectorsDir: System.FilePath): IO Unit :=
   runTests testVectorsDir "Messages" .messages (fun | .messagesTest l => some l | _ => none) testMessages
 
 /-- Port of `main`. -/
-@[expose]
 public
 def main (testVectorsDir: System.FilePath): IO Unit := do
   OpenSSL.Test.main

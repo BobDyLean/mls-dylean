@@ -2,6 +2,9 @@ module
 
 public import MLS.TreeSync.Code.Invariants.AuthService
 public import MLS.TreeSync.Proofs.Operations
+import all MLS.TreeSync.Code.Invariants.AuthService
+import all MLS.TreeSync.Code.Operations
+import all MLS.Common.Code.TreeCommon
 
 /-!
 Port of `MLS.TreeSync.Invariants.AuthService.Proofs`.

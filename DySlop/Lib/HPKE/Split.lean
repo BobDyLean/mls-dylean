@@ -45,7 +45,6 @@ public
 abbrev HpkePred.Local (tags: List String) := HpkePred.splitParams.Local tags
 
 /-- The HPKE predicate defined by local HPKE predicates (DY*'s `mk_global_crypto_predicate split_hpke_predicate_params`). -/
-@[expose]
 public
 def HpkePred.Local.pred {tags: List String} (l: HpkePred.Local tags)
   [BytesWellFormed] [GetUsage] [GetLabel]
@@ -84,7 +83,7 @@ where
     exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 usage (msg, info, ad) tr _ rfl h_tag
 
 /-- Port of `mk_hpke_predicate`. -/
-@[expose, instance_reducible]
+@[instance_reducible]
 public
 def HpkePred.ofLocal {tags: List String} (l: HpkePred.Local tags): HpkePred where
   pred := l.pred

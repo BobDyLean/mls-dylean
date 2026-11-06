@@ -28,7 +28,6 @@ def treesyncToTreekemNode (node: ParentNode Bytes tkt): TreeKEMNode Bytes :=
 Port of `treesync_to_treekem`.
 This does not contain any internal TreeKEM data. To be used then joining a new group.
 -/
-@[expose]
 public
 def treesyncToTreekem {l: Nat} (t: TreeSync Bytes tkt l): TreeKEM Bytes l :=
   match t.intoLeftRightView with

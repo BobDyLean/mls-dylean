@@ -137,7 +137,6 @@ theorem bigJoin_canFlow {α: Type} (f: α → Label) (x: α) (tr: ExecTrace):
 Port of `prop_to_label`: interpret a proposition as a label,
 always corrupt if the proposition is true, otherwise never corrupt.
 -/
-@[expose]
 public
 def ofProp (p: Prop): Label where
   isCorrupt _ := p
@@ -161,7 +160,6 @@ def unknown: Label := Label.pub
 /-! ## Guarded labels -/
 
 /-- Port of `guarded`: `guarded l g` is corrupt when `l` was corrupt before `g` was corrupt. -/
-@[expose]
 public
 def guarded (l g: Label): Label where
   isCorrupt tr := ∃ trBefore, trBefore ≤ tr ∧ l.isCorrupt trBefore ∧ ¬ g.isCorrupt trBefore

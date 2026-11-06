@@ -63,7 +63,6 @@ public
 abbrev MacPred.Local (tags: List String) := MacPred.splitParams.Local tags
 
 /-- The MAC predicate defined by local MAC predicates. -/
-@[expose]
 public
 def MacPred.Local.pred {tags: List String} (l: MacPred.Local tags)
   [BytesWellFormed] [GetUsage] [GetLabel]
@@ -104,7 +103,7 @@ where
     exact SplitPredicate.Params.Local.pred_of_hasStep _ l1 l2 keyUsg (key, msg) tr _ (SplitPredicate.usageTag_eq_some h_type rfl) h_tag
 
 /-- Port of `mk_mac_predicate`. -/
-@[expose, instance_reducible]
+@[instance_reducible]
 public
 def MacPred.ofLocal {tags: List String} (l: MacPred.Local tags): MacPred where
   pred := l.pred

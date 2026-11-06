@@ -4,6 +4,7 @@ public import MLS.TreeSync.Code.TreeHash
 public import MLS.Common.Proofs.Tree
 public import MLS.Common.Proofs.Crypto.Derived
 public import MLS.Common.Proofs.Crypto.HashCollision
+import all MLS.TreeSync.Code.TreeHash
 
 /-!
 Port of `MLS.TreeSync.TreeHash.Proofs`.
@@ -29,7 +30,6 @@ open MLS
 variable {Bytes: Type} [CryptoBytes Bytes] {tkt: TreeKEMTypes Bytes}
 
 /-- Port of `get_tree_hash_input`. -/
-@[expose]
 public
 def getTreeHashInput {l: Nat} (t: TreeSync Bytes tkt l): Result (TreeHashInput Bytes tkt) :=
   match t.intoLeftRightView with
@@ -83,7 +83,6 @@ Given two trees that have the same hash, then either:
 
 This function computes the pair of bytes, its specification is `treeHashInj_spec`.
 -/
-@[expose]
 public
 def treeHashInj {l1 l2: Nat} (t1: TreeSync Bytes tkt l1) (t2: TreeSync Bytes tkt l2): Bytes × Bytes :=
   match getTreeHashInput t1, getTreeHashInput t2 with

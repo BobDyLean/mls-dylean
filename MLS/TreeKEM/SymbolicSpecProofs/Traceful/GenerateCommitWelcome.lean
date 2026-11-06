@@ -5,9 +5,12 @@ public import MLS.TreeKEM.SymbolicSpecProofs.Traceful.ProcessCommit
 public import MLS.TreeKEM.SymbolicSpecProofs.API.Tree
 public import MLS.Bootstrap.SymbolicProofs.GroupInfo
 public import MLS.Symbolic.SymbolicProofs.Randomness
+import all MLS.TreeSync.Code.Operations
 import all MLS.TreeKEM.SymbolicSpec.Traceful.GenerateCommitWelcome
 import all MLS.TreeKEM.SymbolicSpec.EpochEvent
 import all MLS.Bootstrap.SymbolicSpec.KeyPackage
+import all MLS.TreeKEM.Code.API
+import all MLS.TreeSync.Code.API
 import DY.Meta.Step
 
 /-!
@@ -68,7 +71,6 @@ theorem createGroupInfo'.proof (me: Participant) (st: TreeSyncTreeKEMState) (par
     TreesyncTreekemStateCoarseInvariant, TreekemKeyscheduleStateGood]
 
 /-- The key packages of a list are publishable (stated with a definition, so that `step` can monotonize it). -/
-@[expose]
 public
 def KeyPackagesArePublishable (tr: ProofTrace) (l: List (KeyPackage Bytes tkt)): Prop :=
   ∀ kp ∈ l, (KeyPackage.mf tkt).wf (Bytes.Publishable · tr) kp

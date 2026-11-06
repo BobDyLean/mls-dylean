@@ -2,6 +2,10 @@ module
 
 public import MLS.TreeSync.Code.Invariants.ParentHash
 public import MLS.TreeSync.Proofs.Invariants.UnmergedLeaves
+import all MLS.TreeSync.Code.Invariants.UnmergedLeaves
+import all MLS.TreeSync.Code.Invariants.ParentHash
+import all MLS.TreeSync.Code.Operations
+import all MLS.Common.Code.TreeCommon
 
 /-!
 Port of `MLS.TreeSync.Invariants.ParentHash.Proofs`.
@@ -186,7 +190,6 @@ grind_pattern mem_unmergedResolution => x ∈ unmergedResolution l
 /-! ## `set_eqP` -/
 
 /-- Port of `set_eqP`. -/
-@[expose]
 public
 def SetEqP {α: Type} (l1 l2: List α): Prop :=
   ∀ x, x ∈ l1 ↔ x ∈ l2
@@ -326,19 +329,16 @@ theorem ofLeafIndex_not_mem_resolution {l: Nat} (t: TreeSync Bytes tkt l) (li: N
 /-! ## `last_update` set equality imply equality -/
 
 /-- Port of `node_indices_are_leaf_indices`. -/
-@[expose]
 public
 def NodeIndicesAreLeafIndices (l: List NodeIndex): Prop :=
   ∀ x ∈ l, x.levels = 0
 
 /-- Port of `node_index_lt`. -/
-@[expose]
 public
 def nodeIndexLt (x y: NodeIndex): Bool :=
   x.position < y.position
 
 /-- Port of `node_indices_are_sorted`. -/
-@[expose]
 public
 def nodeIndicesAreSorted (l: List NodeIndex): Bool :=
   decide (l.Pairwise (nodeIndexLt · ·))
@@ -826,7 +826,6 @@ def NodeHasParentHashLinkP {lp: Nat} (p: TreeSync Bytes tkt (lp+1)): Prop :=
   nodeNotBlank p → ∃ (ld: Nat) (d: TreeSync Bytes tkt ld), ld ≤ lp ∧ nodeHasParentHash d ∧ ParentHashLinkedP d p
 
 /-- Port of `parent_hash_invariantP`. -/
-@[expose]
 public
 def ParentHashInvariantP {l: Nat} (t: TreeSync Bytes tkt l): Prop :=
   match t.intoLeftRightView with
