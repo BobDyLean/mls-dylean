@@ -368,7 +368,7 @@ theorem scenario.reach: scenario.PreservesReachability config (fun _ => True) (f
     knows_list
     exact ⟨proposal_attackerKnows (add_attackerKnows (by knows_later)),
       proposal_attackerKnows (add_attackerKnows (by knows_later))⟩) as ⟨res, alice⟩
-  dsimp only
+  split
   split; rotate_left
   · reach_failure
   reach Client.processWelcome.reach _ _ _ as bob
@@ -385,7 +385,7 @@ theorem scenario.reach: scenario.PreservesReachability config (fun _ => True) (f
   reach Client.commit.reach _ _ _ using (by
     knows_list
     assumption) as ⟨res, bob⟩
-  dsimp only
+  split
   split; rotate_left
   · reach_failure
   reach Client.processCommit.reach _ _ as alice
@@ -442,7 +442,7 @@ theorem fullScenario.reach: fullScenario.PreservesReachability config (fun _ => 
     knows_list
     exact ⟨proposal_attackerKnows (add_attackerKnows (by knows_later)),
       proposal_attackerKnows (add_attackerKnows (by knows_later))⟩) as ⟨res, alice⟩
-  dsimp only
+  split
   split; rotate_left
   · reach_failure
   reach Client.processWelcome.reach _ _ _ as bob
@@ -457,7 +457,7 @@ theorem fullScenario.reach: fullScenario.PreservesReachability config (fun _ => 
   reach Client.processProposal.reach _ _ _ as charlie
   reach proposalRef.reach _ using add_attackerKnows (by knows_later) as addDaveRef
   reach Client.commit.reach _ _ _ using (by knows_list; assumption) as ⟨res, bob⟩
-  dsimp only
+  split
   split; rotate_left
   · reach_failure
   reach Client.processCommit.reach _ _ as alice
@@ -503,7 +503,7 @@ theorem fullScenario.reach: fullScenario.PreservesReachability config (fun _ => 
   reach Client.commit.reach _ _ _ using (by
     knows_list
     exact proposal_attackerKnows (add_attackerKnows ‹_›)) as ⟨res, dave⟩
-  dsimp only
+  split
   split; rotate_left
   · reach_failure
   reach Client.processCommit.reach _ _ as alice

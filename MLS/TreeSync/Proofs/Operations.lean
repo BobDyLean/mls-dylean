@@ -85,7 +85,7 @@ public
 theorem unAddP_zero (t: TreeSync Bytes tkt 0) (pred: Nat → Bool):
   unAddP t pred = (LeftRightView.leaf (if pred t.position then t.leafContent else none) t.position).pack
 := by
-  grind [unAddP]
+  grind [unAddP.eq_def]
 
 /-- `unAddP` of a node, through the child / sibling view for any leaf index `li`. -/
 public

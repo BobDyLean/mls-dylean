@@ -951,7 +951,7 @@ variable {Bytes: Type}
 theorem unAddP_zero (t: TreeKEM Bytes 0) (pred: Nat → Bool):
   unAddP t pred = (LeftRightView.leaf (if pred t.position then t.leafContent else none) t.position).pack
 := by
-  grind [unAddP]
+  grind [unAddP.eq_def]
 
 theorem unAddP_left_right {l: Nat} (t: TreeKEM Bytes (l+1)) (pred: Nat → Bool):
   (unAddP t pred).left = unAddP t.left pred ∧
